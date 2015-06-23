@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport"></meta>
+<title>obs-2011-07-11 - Google Fusion Tables</title>
+
+<!-- Google Font API -->
+<link href='//fonts.googleapis.com/css?family=Carrois+Gothic+SC' rel='stylesheet' type='text/css'>
+
+<style type="text/css">
+*, *:before, *:after {
+  -moz-box-sizing: border-box; -webkit-box-sizing: border-box; box-sizing: border-box;
+ }
+
+html, body, #googft-mapCanvas {
+  font-family: 'Carrois Gothic SC', sans-serif;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  width: 100%;
+}
+#googft-legend {
+  background-color: #fff;
+  border: 1px solid #000;
+  font-family: Arial, sans-serif;
+  font-size: 12px;
+  margin: 5px;
+  padding: 10px 10px 8px;
+}
+#googft-legend p {
+  font-weight: bold;
+  margin-top: 0;
+}
+#googft-legend div {
+  margin-bottom: 5px;
+}
+.googft-legend-swatch {
+  border: 1px solid;
+  float: left;
+  height: 12px;
+  margin-right: 8px;
+  width: 20px;
+}
+.googft-legend-range {
+  margin-left: 0;
+}
+.googft-dot-icon {
+  margin-right: 8px;
+}
+.googft-paddle-icon {
+  height: 24px;
+  left: -8px;
+  margin-right: -8px;
+  position: relative;
+  vertical-align: middle;
+  width: 24px;
+}
+.googft-legend-source {
+  margin-bottom: 0;
+  margin-top: 8px;
+}
+.googft-legend-source a {
+  color: #666666;
+  font-size: 11px;
+}
+.nav-bar {
+  width: 100%;
+  height: 45px;
+  box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -ms-box-sizing: border-box;
+  -webkit-box-sizing: border-box;
+  background: #2c3e50;
+  position: relative;
+  padding-top: 10px;
+}
+.btn {
+  display: inline-block;
+  margin-left: 10px;
+  padding: 5px 8px;
+  background: #16a085;
+  border: 1px solid #16a085;
+  color: #ecf0f1;
+  text-shadow: 0 -1px 0 #094035;
+  border-radius: 4px;
+  text-decoration: none;
+  text-transform: uppercase;
+  font-size: 12px;
+}
+.btn:hover {
+  background: #1ABF9F;
+  color: #ecf0f1;
+  text-shadow: 0 -1px 0 #094035;
+}
+.btn:active {
+  background: #50A098;
+  color: #ecf0f1;
+  text-shadow: 0 -1px 0 #094035;
+}
+.btn-off {
+  background: #c0392b;
+  text-shadow: 0 -1px 0 #A63125;
+  border-color: #A63125;
+}
+.btn-off:hover {
+  background: #CD3D2E;
+  text-shadow: 0 -1px 0 #A63125;
+  border-color: #A63125;
+}
+.btn-off:active {
+  background: #A63125;
+  text-shadow: 0 -1px 0 #80261D;
+  border-color: #80261D;
+}
+
+/* Side Panel CSS */
+.side-panel {
+  position: absolute;
+  z-index: 99;
+  left: -430px;
+  width: 450px;
+  height: 100%;
+  background: #2c3e50;
+  box-sizing: border-box;
+  padding: 20px;
+  color: #eee;
+  text-transform: uppercase;
+  font-size: 12px;
+  opacity: .9;
+  filter: alpha(opacity = 90);
+  text-shadow: 0px 1px 0px #000;
+}
+.hide-sb {
+  float: right;
+  background: #46637F;
+  color: #EEE;
+  text-shadow: 0 -1px 0 #111;
+  padding: 4px 8px;
+  border: 1px solid #233140;
+  text-transform: uppercase;
+  font-size: 12px;
+  cursor: pointer;
+}
+.hide-sb:hover {
+  background: #46668F;
+}
+.search-bar {
+  float: right;
+  padding: 2px 8px;
+  margin-right: 10px;
+  width: 140px;
+  border-radius: 5px;
+  border: none;
+  font-family: 'Carrois Gothic SC', sans-serif;
+  transition: .5s;
+  -webkit-transition: .5s;
+  -moz-transition: .5s;
+}
+.search-bar:focus {
+  width: 180px;
+}
+</style>
+
+<!-- Google Maps API v3 -->
+<script type="text/javascript" src="//maps.googleapis.com/maps/api/js?v=3&amp;libraries=visualization&amp;sensor=false"></script>
+<!-- jQuery API hosted at Google CDN -->
+<script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+
+<script type="text/javascript">
+  //code for toggling markers
+  function toggleLayer(mapLayer) {
+    if(mapLayer.getMap()) // getMap() checks if the layer is on a map
+      mapLayer.setMap(null);
+    else
+      mapLayer.setMap(map);
+  }
+
+  var map = null, obs_layer = null, segment_layer = null;
+
+  function initialize() {
+
+    google.maps.visualRefresh = true;
+
+    var styles = [
+      {
+        stylers: [
+          { hue: "#00ffe6" },
+          { saturation: -20 }
+        ]
+      },{
+        featureType: "road",
+        elementType: "geometry",
+        stylers: [
+          { lightness: 100 },
+          { visibility: "simplified" }
+        ]
+      },{
+        featureType: "road",
+        elementType: "labels",
+        stylers: [
+          { visibility: "off" }
+        ]
+      }
+    ];
+
+    var styledMap = new google.maps.StyledMapType(styles, {name: "Styled Map"});
+
+    var mapDiv = document.getElementById('googft-mapCanvas');
+    
+	function getParameterByName(name) {
+	    name = name.replace(/[\[]/, "\\\[").replace(/[\]]/, "\\\]");
+	    var regex = new RegExp("[\\?&]" + name + "=([^&#]*)"),
+	        results = regex.exec(location.search);
+	    return results == null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
+	}
+	
+	var _zoom = (getParameterByName("zoom").length > 0 ? parseInt(getParameterByName("zoom")) : 5);
+	var _lat = (getParameterByName("lat").length > 0 ? parseFloat(getParameterByName("lat")) : 44.14838025427134);
+	var _lon = (getParameterByName("lon").length > 0 ? parseFloat(getParameterByName("lon")) : -97.37921466796877);
+
+    map = new google.maps.Map(mapDiv, {
+      center: new google.maps.LatLng(_lat, _lon),
+      zoom: _zoom,
+      mapTypeIds: [ google.maps.MapTypeId.ROADMAP, 'map_style' ] 
+    });
+    map.mapTypes.set('map_style', styledMap);
+    map.setMapTypeId('map_style');
+
+    map.controls[google.maps.ControlPosition.RIGHT_BOTTOM].push(document.getElementById('googft-legend-open'));
+    map.controls[google.maps.ControlPosition.RIGHT_BOTTOM].push(document.getElementById('googft-legend'));
+
+      obs_layer = new google.maps.FusionTablesLayer({
+        map: map,
+        suppressInfoWindows: true,
+        heatmap: { enabled: false },
+        query: {
+          select: "latitudeF",
+          from: "1CK-d3mnJntXR7zjUogT9Z73pGtchVmY92uKqdzo",
+          where: ""
+        }
+        ,styles: [{
+          markerOptions: {
+            iconName: "measle_grey"
+          }
+        }]
+        , options : {
+          styleId : 2,
+          templateId: 2
+        }
+      });
+
+    segment_layer = new google.maps.FusionTablesLayer({
+      map: map,
+      suppressInfoWindows: true,
+      heatmap: { enabled: false },
+      query: {
+        select: "latitudeF",
+        from: "1_r0_fwsDUCfm5Gk5n_CSDe48XzMCCnEikgzmXXk",
+        where: ""
+      }
+    });
+
+    var infowindow = new google.maps.InfoWindow();
+/*
+    google.maps.event.addListener( obs_layer, 'click', function(e) {
+      var windowContent = e.row['obstypeid'].value;
+      infowindow.setOptions({content : windowContent});
+      infowindow.setPosition(e.latLng);
+      infowindow.open(map);
+    });
+*/
+    //these handles the SideBar function ******************************
+    google.maps.event.addListener(obs_layer, 'click', function(e) {
+      //e.event.preventDefault();
+      sidePanel.load(e);
+      sidePanel.open();
+
+      map.panTo(e.latLng);
+
+      var windowContent = '<i class="fa fa-smile-o"></i>';
+      infowindow.setOptions({content : windowContent});
+      infowindow.setPosition(e.latLng);
+      infowindow.open(map);
+    });
+
+    google.maps.event.addListener(segment_layer, 'click', function(e) {
+      //e.event.preventDefault();
+      sidePanel.load(e);
+      sidePanel.open();
+
+      map.panTo(e.latLng);
+
+      var windowContent = '<i class="fa fa-smile-o"></i>';
+      infowindow.setOptions({content : windowContent});
+      infowindow.setPosition(e.latLng);
+      infowindow.open(map);
+    });
+    //*********************************************************************
+
+  }//eof initialize();
+
+
+
+/*
+  //json request for segment polyline
+  var query = "SELECT 'latitudeF', 'longitudeF' FROM " +
+              "1_r0_fwsDUCfm5Gk5n_CSDe48XzMCCnEikgzmXXk " + // <- table ID
+              "LIMIT 500000"; //so far successful return 500k rows
+
+  //encode the query
+  var encodedQuery = encodeURIComponent(query);
+
+  //Construct the URL
+  var url = ['https://www.googleapis.com/fusiontables/v1/query'];
+  url.push('?sql=' + encodedQuery);
+  //my google developers API key don't use this for yourself please :)
+  url.push('&key=AIzaSyAL-xQf3Pnn-KWJS_OgOC0JlAB8xagik5g');
+
+  //send JSONP request, was lazy: used jquery
+  var lat = [],
+      lon = [];
+
+  $.ajax({
+    url: url.join(''),
+    dataType: 'JSONP',
+    success: function(data) { segmentData(data); }
+  });
+
+  function segmentData(data) {
+    var rows = data['rows'];
+    //console.log(rows);
+
+    for ( var i in rows) {
+      lat.push(rows[i][0]);
+      lon.push(rows[i][1]);
+    }
+    queryExt(lat, lon);
+  }
+
+  function queryExt(lat, lon) {
+    //2nd query
+    var query2 = "SELECT 'latitudeF', 'longitudeF' FROM " +
+                "1_r0_fwsDUCfm5Gk5n_CSDe48XzMCCnEikgzmXXk " + // <- table ID
+                "OFFSET 500001 " //fetch rows from 500001
+
+    //encode the query
+    var encodedQuery = encodeURIComponent(query2);
+
+    //Construct the URL
+    var url = ['https://www.googleapis.com/fusiontables/v1/query'];
+    url.push('?sql=' + encodedQuery);
+    //my google developers API key don't use this for yourself please :)
+    url.push('&key=AIzaSyAL-xQf3Pnn-KWJS_OgOC0JlAB8xagik5g');
+    //2nd ajax call
+    $.ajax({
+      url: url.join(''),
+      dataType: "JSONP",
+      success: function(data) {
+        var rows = data['rows'];
+
+        for (var i in rows) {
+          lat.push(rows[i][0]);
+          lon.push(rows[i][1]);
+        }
+
+        console.log(lat);
+        return lon;
+      }
+    });
+  }
+    function deleteRow() {
+
+      var query = "DELETE FROM 1_r0_fwsDUCfm5Gk5n_CSDe48XzMCCnEikgzmXXk WHERE 'obstypeid' = 575";
+      var encodedQuery = encodeURIComponent(query);
+      var url = ['https://www.googleapis.com/fusiontables/v1/query'];
+      url.push('?sql=' + encodedQuery);
+      url.push('&key=AIzaSyAL-xQf3Pnn-KWJS_OgOC0JlAB8xagik5g');
+
+      $.ajax({
+        type: 'POST',
+        url: url.join(''),
+        dataType: 'JSONP',
+        success: function(resp) {
+          console.log(resp)
+        }
+      });
+    }
+*/
+  function placeMarker(location) {
+    var marker = new google.maps.Marker({
+      position: location,
+      map: map
+    });
+  }
+
+  google.maps.event.addDomListener(window, 'load', initialize);
+
+</script>
+
+</head>
+
+<body>
+
+  <div class="nav-bar">
+
+    <a href="#" class="btn" id="toggleObs">
+      <i class="fa fa-check-circle"></i>
+       Nonmobile
+    </a>
+    <a href="#" class="btn" id="toggleSeg">
+      <i class="fa fa-check-circle"></i>
+       Road Segments
+    </a>
+
+    <input type="text" class="search-bar" placeholder="search observer id" />
+
+  </div>
+
+  <div id="sidePanel" class="side-panel">
+
+    <button class="hide-sb">
+      <i class="fa fa-times"></i>
+    </button>
+
+    <h2 class="data-header"></h2>
+
+    <table class="obs-table"></table>
+
+  </div>
+
+  <div id="googft-mapCanvas"></div>
+
+  <script>
+
+    //create object sidePanel and functions to control it   
+    var sidePanel = {
+      open: function() {
+        if ($('.side-panel').position().left === -430)
+          $('.side-panel').animate({
+            left: 0
+          }, 500);
+      },
+      close: function() {
+          $('.side-panel').animate({
+            left: '-430px'
+          }, 500);
+        },
+      load: function(e) {
+        if (e.row['obstypeid'].value > 2000000) {
+          $('.data-header').html('Segment Data:');
+        } else {
+          $('.data-header').html('Nonmobile Data:');
+        }
+
+        $('.obs-table').html(
+          '<tr>' +
+            '<td>Observation Type ID:</td>' +
+            '<td>' + e.row['obstypeid'].value + '</td>' +
+          '</tr>' +
+          '<tr>' +
+            '<td>Source ID:</td>' +
+            '<td>' + e.row['sourceid'].value + '</td>' +
+          '</tr>' +
+          '<tr>' +
+            '<td>Sensor ID</td>' +
+            '<td>' + e.row['sensorid'].value + '</td>' +
+          '</tr>' +
+          '<tr>' +
+            '<td>Observation Time:</td>' +
+            '<td>' + e.row['obstime'].value + '</td>' +
+          '</tr>' +
+          '<tr>' +
+            '<td>Time Received:</td>' +
+            '<td>' + e.row['recvtime'].value + '</td>' +
+          '</tr>' +
+          '<tr>' +
+            '<td>Latitude:</td>' +
+            '<td>' + e.row['latitudeF'].value + '</td>' +
+          '</tr>' +
+          '<tr>' +
+            '<td>Longitude:</td>' +
+            '<td>' + e.row['longitudeF'].value + '</td>' +
+          '</tr>' +
+          '<tr>' +
+            '<td>Elevation:</td>' +
+            '<td>' + e.row['elevation'].value + '</td>' +
+          '</tr>' 
+        );
+      },
+      height: function() {
+        $('.side-panel').css({
+          height: $('#googft-mapCanvas').height()
+        });
+      }
+    }
+
+    //execute when DOM loads
+    $(document).ready(function() {
+
+      //change color for hide/show of markers on the map: obs_layer, segment_layer
+      $('.btn').on('click', function() {
+        $(this).toggleClass("btn-off");
+        if( $(this).find("i").hasClass("fa-check-circle") ) {
+          $(this).find('i').removeClass("fa-check-circle").addClass("fa-times-circle");
+        } else {
+          $(this).find('i').removeClass("fa-times-circle").addClass("fa-check-circle");
+        }
+      });
+
+      $('#toggleSeg').on('click', function() {
+        toggleLayer(segment_layer);
+      });
+
+      $('#toggleObs').on('click', function() {
+        toggleLayer(obs_layer);
+      });
+
+      //hide the sidePanel when clicking on itself
+      $('.hide-sb').on('click', function(event) {
+        event.preventDefault();
+        sidePanel.close();
+      });
+
+      //on window load set the height of the sidePanel
+      sidePanel.height();
+
+      //
+      $('.side-panel').on('click', function() {
+        sidePanel.open();
+      });
+
+      $('.search-bar').on('keydown', function(e) {
+          if( e.keyCode === 13) {
+            alert('Under Construction');
+          }
+      });
+
+      resizeMap();
+
+      $(window).bind('resize', function() {
+        resizeMap();
+      });
+
+      function resizeMap() {
+        //control the height of the map depending on the window height minus the nav-bar on top
+        $('#googft-mapCanvas, .side-panel').css({ height : $('body').height() - $('.nav-bar').height() -10 });
+      }
+
+    });
+  </script>
+
+</body>
+</html>

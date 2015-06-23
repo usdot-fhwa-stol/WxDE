@@ -1,0 +1,11 @@
+###################################################################################
+# DO NOT MODIFY THIS FILE
+###################################################################################
+
+# The number of milliseconds to wait for an observation set before a platform is flagged.
+timeout=14400000
+
+# path to the roadfile
+mn_roadfile=@@vdt.dataroot@@/static/cdl/mn_roads.nc
+
+mi_roadfile=@@vdt.dataroot@@/static/cdl/mi_roads.20131111.nc

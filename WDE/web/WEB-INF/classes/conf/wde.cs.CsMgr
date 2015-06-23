@@ -1,0 +1,9 @@
+###################################################################################
+# DO NOT MODIFY ANYTHING BELOW THIS LINE
+###################################################################################
+
+# Datasource used by this process.
+datasource=java:comp/env/jdbc/wxde
+
+# The number of milliseconds to retry failed collection cycles.
+retry=300

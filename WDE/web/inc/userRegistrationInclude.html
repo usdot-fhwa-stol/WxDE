@@ -1,0 +1,97 @@
+
+<div class="container">
+	<h1>User Registration</h1>
+
+	<div id="container" style="border:none;">
+	
+	     <div class="canvas">
+	     
+	     		<form action="POST" name="registerForm" id="registerForm">
+	     		
+				<fieldset class="ui-widget ui-widget-content ui-corner-all" style="min-width:450px; max-width:450px;">
+				
+					<div>
+						<label for="userName" style="width: 120px;">User Name: </label>
+						<input type="text" id="userName" name="userName" size="41" 
+							class="ui-corner-all" style="width: 297px;">
+					</div>
+					
+					<div>
+						<label for="email" style="width: 120px;">Business Email: </label>
+						<input type="text" id="email" name="email" size="41" 
+							class="ui-corner-all" style="width: 297px;">
+					</div>
+					
+					<div>
+						<label for="password" style="width: 120px;">Password: </label>
+						<input type="password" id="password" name="password" size="41"
+					       class="ui-corner-all" style="width: 297px;">
+					</div>
+					
+					<div>
+						<label for="password2" style="width: 120px;">Verify Password: </label>
+					<input type="password" id="password2" name="password2" size="41"
+					       class="ui-corner-all" style="width: 297px;">
+					</div>
+					
+					<div>
+						<label for="firstName" style="width: 120px;">First Name: </label>
+						<input type="text" id="firstName" name="firstName" size="41"
+					       class="ui-corner-all" style="width: 297px;">
+					</div>
+					
+					<div>
+						<label for="lastName" style="width: 120px;">Last Name: </label>
+						<input type="text" id="lastName" name="lastName" size="41"
+					       class="ui-corner-all" style="width: 297px;">
+					</div>
+					
+					<div>
+						<label for="organization" style="width: 120px;">Organization: </label>
+						<input type="text" id="organization" name="organization" size="41"
+					       class="ui-corner-all" style="width: 297px;">
+					</div>
+					
+					<div>
+						<label for="organizationType" style="width: 120px;">Organization Type: </label>
+						<select id="organizationType" class="ui-corner-all" style="width: 303px;"></select>
+					</div>
+					
+					<div>
+						<label for="country" style="width: 120px;">Country: </label>
+						<select id="country" class="ui-corner-all" style="width: 303px;"></select>
+					</div>
+					<div style="text-align:right; margin-bottom:0;">
+						<button class="btn-signin btn-dark" type="submit" id="register" name="register">
+	    					<img id="loader" src="/image/loader.gif" alt="loader">
+<!-- 							<i class="icon-save"></i>  -->
+							<img src="/image/icons/light/fa-save.png" alt="Save Icon" style="margin-bottom: -1px" />
+							<span>Save</span>
+							</button>
+						<button class="btn-signin btn-light" type="button" id="cancel" name="cancel">
+<!-- 							<i class="icon-ban-circle"></i>  -->
+							<img src="/image/icons/dark/fa-ban.png" alt="Cancel Icon" style="margin-bottom: -2px" />
+							Cancel</button>
+					</div>
+									
+				</fieldset>
+				
+			</form>
+			
+		</div>
+		
+		<div id="dialogSuccess">
+			You have successfully registered.
+			Thank you.
+		</div>
+		<div id="dialogError"></div>
+	</div>
+	
+	<p>
+		Please, provide all required information.
+		<br/>
+		<em>* All fields are required.</em>
+	</p>
+	
+	<div class="clearfix"></div>
+</div><!-- .container -->

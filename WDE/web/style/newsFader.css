@@ -1,0 +1,41 @@
+@CHARSET "ISO-8859-1";
+
+.news-slide-stage{
+    width:200%;
+    position: relative;
+    padding-top: 60%;
+    overflow: hidden;
+}
+.news{
+    position:absolute;
+    padding:0 !important;
+    opacity: 0;
+    z-index: 1;
+    width:340px;
+    right: 25px;
+    margin-left: -10px !important;
+}
+.news-text {
+	height: 100px;
+	overflow-y: hidden;
+}
+.news-slide-selectors{
+    position:absolute;
+    top:30%;
+}
+.button-white{
+    width:20%;
+    text-align:center;
+}
+
+.hidden-news {
+	right:9999px;
+	opacity:0;
+	-ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=0)";
+	filter:alpha(opacity=0);
+}
+
+#play {
+	margin-left: 1px;
+	margin-right: 1px;
+}

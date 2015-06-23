@@ -1,0 +1,1 @@
+1-59/5 * * * * root java -cp <classpath> wde.cs.imo.MiDot http://imo.umtri.umich.edu/synesis/ <dest_dir> > /dev/null

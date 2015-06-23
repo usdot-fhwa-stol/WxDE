@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE configuration
+PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-config.dtd">
+<configuration>
+	<typeAliases>
+		<typeAlias alias="User" type="wde.data.User" />
+		<typeAlias alias="Country" type="wde.data.Country" />
+		<typeAlias alias="OrganizationType" type="wde.data.OrganizationType" />
+		<typeAlias alias="Feedback" type="wde.data.Feedback" />
+		<typeAlias alias="FeedbackType" type="wde.data.FeedbackType" />
+		<typeAlias alias="Contributor" type="wde.data.Contributor" />
+		<typeAlias alias="Platform" type="wde.data.Platform" />
+ 		<typeAlias alias="Boundary" type="wde.data.Boundary" />
+		<typeAlias alias="Coordinates" type="wde.data.Coordinates" />
+		<typeAlias alias="CollectionStatus" type="wde.data.CollectionStatus" />
+		<typeAlias alias="DataMapState" type="wde.data.DataMapState" />
+		<typeAlias alias="Subscription" type="wde.data.Subscription" />
+		<typeAlias alias="SubscriptionUser" type="wde.data.SubscriptionUser" />
+	</typeAliases>
+	<environments default="standalone">
+		<environment id="standalone">
+			<transactionManager type="JDBC" />
+			<dataSource type="POOLED">
+				<property name="driver" value="org.postgresql.Driver" />
+				<property name="url" value="jdbc:postgresql://localhost:5432/wxde" />
+				<property name="username" value="wxde" />
+				<property name="password" value="d0t_dev$" />
+			</dataSource>
+		</environment>
+		<environment id="web">
+			<transactionManager type="JDBC" />
+			<dataSource type="JNDI">
+				<property name="data_source" value="jdbc/wxde" />
+			</dataSource>
+		</environment>
+	</environments>
+	<mappers>
+		<mapper resource="UserMapper.xml" />
+		<mapper resource="FeedbackMapper.xml" />
+		<mapper resource="MetadataMapper.xml" />
+		<mapper resource="SubscriptionMapper.xml" />
+		<mapper resource="UtilMapper.xml" />		
+	</mappers>
+</configuration>

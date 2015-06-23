@@ -1,0 +1,128 @@
+.side-bar {
+	box-sizing: border-box;
+	padding: 20px 30px 10px 10px;
+	position: absolute;
+	height: 90%;
+	width: auto;
+	max-width: 1000px;
+	color: #333333;
+	background-image: url(/image/shade-bg-50-opacity.png);
+	//background-color: rgba(236, 240, 241, .5);
+	box-shadow: 2px 0 5px rgba(0, 0, 0, .5);
+	border-right: solid 1px rgba(255, 255, 255, 1);
+	left: -160px;
+	z-index: 2;
+	-webkit-transition: .5s;
+	-moz-transition: .5s;
+	-ms-transition: .5s;
+	-o-transition: .5s;
+	transition: .5s;
+	display: none;
+}
+.side-bar:hover {
+	background-color: rgb(236, 240, 241);
+}
+#sideBar #gmapIW {
+	height: auto;
+	max-height: 550px !important;
+	width: auto;
+	max-width: 770px !important;
+}
+.ie .side-bar {
+	left: -180px;
+}
+#sideBar .qualityChecks {
+	background: transparent;
+	width: auto !important;
+	border-collapse: collapse;
+}
+#sideBar .qualityChecks, #sideBar h3 {
+	color: #333333;
+	text-shadow: 0 1px 0 #FFFFFF;
+}
+#sideBar h3 {
+	margin-top:0;
+	margin-bottom: 20px
+}
+#sideBar .qualityChecks .obs-table-body {
+	height: auto;
+	max-height: 400px !important;
+}
+.close-panel {
+	font-weight: 100;
+	font-size: 18px;
+	cursor: pointer;
+	z-index: 5;
+}
+#sideBar .btn {
+	margin-top: 10px;
+}
+.btn-dark {
+	background: #333;
+	color: #eee;
+	border: none;
+	margin-top: 11px;
+}
+.btn-dark:hover {
+	border: none;
+	background: #444;
+}
+.btn-primary, .btn-primary:hover {
+	border: none;
+	margin-right: 5px;
+}
+.drag {
+	height: 100%;			
+	width: 20px;
+	background: #DDD;
+	cursor: pointer;
+}
+.btn-group {
+	margin-top: 5px;
+	margin-left: 20px;
+}
+
+.toggle-shade {
+	margin-top: 5px;
+	margin-left: 15px;
+}
+.btn-pills, .btn-pills:active, .btn-pills:focus {
+	background: #DDDDDD;
+	color: #2c3e50;
+	border: none;
+	box-shadow: none;
+	margin: 0;
+	font-size: 12px !important;
+	padding: 3px 8px;
+}
+.btn-pills:hover, .btn-pills:focus {
+	background: #FFF;
+	color: #2c3e50;
+	border: none;
+	box-shadow: none;
+	padding: 3px 8px !important;
+}
+.btn-pills.active, .btn-pills.active:active, .btn-pills.active:focus {
+	background: #555555;
+	color: #999999;
+	cursor: default;
+	box-shadow: none;
+	border: none;
+	padding: 3px 8px;
+	padding-top: 4px;
+}
+.btn-pills.active:hover {
+	background: #555;
+	border: none;
+	padding: 3px 8px !important;
+	padding-top: 4px !important;
+}
+.btn-pills.active:blur {
+	padding: 3px 8px;
+}
+.btn-group .btn+.btn {
+	margin-left: 0 !important;
+}
+.btn-pills  i {
+	font-size: 13px !important;
+}

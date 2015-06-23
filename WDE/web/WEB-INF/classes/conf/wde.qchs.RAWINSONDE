@@ -1,0 +1,36 @@
+###################################################################################
+# DO NOT MODIFY THIS FILE
+###################################################################################
+
+# Configuration to retrieve meteorology historic data in the form the GRIB2 data.
+# This data is retrieved from the NOAA FTP site. Your email is used as the FTP password so
+# that they may contact you if changes occur to the data format or accessibility.
+
+# Filename in which sounding data will be written.
+csvFile=@@webapp.root@@/WEB-INF/classes/sounding.csv
+
+# Filename in which re-analysis data is stored.
+reanalysisFile=@@webapp.root@@/WEB-INF/classes/reanalysis2_monthly_mean_air_temp_700mb.csv
+
+# The password used for FTP connection. Use your email address.
+ftpPassword=@@admin.email@@
+
+# The FTP server in which to retrieve the data.
+ftpServer=ftp://tgftp.nws.noaa.gov
+#ftpServer=ftp://140.90.128.71
+
+# The remote directory on the FTP server in which the data is stored.
+dataDirectory=SL.us008001/DF.an/DC.vsndn/DS.raobf/
+
+# File on the FTP server that lists the files.
+directoryListing=ls-l
+
+# The username used for FTP connection.
+ftpUsername=anonymous
+
+# Defines the number of seconds between retrievals of data.
+schedulerPeriod=900
+
+# Defines the number of seconds from midnight from which the schedule should start.
+schedulerOffset=47
+

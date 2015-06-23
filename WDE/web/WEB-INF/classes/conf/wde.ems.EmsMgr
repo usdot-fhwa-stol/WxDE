@@ -1,0 +1,84 @@
+###################################################################################
+# DO NOT MODIFY THIS FILE
+###################################################################################
+
+# The number of seconds between refreshes of metadata files from the database
+# Metadata changes infrequently, so a 4 hour (14400 second) refresh is adequate
+offset=3420
+refresh=14400
+
+# File path to the location where metadata files should be written
+metadata=@@webapp.root@@/../data/metadata/
+
+# Database tables that will be used to generate the metadata files.
+# Generated files follow the naming convention of filename appended with .csv
+# i.e. climateRecord.csv
+#table=climate
+table=climateRecord
+table=contrib
+table=image
+table=obsType
+table=obsValueMap
+table=organization
+table=qchparm
+#table=qchSeq
+table=sensor
+table=sensorType
+table=site
+table=platform
+
+# List of datasource parameters and query to run for each table
+# The first parameter is the datasource and the second is the query to execute
+# Queries must be completed on one line, semicolons are not necessary
+
+#climate=java:comp/env/jdbc/wxde
+#climate=SELECT * FROM climate
+#climate=SELECT id, regionDesc, source FROM climate ORDER BY id
+
+climateRecord=java:comp/env/jdbc/wxde
+climateRecord=SELECT * FROM conf.climateRecord
+#climateRecord=SELECT id, climateId, period, obsTypeId, minObsRecord, maxObsRecord, avgObsRecord FROM climateRecord ORDER BY id
+
+contrib=java:comp/env/jdbc/wxde
+contrib=SELECT * FROM meta.contrib
+#contrib=SELECT id, orgId, name, agency, disclaimerLink FROM meta.contrib WHERE display = 1 ORDER BY id
+
+image=java:comp/env/jdbc/wxde
+image=SELECT * FROM meta.image
+#image=SELECT id, siteId, description, linkURL FROM meta.image ORDER BY id
+
+obsType=java:comp/env/jdbc/wxde
+obsType=SELECT * FROM meta.obsType
+#obsType=SELECT id, obsType, obs1204Units, obsDesc, obsInternalUnits, obsEnglishUnits FROM meta.obsType WHERE active = 1 ORDER BY id
+
+obsValueMap=java:comp/env/jdbc/wxde
+obsValueMap=SELECT obsTypeId, obsType, valueLabel, value FROM conf.obsValueMap ORDER BY obsType, value
+#obsValueMap=SELECT obsTypeId, obsType, valueLabel, value FROM conf.obsValueMap, obsType ORDER BY obsType, value
+
+organization=java:comp/env/jdbc/wxde
+organization=SELECT * FROM meta.organization
+#organization=SELECT id, name, location, purpose, centerId, centerName, updateDate FROM meta.organization ORDER BY id
+
+qchparm=java:comp/env/jdbc/wxde
+qchparm=SELECT * FROM meta.qchparm
+#qchparm=SELECT id, sensorTypeId, obsTypeId, isDefault, minRange, maxRange, resolution, accuracy, ratePos, rateNeg, rateInterval, persistInterval, persistThreshold, likeThreshold, minDisplay, maxDisplay FROM meta.qchparm ORDER BY id, isDefault
+
+#qchSeq=java:comp/env/jdbc/wxde
+#qchSeq=SELECT obsTypeId, climateId, bitPosition, className AS qualityCheck FROM conf.qchseqmgr, conf.qchseq WHERE active = 1 AND qchseqmgrId = id ORDER BY obsTypeId, bitPosition, climateId
+
+sensor=java:comp/env/jdbc/wxde
+sensor=SELECT id, sourceid, staticid, updatetime, totime, platformid as stationid, contribid, sensorindex, obstypeid, qchparmId, distGroup, nsOffset, ewOffset, elevOffset, surfaceOffset, installDate, calibDate, maintDate, maintBegin, maintEnd, embeddedMaterial FROM meta.sensor ORDER BY id
+#sensor=SELECT id, stationId, sensorIndex, qchparmId, distGroup, nsOffset, ewOffset, elevOffset, surfaceOffset, installDate, calibDate, maintDate, maintBegin, maintEnd, serial, embeddedMaterial, sensorLocation FROM meta.sensor ORDER BY id
+
+sensorType=java:comp/env/jdbc/wxde
+sensorType=SELECT * FROM meta.sensorType
+#sensorType=SELECT id, mfr, model, outputAvgInterval, outputIntervalUnits, samplingInterval FROM meta.sensorType ORDER BY id
+
+site=java:comp/env/jdbc/wxde
+site=SELECT * FROM meta.site
+#site=SELECT id, stateSiteId, contribId, description, roadwayDesc, roadwayMilepost, roadwayOffset, roadwayHeight, county, state, country, accessDirections, climateId, representativeness, obstructions, landscape, accessControlled, terrainSlope, terrainSlopeDirection, windRoughnessClass, soilType, stateSystemID FROM meta.site ORDER BY id
+
+platform=java:comp/env/jdbc/wxde
+platform=SELECT id, staticid, updatetime, totime, platformcode as stationcode, category, description, type, contribId, siteId, locBaseLat, locBaseLong, locBaseElev, locBaseDatum, powerType, doorOpen, batteryStatus, lineVolts, maintcontactid FROM meta.platform ORDER BY id
+ FROM meta.platform
+#station=SELECT id, stationCode, category, description, type, contribId, siteId, locBaseLat, locBaseLong, locBaseElev, locBaseDatum, powerType, doorOpen, batteryStatus, lineVolts, maintArea, maintPrevFreq, maintCalibFreq, maintStatus, maintInstallDate, rpuNumCards, rpuCommType, rpuMfr, rpuUTCOffset, rpuDST, obsCollFreq, obsCollOffset, obsTransFreq, obsTransOffset, obsTransFormat FROM meta.platform ORDER BY id

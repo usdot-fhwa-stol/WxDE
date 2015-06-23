@@ -1,0 +1,3 @@
+# The number of milliseconds to wait for an observation set before a station is flagged.
+# 4 hours = 3600 * 1000 * 4
+timeout=50400000

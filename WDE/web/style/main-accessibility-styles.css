@@ -1,0 +1,165 @@
+/*
+* Styles here are for accessibility functions.
+* 
+*/
+
+/* Animations */
+@-webkit-keyframes blink-green {
+    0% { background: rgba(39, 174, 96, .9); }
+    50% { background: rgba(39, 174, 96, .3); }
+    100% { background: rgba(39, 174, 96, .9); }
+}
+
+@keyframes blink-green {
+    0% { background: rgba(39, 174, 96, .9); }
+    50% { background: rgba(39, 174, 96, .3); }
+    100% { background: rgba(39, 174, 96, .9); }
+}
+
+@-webkit-keyframes blink-orange {
+    0% { background: rgba(230, 126, 34, 1.0); }
+    50% { background: rgba(200, 100, 0, 1.0); }
+    100% { background: rgba(230, 126, 34, 1.0); }
+}
+
+@keyframes blink-orange {
+    0% { background: rgba(230, 126, 34, 1.0); }
+    50% { background: rgba(200, 100, 0, 1.0); }
+    100% { background: rgba(230, 126, 34, 1.0); }
+}
+
+.accessible-parent a:focus {
+	background: rgba(39, 174, 96, .9);
+	color: rgba( 255, 255, 255, 1) !important;
+}
+
+/* Main Header Styles */
+.accessible-link:focus, .footer a:focus, #wdeMenu a:focus {
+/* 	background: rgba(39, 174, 96, .9); */
+/* 	color: rgba( 255, 255, 255, 1) !important; */
+	outline-style: solid;
+	outline-color: #999;
+	outline-width: 2px;
+	
+/*     -webkit-animation-direction: normal;
+    -webkit-animation-duration: 1s;
+    -webkit-animation-iteration-count: infinite;
+    -webkit-animation-name: blink-green;
+    -webkit-animation-timing-function: ease;   
+
+    animation-direction: normal;
+    animation-duration: 1s;
+    animation-iteration-count: infinite;
+    animation-name: blink-green;
+    animation-timing-function: ease; */
+}
+
+.skip-link {
+	position: absolute;
+	top: 10px;
+	left: -999px;
+	display: block;
+	padding: 10px 15px;
+	background-color: rgba(230, 126, 34, 1.0);
+	color: #fff !important;
+	text-decoration: none;
+	font-weight: 900;
+	box-shadow: 0px 5px 12px rgba(0,0,0, .5);
+	text-decoration: none !important;
+	z-index: 9090;
+}
+
+.logical-placement {
+	top: auto;
+}
+
+.skip-link.pre-menu {
+	top: 100px;
+}
+
+.skip-link:focus {
+	left: inherit;
+	
+/*     -webkit-animation-direction: normal;
+    -webkit-animation-duration: 1s;
+    -webkit-animation-iteration-count: infinite;
+    -webkit-animation-name: blink-orange;
+    -webkit-animation-timing-function: ease;   
+
+    animation-direction: normal;
+    animation-duration: 1s;
+    animation-iteration-count: infinite;
+    animation-name: blink-orange;
+    animation-timing-function: ease; */
+}
+
+div:focus, ul:focus {
+	outline-color: rgba(230, 126, 34,1.0) !important;
+	outline-width: thick !important;
+}
+
+#latestNews .icon-button:focus > img {
+	height: 32px !important;
+	background-color: rgba(0, 0, 0, .3);
+}
+
+#latestNews .news-header {
+	position: absolute;
+	top: 10px;
+	right: 9999px;
+	display: block;
+	padding: 10px 15px;
+	background-color: rgba(230, 126, 34, 1.0);
+	color: #fff;
+	text-decoration: none;
+	font-weight: 900;
+	box-shadow: 0px 5px 12px rgba(0,0,0, .5);
+	
+	z-index: 9090;
+}
+
+/* Buttons */
+
+.btn-access:focus {
+	outline: auto thick;
+}
+
+
+/* FAQ */
+
+.faq-side-nav:focus {
+	border: solid 1px rgba(230, 126, 34, 1.0);
+}
+
+.faq-category:focus {
+	background-color: #777 !important;
+	text-shadow: none;
+}
+
+.quesLink:focus {
+	background-color: #CCC !important;
+	color: #555 !important;
+	text-shadow: none !important
+}
+
+.skip-to-section {
+	position: fixed;
+	left: -9999px;
+	display: block;
+	padding: 10px 15px;
+	background-color: rgba(230, 126, 34, 1.0);
+	color: #FFF;
+	text-decoration: none;
+	font-size: 14px;
+	text-shadow: none;
+}
+
+.skip-to-footer:focus {
+	left: inherit;
+	outline: none;
+}
+.navbar a:focus {
+	outline-color: #fff;
+}
+
+/* Accessibility Controls, Dialog, Instructions */

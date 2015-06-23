@@ -1,0 +1,363 @@
+<!--
+
+Copyright (c) 2010 Mixon/Hill, Inc. All rights reserved.
+
+Author: Dirk Stubbs (das)
+
+Modification History:
+	dd-Mmm-yyyy		iii		[Bug #]
+		Change description.
+		
+	28-Jun-2012		das
+		Modified dist task to not include the servlet-api.jar as this is already
+		supplied by the Tomcat container. However, the library is left in the project
+		for build purposes.
+		
+	02-Jul-2012		das
+		Modified to copy the util* configuration file based on the deployment type.
+		Added support to build a distribution zip.
+
+-->
+	
+<project name="WDE" default="help" basedir=".">
+	<description>ANT build file for the WDE project</description>
+
+	<property name="src" location="src"/>
+	<property name="resources" location="resources"/>
+	<property name="build" location="build"/>
+	<property name="assembly"  location="assembly"/>
+	<property name="workarea"  location="deploy/wde_cs"/>
+	<property name="dist"  location="deploy/wde_cs"/>
+	<property name="webapp_deployment_dir" location="deploy/wde"/>
+	<property name="cs_deployment_dir" location="deploy/wde_cs"/>
+	<property name="qchs_deployment_dir" location="deploy/wde_qchs"/>
+	<property name="warfile" value="ROOT"/>
+
+	<property name="app-type" value="web"/>
+	<property name="build-type" value="archive"/>
+	
+	<target name="init">
+		<tstamp/>
+		
+		<!-- Initialize the build directory -->
+		<mkdir dir="${build}"/>
+		<mkdir dir="${build}/classes"/>
+		
+		<!-- Get the current revision number -->
+		<exec executable="svn" output="${build}/svn.properties">
+			<arg value="info" />
+		</exec>
+		<property prefix="svn" file="${build}/svn.properties"/>
+	</target>
+
+	<target name="compile" depends="init">
+		
+		<echo message="Compiling using revision #${svn.Revision}"/>
+		
+		<javac srcdir="${src}" destdir="${build}/classes" includeantruntime="false" debug="on">
+			<classpath>
+				<pathelement path="${classpath}"/>
+				<fileset dir="lib">
+					<include name="**/*.jar"/>
+				</fileset>
+			</classpath>
+		</javac>
+	</target>
+
+	<target name="clean">
+		<!-- Delete the ${build} and ${assembly} directory trees -->
+		<delete dir="${build}"/>
+		<delete dir="${assembly}"/>
+	</target>
+
+	<target name="assemble" depends="clean,compile">
+				
+		<!-- Create the distribution directory -->
+		<mkdir dir="${assembly}"/>
+		
+		<!-- Copy the web source files to the dist directory -->
+		<copy todir="${assembly}">
+			<fileset dir="${app-type}">
+				<exclude name="**/wde_util_ConfigSvc_en_US*"/>
+				<exclude name="**/context*"/>
+				<exclude name="auth2/metadata"/>
+				<exclude name="inc/mainContent_demo.html"/>
+			</fileset>
+		</copy>
+		
+		<!-- Copy the libraries to the dist directory -->
+		<mkdir dir="${assembly}/WEB-INF/lib"/>
+		<copy todir="${assembly}/WEB-INF/lib">
+			<fileset dir="lib" excludes="servlet-api.jar"/>
+		</copy>
+		
+		<!-- Copy the wde_util_ConfigSvc_en_US configuration based on the build type -->
+		<copy file="${app-type}/META-INF/context.xml-${build-type}" tofile="${assembly}/META-INF/context.xml"/>
+		
+		<!-- Copy the wde_util_ConfigSvc_en_US configuration based on the build type -->
+		<copy file="${app-type}/WEB-INF/classes/wde_util_ConfigSvc_en_US.properties-${build-type}" tofile="${assembly}/WEB-INF/classes/wde_util_ConfigSvc_en_US.properties"/>
+		
+		<!-- Copy UserMapper.xml -->
+		<copy file="${resources}/UserMapper.xml" tofile="${assembly}/WEB-INF/classes/UserMapper.xml"/>
+		
+		<!-- Copy UserMapper.xml -->
+		<copy file="${resources}/UtilMapper.xml" tofile="${assembly}/WEB-INF/classes/UtilMapper.xml"/>
+		
+		<!-- Copy FeedbackMapper.xml -->
+		<copy file="${resources}/FeedbackMapper.xml" tofile="${assembly}/WEB-INF/classes/FeedbackMapper.xml"/>
+		
+		<!-- Copy FeedbackMapper.xml -->
+		<copy file="${resources}/MetadataMapper.xml" tofile="${assembly}/WEB-INF/classes/MetadataMapper.xml"/>
+		
+		<!-- Copy SubscriptionMapper.xml -->
+		<copy file="${resources}/SubscriptionMapper.xml" tofile="${assembly}/WEB-INF/classes/SubscriptionMapper.xml"/>
+		
+		<!-- Copy mybatis.xml based on the build type -->
+		<copy file="${resources}/mybatis.xml-${build-type}" tofile="${assembly}/WEB-INF/classes/mybatis.xml"/>
+
+		<!-- Copy the log4j file 
+		<copy file="config/wde_log4j.xml" tofile="${assembly}/WEB-INF/classes/wde_log4j.xml"/>
+		-->
+		<copy file="config/wde_log4j.properties" tofile="${assembly}/WEB-INF/classes/wde_log4j.properties"/>
+		
+		<copy file="config/metadata_recovery_config.properties" tofile="${assembly}/WEB-INF/classes/metadata_recovery_config.properties"/>
+		
+		<!-- Copy the compiled classes to the dist directory -->
+		<mkdir dir="${assembly}/WEB-INF/classes"/>
+		<copy todir="${assembly}/WEB-INF/classes">
+			<fileset dir="${build}/classes"/>
+		</copy>
+				
+		<!-- Create the directories needed by the particular applications. -->
+		<!-- The metadata, subscriptions and monitor are only required by the web application. -->
+		<!-- The grib directory is only required by the CS application. -->	
+		<!--
+		<mkdir dir="${assembly}/auth2/metadata"/>
+		<copy todir="${assembly}/auth2/metadata">
+			<fileset dir="${metadata}"/>
+		</copy>
+		<mkdir dir="${assembly}/subscriptions"/>
+		-->
+		<mkdir dir="${assembly}/monitor"/>
+		<mkdir dir="${assembly}/grib"/>
+		
+	</target>
+	
+    <target name="deploy-to-dir" >
+    	
+		<!-- Delete the existing application -->
+		<delete dir="${deployment-dir}"/>
+    	
+    	<!-- Copy the assembled project to the Tomcat webapps directory -->
+		<copy todir="${deployment-dir}">
+			<fileset dir="${assembly}"/>
+		</copy>
+
+		<!-- Delete the directory used to assemble the project -->	
+    	<delete dir="${assembly}"/>
+
+    </target>
+	
+    <target name="deploy-to-zip" >
+    	
+		<!-- Get the current revision number. This is needed for zip naming. -->
+		<exec executable="svn" output="${build}/svn.properties">
+			<arg value="info" />
+		</exec>
+		<property prefix="svn" file="${build}/svn.properties"/>
+    	
+		<zip destfile="${workarea}/wde-${svn.Revision}.zip" basedir="${dist}" />
+    	<echo message="Distribution zip built: ${workarea}/wde-${svn.Revision}.zip"/>
+    </target>
+	
+	<target name="deploy-to-war" >
+		<war destfile="${warfile}.war" webxml="${webapp_deployment_dir}/WEB-INF/web.xml" update="true">
+		<fileset dir="${webapp_deployment_dir}">
+			<exclude name="**/lib/*.jar"/>
+			<exclude name="WEB-INF/web.xml"/>
+			<exclude name="**/auth2/metadata/"/>
+			<exclude name="**/admin/reports/"/>
+		</fileset>
+		</war>
+	</target>
+	
+	<target name="build-web-dev" description="Builds a development version of the WDE Web application">
+		
+		<!-- Assemble the project --> 
+		<antcall target="assemble">
+			<param name="app-type" value="web"/>
+			<param name="build-type" value="dev"/>
+		</antcall>
+		
+		<!-- Copy the build to the Tomcat directory -->
+		<antcall target="deploy-to-dir">
+			<param name="deployment-dir" value="${webapp_deployment_dir}"/>
+		</antcall>
+		
+	</target>
+	
+	<target name="build-web-test" description="Builds a test version of the WDE Web application">
+		
+		<!-- Assemble the project --> 
+		<antcall target="assemble">
+			<param name="app-type" value="web"/>
+			<param name="build-type" value="test"/>
+		</antcall>
+		
+		<!-- Copy the build to the Tomcat directory -->
+		<antcall target="deploy-to-dir">
+			<param name="deployment-dir" value="${webapp_deployment_dir}"/>
+		</antcall>
+		
+		<!-- Create the war file -->
+		<antcall target="deploy-to-war"/>
+		
+	</target>
+	
+	<target name="build-web-demo" description="Builds a demo version of the WDE Web application">
+		
+		<!-- Assemble the project --> 
+		<antcall target="assemble">
+			<param name="app-type" value="web"/>
+			<param name="build-type" value="demo"/>
+		</antcall>
+				
+		<copy file="web/inc/mainContent_demo.html" tofile="${assembly}/inc/mainContent.html" overwrite="true"/>
+		
+		<!-- Copy the build to the Tomcat directory -->
+		<antcall target="deploy-to-dir">
+			<param name="deployment-dir" value="${webapp_deployment_dir}"/>
+		</antcall>
+
+		<!-- Create the war file -->
+		<antcall target="deploy-to-war"/>
+		
+	</target>
+	
+	<target name="build-web-archive" description="Builds an archive version of the WDE Web application">
+		
+		<!-- Assemble the project --> 
+		<antcall target="assemble">
+			<param name="app-type" value="web"/>
+			<param name="build-type" value="archive"/>
+		</antcall>
+		
+		<!-- Copy the build to the Tomcat directory -->
+		<antcall target="deploy-to-dir">
+			<param name="deployment-dir" value="${webapp_deployment_dir}"/>
+		</antcall>
+		
+		<!-- Create the war file -->
+		<antcall target="deploy-to-war"/>
+		
+	</target>
+		
+	<target name="build-web-prod" description="Builds a production version of the WDE Web application">
+		
+		<!-- Assemble the project --> 
+		<antcall target="assemble">
+			<param name="app-type" value="web"/>
+			<param name="build-type" value="prod"/>
+		</antcall>
+		
+		<!-- Copy the build to the Tomcat directory -->
+		<antcall target="deploy-to-dir">
+			<param name="deployment-dir" value="${webapp_deployment_dir}"/>
+		</antcall>
+		
+		<!-- Create the war file -->
+		<antcall target="deploy-to-war"/>
+		
+	</target>
+	
+	<target name="build-qchs-dev" description="Builds a development version of the WDE Quality Check Services application">
+		
+		<!-- Assemble the project --> 
+		<antcall target="assemble">
+			<param name="app-type" value="qchs"/>
+			<param name="build-type" value="dev"/>
+		</antcall>
+		
+		<!-- Copy the build to the Tomcat directory -->
+		<antcall target="deploy-to-dir">
+			<param name="deployment-dir" value="${qchs_deployment_dir}"/>
+		</antcall>
+		
+	</target>
+	
+	<target name="build-cs-dev" description="Builds a development version of the WDE Collector Service application">
+		
+		<!-- Assemble the project --> 
+		<antcall target="assemble">
+			<param name="app-type" value="cs"/>
+			<param name="build-type" value="dev"/>
+		</antcall>
+		
+		<!-- Copy the build to the Tomcat directory -->
+		<antcall target="deploy-to-dir">
+			<param name="deployment-dir" value="${cs_deployment_dir}"/>
+		</antcall>
+		
+	</target>
+	
+	<target name="build-all-dist" description="Builds all the WDE applications for distribution purposes">		
+		
+		<delete dir="${dist}"/>
+		<mkdir dir="${dist}"/>
+		
+		<!-- Assemble the web project --> 
+		<antcall target="assemble">
+			<param name="app-type" value="web"/>
+			<param name="build-type" value="dist"/>
+		</antcall>
+		
+		<!-- Copy the build to the Tomcat directory -->
+		<antcall target="deploy-to-dir">
+			<param name="deployment-dir" value="${dist}/wde"/>
+		</antcall>
+		
+		<!-- Assemble the WDE Quality Check project --> 
+		<antcall target="assemble">
+			<param name="app-type" value="qchs"/>
+			<param name="build-type" value="dist"/>
+		</antcall>
+		
+		<!-- Copy the build to the Tomcat directory -->
+		<antcall target="deploy-to-dir">
+			<param name="deployment-dir" value="${dist}/wde_qchs"/>
+		</antcall>
+		
+		<!-- Assemble the WDE Collector Service project --> 
+		<antcall target="assemble">
+			<param name="app-type" value="cs"/>
+			<param name="build-type" value="dist"/>
+		</antcall>
+		
+		<!-- Copy the build to the Tomcat directory -->
+		<antcall target="deploy-to-dir">
+			<param name="deployment-dir" value="${dist}/wde_cs"/>
+		</antcall>
+		
+		<!-- Copy the DDL for WDE to the db directory -->
+		<copy todir="${dist}/db">
+			<fileset dir="db"/>
+		</copy>
+		
+		<antcall target="deploy-to-zip"/>
+
+	</target>
+	
+	<target name="build-all-dev" description="Builds all the WDE applications for development purposes">		
+		<antcall target="build-web-dev"/>
+		<antcall target="build-cs-dev"/>
+		<antcall target="build-qchs-dev"/>	
+	</target>
+	
+	<target name="help" description="Help">		
+		<echo message="This ANT script is used to build the WDE project applications."/>
+		<echo message=" "/>
+		<echo message="build-all-dev - Builds and deploys all the WDE applications for development purposes."/>
+		<echo message="build-all-dist - Builds a distribution version of all the WDE applications."/>
+	</target>
+
+</project>

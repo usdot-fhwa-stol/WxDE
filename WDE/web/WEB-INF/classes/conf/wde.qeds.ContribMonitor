@@ -1,0 +1,19 @@
+###################################################################################
+# DO NOT MODIFY THIS FILE
+###################################################################################
+
+# Directory to which monitor files will be written.
+dir=@@webapp.root@@/monitor/
+
+# The IP address or host name of the SMTP server used to send emails to notify a
+# contributer that observations have not been received.
+mail.smtp.host=@@smtp.server@@
+
+# The email address used as the sender of these emails.
+mail.from=@@admin.email@@
+
+# The email address that will be blind carbon copied on these notifications.
+bcc=@@admin.email@@
+
+# Datasource used by this process.
+datasource=java:comp/env/jdbc/wxde

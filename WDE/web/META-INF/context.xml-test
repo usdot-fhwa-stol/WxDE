@@ -1,0 +1,9 @@
+<Context path="/" allowLinking="true">
+
+  <Resource name="jdbc/wxde" auth="Container" 
+    type="javax.sql.DataSource" driverClassName="org.postgresql.Driver" 
+    url="jdbc:postgresql://wdetest:5432/wxde" 
+    username="wxde" password="d0t_dev$" maxActive="20" maxIdle="10" 
+    maxWait="-1" />
+
+</Context>

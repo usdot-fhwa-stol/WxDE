@@ -1,0 +1,30 @@
+###################################################################################
+# DO NOT MODIFY THIS FILE
+###################################################################################
+
+# These are the datasources used by the application.
+# JNDI name,server address,database name,username,password,[port]
+datasource=java:comp/env/jdbc/clarus_conf,@@database.host@@,clarus_conf,@@database.user@@,@@database.password@@
+datasource=java:comp/env/jdbc/clarus_meta,@@database.host@@,clarus_meta,@@database.user@@,@@database.password@@
+datasource=java:comp/env/jdbc/clarus_qedc,@@database.host@@,clarus_qedc,@@database.user@@,@@database.password@@
+datasource=java:comp/env/jdbc/clarus_subs,@@database.host@@,clarus_subs,@@database.user@@,@@database.password@@
+
+# Specify the observation set processing order
+order=clarus.qedc.ObsMgr
+order=clarus.qeds.StationMonitor
+order=clarus.qeds.ContribMonitor
+
+# Specify service initialization order
+start=util.threads.ThreadPool
+start=util.Scheduler
+start=clarus.Units
+start=clarus.emc.ObsTypes
+start=clarus.emc.Stations
+start=clarus.emc.Sensors
+start=clarus.emc.ClimateRecords
+start=clarus.ems.EmsMgr
+start=clarus.qedc.ObsMgr
+start=clarus.qeds.Contribs
+start=clarus.qeds.StationMonitor
+start=clarus.qeds.ContribMonitor
+

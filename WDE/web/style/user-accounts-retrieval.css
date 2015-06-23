@@ -1,0 +1,23 @@
+h1 {
+	display: inline-block;
+	min-width: 379px;
+}
+.btn-back, .btn-home {
+	display:inline-block;
+	padding: 5px 10px;
+	font-size: 14px;
+	text-decoration:none;
+}
+.btn-home {
+	display: none;
+}
+#backStep2 {
+	display: none;
+}
+#loading {
+	 display: none;
+	 float: right;
+	 height: 22px; 
+	 width: 22px; 
+	 opacity: .5
+}

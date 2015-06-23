@@ -1,0 +1,177 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml">
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8"/>
+    <title>Clarus Map Interface</title>
+    <style type="text/css">
+      v\:* {
+        behavior:url(#default#VML);
+      }
+    </style>
+    <link href="style/ClarusMap.css" rel="stylesheet" type="text/css" media="screen"/>
+
+    <!-- Pre-load the images. -->
+    <script language="javascript" type="text/javascript">
+      if (document.images)
+      {
+        imgComplete = new Image(15, 106);
+        imgComplete.src = "image/qch/Complete.png";
+
+        imgManual = new Image(15, 106);
+        imgManual.src = "image/qch/Manual.png";
+
+        imgSensorRange = new Image(15, 106);
+        imgSensorRange.src = "image/qch/SensorRange.png";
+
+        imgClimateRange = new Image(16, 106);
+        imgClimateRange.src = "image/qch/ClimateRange.png";
+
+        imgStep = new Image(16, 106);
+        imgStep.src = "image/qch/Step.png";
+
+        imgLikeInstrument = new Image(16, 106);
+        imgLikeInstrument.src = "image/qch/LikeInstrument.png";
+
+        imgPersistence = new Image(15, 106);
+        imgPersistence.src = "image/qch/Persistence.png";
+
+        imgBarnesSpatial = new Image(15, 106);
+        imgBarnesSpatial.src = "image/qch/BarnesSpatial.png";
+
+        imgDewpoint = new Image(16, 106);
+        imgDewpoint.src = "image/qch/Dewpoint.png";
+
+        imgSealevelPressure = new Image(16, 106);
+        imgSealevelPressure.src = "image/qch/SeaLevelPressure.png";
+
+        imgIQR = new Image(16, 106);
+        imgIQR.src = "image/qch/IQR.png";
+
+        imgPrecipAccum = new Image(16, 106);
+        imgPrecipAccum.src = "image/qch/PrecipAccum.png";
+
+        picTestPass = new Image(16, 16);
+        picTestPass.src = "image/p.png";
+
+        imgTestFail = new Image(16, 16);
+        imgTestFail.src = "image/n.png";
+
+        imgTestNotRun = new Image(16, 16);
+        imgTestNotRun.src = "image/nr.png";
+
+        imgTestBlank = new Image(16, 16);
+        imgTestBlank.src = "image/b.png";
+      }
+    </script>
+
+    <script language="javascript" type="text/javascript">
+      var sKey;
+      var sUrl = document.location.href;
+
+      if (sUrl.search("8080") < 0)
+      {
+        // page is on the production server
+        if (sUrl.search("clarus-system") >= 0)
+        {
+          // www.clarus-system.com domain
+          sKey = "ABQIAAAA2mj7kRnCCaSJf2iSkChZvxT6LjpQeV-0mcMK3knckj6FFXDLUxR4fzRhBDoJMPdLxZS_6eYWhll-9Q";
+        }
+
+        if (sUrl.search("mixonhill") >= 0)
+        {
+          // clarus.mixonhill.com domain
+          sKey = "ABQIAAAA2mj7kRnCCaSJf2iSkChZvxQzA5qgW34bo5zReZY2LslJ1bLz2RS5mKwhMoUgTMAOvn5rzJzTEx-7Xw";
+        }
+        
+        if (sUrl.search("localhost") >= 0)
+        {
+          // development
+          sKey = "";
+        }
+      }
+      else
+      {
+
+        // page is on the test server
+        if (sUrl.search("clarus5") >= 0)
+        {
+          // clarus5 domain
+          sKey = "ABQIAAAA2mj7kRnCCaSJf2iSkChZvxSWGUYffwi8Yr1kpG82N3q9YNrDRRTEA2QOEiVJEEoP9xQOkeIuD2rceQ";
+        }
+
+        if (sUrl.search("clarus-system") >= 0)
+        {
+          // www.clarus-system.com domain
+          sKey = "ABQIAAAA2mj7kRnCCaSJf2iSkChZvxSQI16iqSgjqfPuzhHduakngk4u9hRGIQIibMoPKwnaKoscOHP7W_ix8g";
+        }
+
+        if (sUrl.search("mixonhill") >= 0)
+        {
+          // clarus.mixonhill.com domain
+          sKey = "ABQIAAAA2mj7kRnCCaSJf2iSkChZvxQx1MWGXaF0Ags8c1SoSVU9O33OjxQVpLaUY39djkGlJtptEzv67BtHuA";
+        }
+        
+        if (sUrl.search("localhost") >= 0)
+        {
+          // development
+          sKey = "";
+        }
+      }
+
+      document.write('<script src="http://maps.google.com/maps?file=api&v=2&key=', sKey, '" type="text/javascript"><\/script>');
+
+    </script>
+
+    <script src="script/markermanager.js" language="javascript" type="text/javascript"></script>
+    <script src="script/xml.js" language="javascript" type="text/javascript"></script>
+    <script src="script/QChTests.js" language="javascript" type="text/javascript"></script>
+    <script src="script/ObsSorter.js" language="javascript" type="text/javascript"></script>
+    <script src="script/StationMgr.js" language="javascript" type="text/javascript"></script>
+    <script src="script/Listbox.js" language="javascript" type="text/javascript"></script>
+    <script src="script/Common.js" language="javascript" type="text/javascript"></script>
+    <script src="script/MapAreas.js" language="javascript" type="text/javascript"></script>
+    <script src="script/js/lang/System.js" language="javascript" type="text/javascript"></script>
+    <script src="script/js/util/Collections.js" language="javascript" type="text/javascript"></script>
+    <script src="script/ClarusMap.js" language="javascript" type="text/javascript"></script>
+
+  </head>
+
+  <body onload="onLoad()" onunload="onUnload()">
+
+	<div style="width: 100%; height: 33px;">
+		<div style="margin: 5px 5px 5px 5px; float: left;">
+			<a style="color: #FFFFFF;" href="index.html">Home</a>
+			&nbsp;&nbsp;&nbsp;
+        	<select id="jumpList" name="jumpList" style="width: 160px;" onchange="Jump()"></select>
+        </div>
+
+        <div id="latlong" style="width: 200px; margin: 5px 5px 5px 5px; float: right;">Lat, Lon: </div>
+        <div id="stationCode" style="width: 300px; margin: 5px 5px 5px 5px; float: right;">Station Code: </div>
+	</div>
+
+    <div id="map"></div>
+
+	<div style="width: 100%;">
+
+		<div style="margin: 5px 5px 5px 5px; float: left;">
+			<select id="obsTypeList" name="obsTypeList" style="width: 270px;" onchange="GetObsValue()"></select>
+			&emsp;&emsp;
+			<input id="rbMetric" name="rbUnits" type="radio" onclick="LabelClicked('m')" checked="true"/> Metric
+			&nbsp;
+			<input id="rbEnglish" name="rbUnits" type="radio" onclick="LabelClicked('e')"/> English
+			&emsp;&emsp;&emsp;
+			<input id="chMobile" name="chMobile" type="checkbox" checked onclick="ToggleLayer()"/>
+			<img alt="mobile" src="image/mm_12_blue.png"/> Mobile
+			&nbsp;
+			<input id="chFixed" name="chFixed" type="checkbox" checked onclick="ToggleLayer()"/>
+			<img alt="non-mobile" src="image/mm_12_purple.png"/> Non-mobile
+		</div>
+
+		<div id="timeUTC" style="margin: 5px 5px 5px 5px; float: right;"></div>
+	</div>
+
+    <div id="button1"><input id="btn_circle" name="btn_circle" type="button" value="Clear Circle" onclick="ClearCircle()" /></div>
+
+  </body>
+
+</html>

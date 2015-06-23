@@ -1,0 +1,59 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml">
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8"/>
+    <title>Clarus Nearest Neighbors</title>
+    <style type="text/css">
+      v\:* {
+        behavior:url(#default#VML);
+      }
+    </style>
+    <script language="javascript" type="text/javascript">
+
+      var sKey;
+      var sUrl = document.location.href;
+
+      if (sUrl.search("8080") < 0)
+      {
+        // page is on the production server
+        if (sUrl.search("mixonhill") < 0)
+        {
+          // www.clarus-system.com domain
+          sKey = "ABQIAAAA2mj7kRnCCaSJf2iSkChZvxT6LjpQeV-0mcMK3knckj6FFXDLUxR4fzRhBDoJMPdLxZS_6eYWhll-9Q";
+        }
+        else
+        {
+          // clarus.mixonhill.com domain
+          sKey = "ABQIAAAA2mj7kRnCCaSJf2iSkChZvxQzA5qgW34bo5zReZY2LslJ1bLz2RS5mKwhMoUgTMAOvn5rzJzTEx-7Xw";
+        }
+      }
+      else
+      {
+        // page is on the test server
+        if (sUrl.search("mixonhill") < 0)
+        {
+          // www.clarus-system.com domain
+          sKey = "ABQIAAAA2mj7kRnCCaSJf2iSkChZvxSQI16iqSgjqfPuzhHduakngk4u9hRGIQIibMoPKwnaKoscOHP7W_ix8g";
+        }
+        else
+        {
+          // clarus.mixonhill.com domain
+          sKey = "ABQIAAAA2mj7kRnCCaSJf2iSkChZvxQx1MWGXaF0Ags8c1SoSVU9O33OjxQVpLaUY39djkGlJtptEzv67BtHuA";
+        }
+      }
+
+      document.write('<script src="http://maps.google.com/maps?file=api&v=2&key=', sKey, '" type="text/javascript"><\/script>');
+
+    </script>
+
+    <script src="script/Common.js" language="javascript" type="text/javascript"></script>
+    <script src="script/neighbors_iqr.js" language="javascript" type="text/javascript"></script>
+    <script src="script/NeighborMap.js" language="javascript" type="text/javascript"></script>
+
+  </head>
+
+  <body onload="onLoad()" onunload="onUnload()">
+    <div id="map"></div>
+  </body>
+
+</html>

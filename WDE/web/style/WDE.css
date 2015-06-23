@@ -1,0 +1,222 @@
+body
+{
+    margin: auto;
+    text-align: center;
+    padding: 0;
+    width: 100%;
+    color: #ffffff;
+    font-family: sans-serif, arial, verdana;
+    font-size: 10pt;
+    background: #263b50;
+}
+
+a
+{
+    color: #ffffff;
+}
+
+a:hover {
+	text-decoration: none; 
+	color: yellow;
+}		
+
+h4
+{
+    padding-top: 15px;
+    font-size: 120%;
+    font-weight: bold;
+}
+
+
+#container
+{
+    margin-left: auto;
+    margin-right: auto;
+    width: 800px;
+    text-align: left;
+}
+
+#titleArea
+{
+    position: relative;
+    width: 500px;
+    height: 200px;
+    margin-top: 5px;
+    margin-left: 5px;
+    background-image: url("../image/WeatherPics/Rainbow2a.jpg");
+    background-repeat: no-repeat;
+}
+
+#titleText
+{
+    position: absolute;
+    margin-top: 10px;
+    margin-bottom: 0px;
+    margin-left: 10px;
+    margin-right: 0px;
+    font-size: 200%;
+    font-weight: bold;
+    z-index: 1;
+}
+
+#titleTextShadow
+{
+    position: absolute;
+    margin-top: 12px;
+    margin-bottom: 0px;
+    margin-left: 12px;
+    margin-right: 0px;
+    color: #000000;
+    font-size: 200%;
+    font-weight: bold;
+    z-index: 0;
+}
+
+#titleText2
+{
+    position: absolute;
+    margin-top: 100px;
+    margin-bottom: 0px;
+    margin-left: 75px;
+    margin-right: 0px;
+    font-size: 150%;
+    font-weight: bold;
+    z-index: 1;
+}
+
+#titleText2Shadow
+{
+    position: absolute;
+    margin-top: 102px;
+    margin-bottom: 0px;
+    margin-left: 77px;
+    margin-right: 0px;
+    color: #000000;
+    font-size: 150%;
+    font-weight: bold;
+    z-index: 0;
+}
+
+#linkHome
+{
+    position: absolute;
+    margin-top: 5px;
+    margin-left: 460px;
+    font-size: 90%;
+}
+
+#timeUTC
+{
+    position: absolute;
+    margin-top: 180px;
+    margin-left: 10px;
+    font-size: 90%;
+    color: #FFFFFF;
+    z-index: 1;
+}
+
+#timeUTCShadow
+{
+    position: absolute;
+    margin-top: 181px;
+    margin-left: 11px;
+    font-size: 90%;
+    z-index: 0;
+}
+
+#tblReports
+{
+    width: 100%;
+}
+
+#tblMain th
+{
+    font-size: 150%;
+    font-weight: bold;
+    padding-top: 20px;
+    padding-bottom: 10px;
+}
+
+#tblMain td
+{
+    padding-left: 8px;
+    padding-right: 8px;
+    vertical-align: text-top;
+    line-height: 1.5;
+}
+
+.dim
+{
+    color: #aaaaaa;
+}
+
+.button
+{
+    border: 1px solid #ffffff;
+}
+
+
+#instructions
+{
+    position: absolute;
+    top: 0px;
+    left: 525px;
+    width: 55%;
+}
+
+#navigation
+{
+    position: absolute;
+    width: 55%;
+    top: 450px;
+    left: 525px;
+    margin-left: 5px;
+}
+
+
+#navigation_Old
+{
+    position: absolute;
+    top: 450px;
+    left: 545px;
+    margin-left: 5px;
+}
+
+#statusMessage
+{
+    position: relative;
+    height: 50px;
+    margin-top: 25px;
+    margin-left: 5px;
+    padding: 5px;
+    border: 1px solid #ffffff;
+    display: none;
+}
+
+
+#legalese
+{
+    position: relative;
+    margin-top: 30px;
+    margin-left: auto;
+    margin-right: auto;
+    width: 75%;
+    padding: 10px;
+    text-align: center;
+    border: 1px solid #ffffff;
+    font-weight: bold;
+    font-size: 120%;
+}
+
+
+#legalese a
+{
+	text-decoration: none;
+}
+
+#gLogin {
+	font-size: 90%;
+	position: absolute;
+	margin-top: 180px;
+	left: 440px;
+}

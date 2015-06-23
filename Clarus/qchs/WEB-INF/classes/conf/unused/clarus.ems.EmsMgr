@@ -1,0 +1,81 @@
+# The number of seconds between refreshes of metadata files from the database
+# Metadata changes infrequently, so a 4 hour (14400 second) refresh is adequate
+refresh=14400
+
+# File path to the location where metadata files should be written
+metadata=C:/Tomcat/webapps/clarus_qchs/metadata/
+
+###################################################################################
+# DO NOT MODIFY ANYTHING BELOW THIS LINE
+###################################################################################
+
+# Database tables that will be used to generate the metadata files.
+# Generated files follow the naming convention of filename appended with .csv
+# i.e. climateRecord.csv
+table=climate
+table=climateRecord
+table=contrib
+table=image
+table=obsType
+table=obsValueMap
+table=organization
+table=qchparm
+#table=qchSeq
+table=sensor
+table=sensorType
+table=site
+table=station
+
+# List of datasource parameters and query to run for each table
+# The first parameter is the datasource and the second is the query to execute
+# Queries must be completed on one line, semicolons are not necessary
+
+climate=java:comp/env/jdbc/clarus_meta
+climate=SELECT * FROM climate
+#climate=SELECT id, regionDesc, source FROM climate ORDER BY id
+
+climateRecord=java:comp/env/jdbc/clarus_meta
+climateRecord=SELECT * FROM climateRecord
+#climateRecord=SELECT id, climateId, period, obsTypeId, minObsRecord, maxObsRecord, avgObsRecord FROM climateRecord ORDER BY id
+
+contrib=java:comp/env/jdbc/clarus_meta
+contrib=SELECT * FROM contrib
+#contrib=SELECT id, orgId, name, agency, disclaimerLink FROM contrib WHERE display = 1 ORDER BY id
+
+image=java:comp/env/jdbc/clarus_meta
+image=SELECT * FROM image
+#image=SELECT id, siteId, description, linkURL FROM image ORDER BY id
+
+obsType=java:comp/env/jdbc/clarus_meta
+obsType=SELECT * FROM obsType
+#obsType=SELECT id, obsType, obs1204Units, obsDesc, obsInternalUnits, obsEnglishUnits FROM obsType WHERE active = 1 ORDER BY id
+
+obsValueMap=java:comp/env/jdbc/clarus_conf
+obsValueMap=SELECT obsTypeId, valueLabel, value FROM obsValueMap ORDER BY obsTypeId, valueLabel
+
+organization=java:comp/env/jdbc/clarus_meta
+organization=SELECT * FROM organization
+#organization=SELECT id, name, location, purpose, centerId, centerName, updateDate FROM organization ORDER BY id
+
+qchparm=java:comp/env/jdbc/clarus_meta
+qchparm=SELECT * FROM qchparm
+#qchparm=SELECT id, sensorTypeId, obsTypeId, isDefault, minRange, maxRange, resolution, accuracy, ratePos, rateNeg, rateInterval, persistInterval, persistThreshold, likeThreshold, minDisplay, maxDisplay FROM qchparm ORDER BY id, isDefault
+
+#qchSeq=java:comp/env/jdbc/clarus_conf
+#qchSeq=SELECT obsTypeId, climateId, bitPosition, className AS qualityCheck FROM qchseqmgr, qchseq WHERE active = 1 AND qchseqmgrId = id ORDER BY obsTypeId, bitPosition, climateId
+
+sensor=java:comp/env/jdbc/clarus_meta
+sensor=SELECT * FROM sensor
+#sensor=SELECT id, stationId, sensorIndex, qchparmId, distGroup, nsOffset, ewOffset, elevOffset, surfaceOffset, installDate, calibDate, maintDate, maintBegin, maintEnd, serial, embeddedMaterial, sensorLocation FROM sensor ORDER BY id
+
+sensorType=java:comp/env/jdbc/clarus_meta
+sensorType=SELECT * FROM sensorType
+#sensorType=SELECT id, mfr, model, outputAvgInterval, outputIntervalUnits, samplingInterval FROM sensorType ORDER BY id
+
+site=java:comp/env/jdbc/clarus_meta
+site=SELECT * FROM site
+#site=SELECT id, stateSiteId, contribId, description, roadwayDesc, roadwayMilepost, roadwayOffset, roadwayHeight, county, state, country, accessDirections, climateId, representativeness, obstructions, landscape, accessControlled, terrainSlope, terrainSlopeDirection, windRoughnessClass, soilType, stateSystemID FROM site ORDER BY id
+
+station=java:comp/env/jdbc/clarus_meta
+station=SELECT * FROM station
+#station=SELECT id, stationCode, category, description, type, contribId, siteId, locBaseLat, locBaseLong, locBaseElev, locBaseDatum, powerType, doorOpen, batteryStatus, lineVolts, maintArea, maintPrevFreq, maintCalibFreq, maintStatus, maintInstallDate, rpuNumCards, rpuCommType, rpuMfr, rpuUTCOffset, rpuDST, obsCollFreq, obsCollOffset, obsTransFreq, obsTransOffset, obsTransFormat FROM station ORDER BY id

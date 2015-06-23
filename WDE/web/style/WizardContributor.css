@@ -1,0 +1,31 @@
+#titleArea
+{
+    background-image: url("../image/WeatherPics/Clouds1.jpg");
+}
+
+#tblTossItems td
+{
+    padding-left: 10px;
+    padding-right: 10px;
+}
+
+#tblTossItems th
+{
+    font-size: 100%;
+    font-weight: bold;
+    padding-top: 20px;
+    padding-bottom: 10px;
+    text-align: center;
+}
+
+#tblTossItems select
+{
+    width: 160px;
+}
+
+/*****
+#navigation
+{
+    left: 637px;
+}
+*****/

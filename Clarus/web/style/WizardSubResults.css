@@ -1,0 +1,34 @@
+#titleArea
+{
+    background-image: url("../image/WeatherPics/Sunset1.jpg");
+}
+
+#linkHome a
+{
+    color: #000000;
+}
+
+#tblTossItems td
+{
+    padding-left: 10px;
+    padding-right: 10px;
+}
+
+#tblTossItems th
+{
+    font-size: 100%;
+    font-weight: bold;
+}
+
+#tblTossItems select
+{
+    width: 160px;
+}
+
+#tblURL th
+{
+    font-size: 100%;
+    font-weight: bold;
+    padding-top: 20px;
+}
+

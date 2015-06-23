@@ -1,0 +1,138 @@
+body
+{
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  color: #FFFFFF;
+  font-family: sans-serif, arial, verdana;
+  font-size: 10pt;
+  background: #263b50;
+}
+
+a
+{
+    color: #ffffff;
+}
+
+/*
+ *  Sidebar and sub-elements
+ */
+
+#sidebar
+{
+    position: absolute;
+    left: 0px;
+    top: 3px;
+    margin-left: 5px;
+}
+
+
+#titleArea
+{
+    width: 205px;
+    height: 82px;
+    background-image: url("../image/WeatherPics/Rainbow2a_small.jpg");
+    background-repeat: no-repeat;
+}
+
+#linkHome
+{
+    position: absolute;
+    margin-top: 2px;
+    margin-left: 165px;
+    font-size: 90%;
+}
+
+#linkHome a
+{
+    color: #FFFFFF;
+}
+
+#titleText
+{
+    position: absolute;
+    margin-top: 10px;
+    margin-bottom: 0px;
+    margin-left: 10px;
+    margin-right: 0px;
+    font-weight: bold;
+    z-index: 1;
+}
+
+#titleTextShadow
+{
+    position: absolute;
+    margin-top: 12px;
+    margin-bottom: 0px;
+    margin-left: 12px;
+    margin-right: 0px;
+    color: #000000;
+    font-weight: bold;
+    z-index: 0;
+}
+
+#titleText2
+{
+    position: absolute;
+    margin-top: 45px;
+    margin-bottom: 0px;
+    margin-left: 35px;
+    margin-right: 0px;
+    font-weight: bold;
+    z-index: 1;
+}
+
+#titleText2Shadow
+{
+    position: absolute;
+    margin-top: 47px;
+    margin-bottom: 0px;
+    margin-left: 37px;
+    margin-right: 0px;
+    color: #000000;
+    font-weight: bold;
+    z-index: 0;
+}
+
+h3
+{
+    font-size: 10pt;
+}
+
+#timeUTC
+{
+    margin-top: 20px;
+    margin-bottom: 30px;
+    padding-left: 5px;
+}
+
+#saveArea
+{
+    margin-top: 40px;
+    margin-left: 5px;
+    text-align: justify;
+    width: 195px;
+}
+
+
+#resultsArea
+{
+    position: absolute;
+    margin-left: auto;
+    margin-right: auto;
+    left: 215px;
+    top: 3px;
+    border: 1px solid black;
+}
+
+#resultsFrame
+{
+    text-align: left;
+    padding: 0;
+    color: #000000;
+    font-family: fixed, courier;
+    font-size: 10pt;
+    background: #ffffff;
+    display: none;
+}
+

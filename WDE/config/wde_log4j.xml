@@ -1,0 +1,281 @@
+<?xml version="1.0" encoding="UTF-8"?> 
+<!DOCTYPE log4j:configuration SYSTEM "log4j.dtd">
+<log4j:configuration xmlns:log4j="http://jakarta.apache.org/log4j/" debug="false">
+	<appender name="consoleAppender" class="org.apache.log4j.ConsoleAppender">
+		<param name="Threshold" value="INFO" />
+		<layout class="org.apache.log4j.PatternLayout">
+			<param name="ConversionPattern" value="%d %-5p  [%c{1}] %m %n" />
+		</layout>
+	</appender>
+	<appender name="fileAppender" class="org.apache.log4j.RollingFileAppender">
+    	<param name="MaxFileSize" value="50000KB" />
+    	<param name="MaxBackupIndex" value="100" />
+		<param name="Threshold" value="INFO" />
+		<param name="File" value="WxDE.log" />
+		<layout class="org.apache.log4j.PatternLayout">
+			<param name="ConversionPattern" value="%d %-5p  [%c{1}] %m %n" />
+		</layout>
+	</appender>
+	
+	<logger name="wde.cs.CsMgr" additivity="false">
+		<level value="INFO" />
+		<appender-ref ref="consoleAppender" />
+		<appender-ref ref="fileAppender" />
+	</logger>	
+	<logger name="wde.cs.MappedValues" additivity="false">
+		<level value="INFO" />
+		<appender-ref ref="consoleAppender" />
+		<appender-ref ref="fileAppender" />
+	</logger>
+	<logger name="wde.dao.ContactDao" additivity="false">
+		<level value="INFO" />
+		<appender-ref ref="consoleAppender" />
+		<appender-ref ref="fileAppender" />
+	</logger>
+	<logger name="wde.dao.ContribDao" additivity="false">
+		<level value="INFO" />
+		<appender-ref ref="consoleAppender" />
+		<appender-ref ref="fileAppender" />
+	</logger>
+	<logger name="wde.dao.DatabaseManager" additivity="false">
+		<level value="INFO" />
+		<appender-ref ref="consoleAppender" />
+		<appender-ref ref="fileAppender" />
+	</logger>
+	<logger name="wde.dao.DbCache" additivity="false">
+		<level value="INFO" />
+		<appender-ref ref="consoleAppender" />
+		<appender-ref ref="fileAppender" />
+	</logger>
+	<logger name="wde.dao.DistGroupDao" additivity="false">
+		<level value="INFO" />
+		<appender-ref ref="consoleAppender" />
+		<appender-ref ref="fileAppender" />
+	</logger>
+	<logger name="wde.dao.ImageDao" additivity="false">
+		<level value="INFO" />
+		<appender-ref ref="consoleAppender" />
+		<appender-ref ref="fileAppender" />
+	</logger>
+	<logger name="wde.dao.MetadataDao" additivity="false">
+		<level value="INFO" />
+		<appender-ref ref="consoleAppender" />
+		<appender-ref ref="fileAppender" />
+	</logger>
+	<logger name="wde.dao.ObservationDao" additivity="false">
+		<level value="INFO" />
+		<appender-ref ref="consoleAppender" />
+		<appender-ref ref="fileAppender" />
+	</logger>	
+	<logger name="wde.dao.ObsTypeDao" additivity="false">
+		<level value="INFO" />
+		<appender-ref ref="consoleAppender" />
+		<appender-ref ref="fileAppender" />
+	</logger>
+	<logger name="wde.dao.OrganizationDao" additivity="false">
+		<level value="INFO" />
+		<appender-ref ref="consoleAppender" />
+		<appender-ref ref="fileAppender" />
+	</logger>
+	<logger name="wde.dao.QchparmDao" additivity="false">
+		<level value="INFO" />
+		<appender-ref ref="consoleAppender" />
+		<appender-ref ref="fileAppender" />
+	</logger>
+	<logger name="wde.dao.QualityFlag" additivity="false">
+		<level value="INFO" />
+		<appender-ref ref="consoleAppender" />
+		<appender-ref ref="fileAppender" />
+	</logger>	
+	<logger name="wde.dao.QualityFlagDao" additivity="false">
+		<level value="INFO" />
+		<appender-ref ref="consoleAppender" />
+		<appender-ref ref="fileAppender" />
+	</logger>	
+	<logger name="wde.dao.Query" additivity="false">
+		<level value="INFO" />
+		<appender-ref ref="consoleAppender" />
+		<appender-ref ref="fileAppender" />
+	</logger>
+	<logger name="wde.dao.PlatformDao" additivity="false">
+		<level value="INFO" />
+		<appender-ref ref="consoleAppender" />
+		<appender-ref ref="fileAppender" />
+	</logger>
+	<logger name="wde.dao.SensorDao" additivity="false">
+		<level value="INFO" />
+		<appender-ref ref="consoleAppender" />
+		<appender-ref ref="fileAppender" />
+	</logger>
+	<logger name="wde.dao.SensorTypeDao" additivity="false">
+		<level value="INFO" />
+		<appender-ref ref="consoleAppender" />
+		<appender-ref ref="fileAppender" />
+	</logger>
+	<logger name="wde.dao.SiteDao" additivity="false">
+		<level value="INFO" />
+		<appender-ref ref="consoleAppender" />
+		<appender-ref ref="fileAppender" />
+	</logger>
+	<logger name="wde.dao.SourceDao" additivity="false">
+		<level value="INFO" />
+		<appender-ref ref="consoleAppender" />
+		<appender-ref ref="fileAppender" />
+	</logger>
+	<logger name="wde.dao.Units" additivity="false">
+		<level value="INFO" />
+		<appender-ref ref="consoleAppender" />
+		<appender-ref ref="fileAppender" />
+	</logger>
+	<logger name="wde.ems.EmsMgr" additivity="false">
+		<level value="INFO" />
+		<appender-ref ref="consoleAppender" />
+		<appender-ref ref="fileAppender" />
+	</logger>
+	<logger name="wde.metadata.MetadataUpdater" additivity="false">
+		<level value="INFO" />
+		<appender-ref ref="consoleAppender" />
+		<appender-ref ref="fileAppender" />
+	</logger>
+	<logger name="wde.obs.ObsMgr" additivity="false">
+		<level value="INFO" />
+		<appender-ref ref="consoleAppender" />
+		<appender-ref ref="fileAppender" />
+	</logger>	
+	<logger name="wde.obs.ObsArchiveMgr" additivity="false">
+		<level value="INFO" />
+		<appender-ref ref="consoleAppender" />
+		<appender-ref ref="fileAppender" />
+	</logger>	
+	<logger name="wde.qchs.QChSMgr" additivity="false">
+		<level value="INFO" />
+		<appender-ref ref="consoleAppender" />
+		<appender-ref ref="fileAppender" />
+	</logger>
+	<logger name="wde.qchs.QChSeqMgr" additivity="false">
+		<level value="INFO" />
+		<appender-ref ref="consoleAppender" />
+		<appender-ref ref="fileAppender" />
+	</logger>
+	<logger name="wde.qchs.Stage24Precip" additivity="false">
+		<level value="INFO" />
+		<appender-ref ref="consoleAppender" />
+		<appender-ref ref="fileAppender" />
+	</logger>	
+	<logger name="wde.qeds.ApplicationInterfaceServlet" additivity="false">
+		<level value="INFO" />
+		<appender-ref ref="consoleAppender" />
+		<appender-ref ref="fileAppender" />
+	</logger>
+	<logger name="wde.qeds.ContribMonitor" additivity="false">
+		<level value="INFO" />
+		<appender-ref ref="consoleAppender" />
+		<appender-ref ref="fileAppender" />
+	</logger>
+	<logger name="wde.qeds.Contribs" additivity="false">
+		<level value="INFO" />
+		<appender-ref ref="consoleAppender" />
+		<appender-ref ref="fileAppender" />
+	</logger>
+	<logger name="wde.qeds.ContribPlatforms" additivity="false">
+		<level value="INFO" />
+		<appender-ref ref="consoleAppender" />
+		<appender-ref ref="fileAppender" />
+	</logger>
+	<logger name="wde.qeds.ReplObs" additivity="false">
+		<level value="INFO" />
+		<appender-ref ref="consoleAppender" />
+		<appender-ref ref="fileAppender" />
+	</logger>
+	<logger name="wde.qeds.PlatformMonitor" additivity="false">
+		<level value="INFO" />
+		<appender-ref ref="consoleAppender" />
+		<appender-ref ref="fileAppender" />
+	</logger>
+	<logger name="wde.qeds.StreamMgr" additivity="false">
+		<level value="INFO" />
+		<appender-ref ref="consoleAppender" />
+		<appender-ref ref="fileAppender" />
+	</logger>
+	<logger name="wde.qeds.Subscription" additivity="false">
+		<level value="INFO" />
+		<appender-ref ref="consoleAppender" />
+		<appender-ref ref="fileAppender" />
+	</logger>
+	<logger name="wde.qeds.Subscriptions" additivity="false">
+		<level value="INFO" />
+		<appender-ref ref="consoleAppender" />
+		<appender-ref ref="fileAppender" />
+	</logger>	
+	<logger name="wde.util.ClarusObsFileDbLoader" additivity="false">
+		<level value="INFO" />
+		<appender-ref ref="consoleAppender" />
+		<appender-ref ref="fileAppender" />
+	</logger>	
+	<logger name="wde.util.CollectionReport" additivity="false">
+		<level value="INFO" />
+		<appender-ref ref="consoleAppender" />
+		<appender-ref ref="fileAppender" />
+	</logger>
+	<logger name="wde.util.Config" additivity="false">
+		<level value="INFO" />
+		<appender-ref ref="consoleAppender" />
+		<appender-ref ref="fileAppender" />
+	</logger>
+	<logger name="wde.util.ConfigSvc" additivity="false">
+		<level value="INFO" />
+		<appender-ref ref="consoleAppender" />
+		<appender-ref ref="fileAppender" />
+	</logger>
+	<logger name="wde.util.FileCompressor" additivity="false">
+		<level value="INFO" />
+		<appender-ref ref="consoleAppender" />
+		<appender-ref ref="fileAppender" />
+	</logger>	
+	<logger name="wde.util.net.FtpConn" additivity="false">
+		<level value="INFO" />
+		<appender-ref ref="consoleAppender" />
+		<appender-ref ref="fileAppender" />
+	</logger>
+	<logger name="wde.util.net.HttpConn" additivity="false">
+		<level value="INFO" />
+		<appender-ref ref="consoleAppender" />
+		<appender-ref ref="fileAppender" />
+	</logger>
+	<logger name="wde.util.net.HttpPush" additivity="false">
+		<level value="INFO" />
+		<appender-ref ref="consoleAppender" />
+		<appender-ref ref="fileAppender" />
+	</logger>
+	<logger name="wde.util.net.JavascriptManager" additivity="false">
+		<level value="INFO" />
+		<appender-ref ref="consoleAppender" />
+		<appender-ref ref="fileAppender" />
+	</logger>
+	<logger name="wde.util.net.NetConn" additivity="false">
+		<level value="INFO" />
+		<appender-ref ref="consoleAppender" />
+		<appender-ref ref="fileAppender" />
+	</logger>
+	<logger name="wde.util.Notification" additivity="false">
+		<level value="INFO" />
+		<appender-ref ref="consoleAppender" />
+		<appender-ref ref="fileAppender" />
+	</logger>
+	<logger name="wde.util.Scheduler" additivity="false">
+		<level value="INFO" />
+		<appender-ref ref="consoleAppender" />
+		<appender-ref ref="fileAppender" />
+	</logger>
+	<logger name="wde.util.MissingSensorGenerator" additivity="false">
+		<level value="INFO" />
+		<appender-ref ref="consoleAppender" />
+		<appender-ref ref="fileAppender" />
+	</logger>
+	<logger name="wde.util.threads.ThreadPool" additivity="false">
+		<level value="INFO" />
+		<appender-ref ref="consoleAppender" />
+		<appender-ref ref="fileAppender" />
+	</logger>
+
+</log4j:configuration>

@@ -1,0 +1,9 @@
+###################################################################################
+# DO NOT MODIFY THIS FILE
+###################################################################################
+
+# The number of milliseconds that mapped values will remain cached before being updated.
+refresh=14400
+
+# The datasource where persistent observations can be retrieved on startup
+datasource=java:comp/env/jdbc/clarus_conf

@@ -1,0 +1,25 @@
+###################################################################################
+# DO NOT MODIFY THIS FILE
+###################################################################################
+
+# Configuration used to retrieve precipitation data from NOAA.
+# This data is retrieved from the NOAA FTP site. Your email is used as the password so
+# that they may contact you if changes occur to the data format or accessibility.
+
+# Password used for connection. Use your email address.
+password=@@admin.email@@
+
+# Path/location used to store and decompress retrieved files
+directory=@@webapp.root@@/grib
+
+
+# URL of the server to retrieve data.
+#url=ftp://ftp.ncep.noaa.gov
+url=ftp://140.90.33.41
+
+# Username to used for connection.
+username=anonymous
+
+# List of remote directories and files to retrieve, Stage 2 files must be before Stage 4 files
+file='pub/data/nccf/com/hourly/prod/nam_pcpn_anal.'yyyyMMdd'/ST2un'yyyyMMddhh'.Grb.Z'
+file='pub/data/nccf/com/hourly/prod/nam_pcpn_anal.'yyyyMMdd'/ST4.'yyyyMMddhh'.01h.Z'

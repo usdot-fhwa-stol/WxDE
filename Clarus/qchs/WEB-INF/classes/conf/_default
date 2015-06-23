@@ -1,0 +1,11 @@
+# List of observation types that are processed by this host
+obstype=essAirTemperature
+obstype=essWetBulbTemp
+obstype=essDewpointTemp
+obstype=essMaxTemp
+obstype=essMinTemp
+obstype=essRelativeHumidity
+obstype=essSurfaceTemperature
+obstype=essPavementTemperature
+obstype=essSubSurfaceTemperature
+obstype=essMobileFriction

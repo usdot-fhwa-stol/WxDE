@@ -1,0 +1,584 @@
+	@import url(//fonts.googleapis.com/css?family=Metrophobic);
+	@import url(//fonts.googleapis.com/css?family=Marcellus+SC);
+	@import url(//fonts.googleapis.com/css?family=Orbitron:400);
+	
+	/** start main CSS style
+	 ** this spans throughout the site
+	 ** must always override normalize.css
+	 ** inquiries: Chuck, and Robert
+	 */
+	 
+	html{ height:100%; } 
+	
+	body {
+	    margin: 0;
+	    padding:0;
+		font-size: 12px;
+		background-size: cover;
+		background-color: #aaa;
+		background-image: linear-gradient(135deg, #555, #FFF);
+		background-image: -o-linear-gradient(135deg, #555, #FFF);
+		background-image: -ms-linear-gradient(135deg, #555, #FFF);
+		background-image: -moz-linear-gradient(135deg, #555, #FFF);
+		background-image: -webkit-linear-gradient(135deg, #555, #FFF);
+		background-attachment:fixed;
+		-webkit-font-smoothing: antialiased;
+	}
+	
+	label { display: inline-block; width: auto; }
+	
+	legend { padding: 0.5em; }
+	
+	input[type="text"]:focus, input[type="email"]:focus, input[type="password"]:focus {
+		-webkit-box-shadow: 0 0 5px rgba(255, 127, 0, 1);
+		-moz-box-shadow: 0 0 5px rgba(255, 127, 0, 1);
+		background: lemonchiffon;
+	}
+	
+	#container {
+		float: left;
+		margin: 0px;
+		margin-right: 20px;
+		border: 1px solid silver;
+	}
+	#container div{
+		margin:10px;
+	}
+	@media screen and (min-width:0\0) {  
+		.datamap-container {
+			margin-bottom: 80px !important;
+		}
+	}
+	#header {
+		background-image: url("../image/WeatherPics/sky_banner.jpg");
+		background-position: top;
+		height: 227px;
+		width: 962px;
+	}
+	
+	#headerText {
+		font-size: xx-large;
+		font-weight: bold;
+		color: white;
+		padding-top: 170px;
+		padding-left: 30px;
+	}
+	
+	#area {
+		width: 965px;
+		margin: 0px;
+		float: left;
+	}
+	
+	#search {
+		width: 265px;
+		height: 1000px;
+		border-right: 1px solid silver;
+		float: left;
+	}
+	
+	.whitetext {
+		color: white;
+	}
+	
+	.blue {
+		background-color: #4f6b83;
+	}
+	
+	.ui-tooltip,.arrow:after {
+		background: black;
+		border: 2px solid white;
+	}
+	
+	.ui-tooltip {
+		padding: 10px 20px;
+		color: white;
+		border-radius: 20px;
+		font: bold 14px "Helvetica Neue", Sans-Serif;
+		text-transform: uppercase;
+		box-shadow: 0 0 7px black;
+	}
+	
+	.arrow {
+		width: 70px;
+		height: 16px;
+		overflow: hidden;
+		position: absolute;
+		left: 50%;
+		margin-left: -35px;
+		bottom: -16px;
+	}
+	
+	.arrow.top {
+		top: -16px;
+		bottom: auto;
+	}
+	
+	.arrow.left {
+		left: 20%;
+	}
+	
+	.arrow:after {
+		content: "";
+		position: absolute;
+		left: 20px;
+		top: -20px;
+		width: 25px;
+		height: 25px;
+		box-shadow: 6px 5px 9px -9px black;
+		-webkit-transform: rotate(45deg);
+		-moz-transform: rotate(45deg);
+		-ms-transform: rotate(45deg);
+		-o-transform: rotate(45deg);
+		tranform: rotate(45deg);
+	}
+	
+	.arrow.top:after {
+		bottom: -20px;
+		top: auto;
+	}
+	#tabs {
+		width:400px;
+		height:150px;
+		margin-left: auto;
+		margin-right: auto;
+	}
+	#cntEquipment{
+		width:150px;
+		margin-left: auto;
+		margin-right: auto;
+	}
+	#body {
+		width: 700px;
+		height: 1000px;
+		float: left;
+	}
+	#metadata {
+		font-size: 14px;
+	}
+	#footer {
+		padding: 0.5em;
+		color: white;
+		background-color: gray;
+		clear: left;
+	}
+	
+	/** WxDE and FHWA Logo CSS **/
+	.wxde-header-container{
+		position: relative;
+		margin: 0 auto;
+		width: 1000px;
+		height: 119px;
+		border-radius: 0;
+		z-index: 2;
+	}
+	.fhwa-logo-link {
+		display: block;
+		height: 45px;
+	}
+	.fhwa-logo{
+		position: absolute;
+		z-index: 1;
+	}
+	.wxde-typography {
+		position: absolute;
+    	font-family: 'Orbitron', sans-serif;
+    	color: #555;
+    	font-size: 1.8em;
+    	font-weight: bold;
+    	line-height: 1em;
+    	top: 52px;
+    	left: 20px;
+	}
+	.wxde-typography > a {
+		text-decoration: none;
+		color: inherit;
+	}
+	.wxde-typography > a > span {
+		color: #ff9900;
+	}
+	.wxde-typography > .subparagraph {
+		margin-top: 0;
+		margin-bottom: 0;
+		font-size: 11px;
+		font-family: Arial;
+		font-weight: 100;
+		/text-transform: uppercase;
+		line-height: 20px;
+	}
+	.wxde-typography > .subparagraph a {
+		color: #2362AA;
+		text-decoration: none;
+	}
+	.wxde-typography > .subparagraph a:hover {
+		text-decoration: underline;
+	}
+	/* CSS Rule targeting Mozilla Firefox for margin rendering issues with the browser */
+	@-moz-document url-prefix() {
+	    .wxde-header-container{
+	        margin-bottom: -3px;
+	    }
+	    .fhwa-logo{
+	    	margin-bottom: -24px;
+	    }
+	}
+	/** Float CSS **/
+	   .pull-left{
+	   position:float;
+	   float:left;
+	}
+	.pull-right{
+	    position:float;
+	    float:right;
+	}
+	
+	/** Footer CSS **/
+	.footer{
+		position:relative;
+		font-size: .8em;
+		width:960px;
+		max-height: 60px;
+		min-height: 60px;
+		padding: 10px 20px;
+		margin: auto;
+	    background-color: #4d4d4d;
+	    background-image: linear-gradient(#4D4D4D, #333333);
+	    background-image: -o-linear-gradient(#4D4D4D, #333333);
+	    background-image: -moz-linear-gradient(#4D4D4D, #333333);
+	    background-image: -webkit-linear-gradient(#4D4D4D, #333333);
+	    border-radius: 2px;
+	}
+	.footer *{
+	    text-shadow:0px -1px 0px #333;
+	    color: #C8C8C8;
+	}
+	.footer h3{
+	    color:#ccc;
+	    line-height:0px;
+	}
+	.footer a{
+	    text-decoration:none;
+	}
+	.footer p{
+	    color: #CCC;
+	}
+	.footer a:hover{
+	    color:#E8E8E8;
+	    text-decoration:underline;
+	}
+
+	/*
+	** Account Retrieval CSS
+	*/
+	.steps-div{
+		float: left;
+		width: 40%;
+		margin-left: 30px;
+	}
+	
+	.btn {
+		display: block;
+		width: 55px;
+		padding: 5px;
+		padding-top: 4px;
+		font-size: 14px;
+		text-decoration: none;
+		text-align: center;
+	}
+	.btn-light{
+		background-color:#CCC;
+		background-image: linear-gradient(#DDD, #999);
+		background-image: -o-linear-gradient(#DDD, #999);
+		background-image: -ms-linear-gradient(#DDD, #999);
+		background-image: -moz-linear-gradient(#DDD, #999);
+		background-image: -webkit-linear-gradient(#DDD, #999);
+		color: #333;
+		border: 1px solid #999;
+		border-radius: 2px;
+		text-shadow: 0px 1px 0px #DDD;
+	}
+		.btn-light:hover{
+			background-color:#DDD;
+			background-image: linear-gradient(#DDD, #888);
+			background-image: -o-linear-gradient(#DDD, #888);
+			background-image: -ms-linear-gradient(#DDD, #888);
+			background-image: -moz-linear-gradient(#DDD, #888);
+			background-image: -webkit-linear-gradient(#DDD, #888);
+			border: solid 1px #888;
+		}
+	.btn-dark{
+		background-color:#555;
+		background-image: linear-gradient(#888,#444);
+		background-image: -o-linear-gradient(#888,#444);
+		background-image: -ms-linear-gradient(#888,#444);
+		background-image: -moz-linear-gradient(#888,#444);
+		background-image: -webkit-linear-gradient(#888,#444);
+		color:#fff;
+		border: solid 1px #444;
+		border-radius: 2px;
+		text-shadow: 0px -1px 0px #444;
+	}
+	.btn-dark-disabled{
+		background-color:#bbb;
+		color:#eee;
+		border: solid 1px #999;
+		border-radius: 2px;
+	}
+	.btn-dark:hover, .btn-dark:focus {
+		background-color:#666;
+		background-image: linear-gradient(#999,#555);
+		background-image: -o-linear-gradient(#999,#555);
+		background-image: -ms-linear-gradient(#999,#555);
+		background-image: -moz-linear-gradient(#999,#555);
+		background-image: -webkit-linear-gradient(#999,#555);
+		border: solid 1px #555;
+	}
+   	.btn-dark:focus {
+		border: 1px solid #555 !important;
+	}
+		
+	.btn {
+		float: right;
+		width: auto;
+		margin-top: 10px;
+	}
+	.btn-block {
+		display: block;
+		font-size: 14px !important;
+	}		
+   .steps-headers{
+   	margin-left: 10px;
+   	min-height:20px;
+   }
+   .steps-headers h2{
+   	color: #CCC;
+   	float:left;
+   	margin-right: 35px;
+   }
+   
+   .input-email{
+   	width: 220px;
+   	margin-left: 10px;
+   }
+
+	.container {
+		width: 940px;
+		min-height: 280px;
+		padding: 10px 20px;
+		margin: 10px auto;
+		color: #555;
+	    background-color: #fcfcfc;
+	   	font-family: 'Metrophobic', sans-serif;
+    	border-radius:5px;
+    	text-shadow: none;
+	 }
+	 .container h1{
+	 	color: #555;
+		margin-bottom: 45px;
+	 }
+	 .container p{
+	 	font-size: 1.2em;
+	 }
+ 
+/** ClearFix repairs
+ ** float collapses **/
+	.clearfix:before,
+	.clearfix:after {
+	    content: " "; /* 1 */
+		display: table; /* 2 */
+	}
+	.clearfix:after {
+	    clear: both;
+	}
+	/**
+	 * For IE 6/7 only
+	 */
+	.clearfix {
+		*zoom: 1;
+	}
+	
+	/*
+	** Chuckerin CSS
+	*/
+	#rdCommentType {
+	    margin-left: 17px;
+	}
+	#feedbackForm #rdCommentType label {
+	    width:160px;
+	}
+	#feedbackForm label {
+	    width: 100px; 
+		vertical-align: top;
+	}
+	button{
+	  	margin-left:10px;
+	  	padding:5px 10px;
+		font-size: 1.2em;
+	}
+	
+	.btn-small{
+		font-size: .9em;
+	}
+
+	.invisible-object {
+	  -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=0)";
+	  filter: alpha(opacity=0);
+	  -moz-opacity: 0;
+	  -khtml-opacity: 0;
+	  opacity: 0;
+	}
+	
+	/* Login styles */
+	
+	a.cant-access-account{
+		display: inline-block;
+		margin-left: 10px;
+		text-decoration: underline;
+		color: #777;
+		font-size: 14px;
+	}
+		.link-small {
+			font-size: 12px !important;
+		}
+		.margin-left-none {
+			margin-left:0 !important;
+		}
+	a.cant-access-account:hover{
+		color: #555;
+	}
+	.btn-login{
+		display:inline-block;
+		padding:5px 10px;
+		font-size:1.2em;
+		text-align:center;
+		text-decoration:none;
+		margin-left: 10px;
+	}
+	.login-a-link {
+		text-decoration: none;
+		color: #006699;
+	}
+	.login-a-link:hover {
+		text-decoration: underline;
+	}
+	.login-section {
+		display: inline-block;
+		margin: 0 0 0 10px !important;
+	}
+	.btn-signin {
+		margin: 5px 0 !important;
+		font-size: 14px !important;
+	}
+	
+/* Reset Password */
+	.new-password-form {
+		font-size: 14px;
+		width: 100%;
+	}
+	.new-password-form > label {
+		display: inline-block;
+		vertical-align: middle;
+		width: 125px;
+	}
+	.new-password-form > .password-box {
+		display: inline-block;
+		width: 200px !important;
+		margin-bottom: 10px;
+		margin-right: 10px;
+	}
+	.new-password-form > .error {
+		width: auto;
+		color: #880000;
+		font-style: italic;
+	}
+	#submitNewPassword {
+		display: block;
+		font-size: 14px;
+		margin-left: 0;
+		margin-top: 10px;
+	}
+	.password-input-row {
+		height: 30px;
+	}
+	
+/* dataMap legends */	
+   	.legends{
+   		padding:10px;
+   		text-align: center;
+   		float:left;
+		position:relative;
+		top:-100px;
+		width:290px;
+		border:1px solid #000;
+		border-radius: 2px;
+		font-size:1.1em;
+		margin-bottom: -100px;
+   	}
+   	
+/* Custom .container links styles */
+	.container .link {
+		color:#006699;
+		text-decoration:none;
+	}
+	.container .link:hover, .container .link:focus {
+		text-decoration:underline;
+	}
+	.container .thead {
+		font-size: 14px;
+	}
+	
+/* Spinner */
+/* For web services e.g. feedbacks, data sources */
+#loading {
+	display: none;
+	height: 22px;
+	width: 22px;
+	opacity: .5;
+}
+/* for registration */
+#loader {
+	display: none;
+	height: 17px;
+	width: 17px;
+	margin-bottom: -3px;
+}
+	
+/* Changelog.jsp styles */
+.blog-heading {
+	display: inline-block;
+	max-width: 60%;
+}
+	
+	
+/************************************
+******** Menu Icon Images ***********
+************************************/
+
+.main-menu-icons {
+	height: 15px;
+	width: 15px;
+	vertical-align: middle;
+	display: inline-block;
+	margin-top: -4px !important;
+	box-sizing: border-box;
+}
+
+
+/* Site Map */
+
+.site-map {
+	font-size: 14px;
+	font-weight: 900;
+}
+.site-map a {
+	color: #2B96D7;	
+	text-decoration: none;
+}
+.site-map a:hover {
+	text-decoration: underline;
+}
+
+a[href $='.csv'].link {
+	padding-right: 18px;
+	background: transparent url(/image/cue_icon_xls.gif) no-repeat center right;
+}

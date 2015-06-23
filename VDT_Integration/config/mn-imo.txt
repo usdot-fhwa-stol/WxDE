@@ -1,0 +1,2 @@
+# configure this command to execute once when server starts
+java -cp /wxde/class/directory/ wde.cs.imo.MnDot 207.67.22.117 4501 5 /wxde/destination/path/ &

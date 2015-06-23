@@ -1,0 +1,12 @@
+.wxde-logo{
+	margin-top: -3px;
+	margin-bottom: -1.5px;
+}
+.sf-menu li:hover,
+.sf-menu li.sfHover {
+	/* only transition out, not in */
+	-webkit-transition: none;
+	transition: none;
+	background: #333;
+	margin-top:0;
+}

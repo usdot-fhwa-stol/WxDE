@@ -1,0 +1,921 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<faqs>
+
+	<faqcategory id="WxDE" catname="Weather Data Environment (WxDE)">
+		<faq>
+			<id>whatis_wxde</id>
+			<question>
+			What is the Weather Data Environment (WxDE)?
+			</question>
+			<answer><![CDATA[
+				<p>
+					The Weather Data Environment is part of <a href="http://www.its.dot.gov/data_capture/data_capture.htm">
+					the United States Department of Transportation's (USDOT’s) Data Capture and Management Program</a> and 
+					associated with the <a href="https://www.its-rde.net/">
+					Research Data Exchange</a>. The WxDE is intended to support research, analysis, application
+					development, and testing related to weather responsive transportation management by collecting 
+					and distributing weather data and weather-related transportation data. There is a particular focus
+					on meeting the evolving weather data needs of connected vehicle applications.
+				</p>
+				<P>
+					The WxDE currently collects and distributes data from environmental sensor stations (ESS) that
+					collect weather data at fixed locations and mobile sensor stations that collect weather data from
+					specially-equipped vehicles as the vehicles operate on roadways. Data from environmental sensor stations are 
+					available for most States,
+					and mobile station data are available from three States participating in USDOT Integrated Mobile Observations
+					(IMO) projects. The data are distributed via maps that provide access to recent observations, queries that allow a
+					user to select and download large batches of data, and subscriptions that allow users to periodically download
+					recently obtained data.
+				</P>
+				<P>
+					The WxDE also creates and distributes value-added content related to these data. The WxDE computes quality
+					check metrics for all observations from fixed (i.e., ESS) and mobile stations. The WxDE also applies algorithms
+					developed by the National Center for Atmospheric Research (NCAR) for the Vehicle Data Translator (VDT) to compute
+					quality check metrics for observations from mobile stations and estimate for weather-related road
+					conditions. Other value-added capabilities are under consideration.
+				</P>
+				<P>
+					The WxDE includes other capabilities, in addition to the collection and distribution of data, related to
+					supporting research, analysis, application development, and testing, such as providing access to metadata that
+					describes the data available through the WxDE and managing the users who access the WxDE and WxDE data.
+				</P>
+			]]></answer>
+			<visible>true</visible>
+		</faq>
+		<faq>
+			<id>whatis_DCMP</id>
+			<question>
+				What is the USDOT Data Capture and Management Research Program?
+			</question>
+			<answer><![CDATA[
+				<P>The USDOT Data Capture and Management research program is a part of a broader research on connected vehicle
+				technologies. The vision of this broader research program is to expedite development and deployment of wireless 
+				technologies in vehicles, infrastructure, and mobile devices to improve safety, mobility, and environmental
+				impacts of our surface transportation system. One role of the Data Capture and Management research program is to make
+				research data accessible to the broad transportation community to facilitate application development and testing.
+				The WxDE is one tool developed to collect and consolidate weather-related transportation 
+				research data and make that data available to the transportation community. The <a href="https://www.its-rde.net/">
+				Research Data Exchange</a> is similar tool that focuses on non-weather data.</P>
+			]]></answer>
+			<visible>true</visible>
+		</faq>
+	</faqcategory>
+
+	<faqcategory id="WxDEData" catname="Weather Data Environment Data">
+		<faq>
+		<id>wxdedata_included</id>
+		<question>
+			What types of data are included in the Weather Data Environment?
+		</question>
+		<answer><![CDATA[
+			<P>The Weather Data Environment includes the following types of data:</P>
+			<ul>
+				<li>Weather observations from fixed Environmental Sensor Stations (i.e., fixed stations), called <a href="#id=whatare_nonmobiledata">nonmobile data</a>.</li>
+				<li>Weather observations from vehicles (i.e., <a href="#id=whatis_mobilestation">mobile stations</a>) specially-equipped to collect weather data and
+				provide that data in near real-time.</li>
+				<li><a href="#id=whatis_qualitymetrics">Quality control metrics</a> computed for weather observations from both fixed and mobile stations.</li>
+				<li><a href="#id=whatare_roadsegmentdata">Road segment data</a>, including statistical averages of weather observations along specific road segments
+				and estimates of weather conditions along these roads.</li>
+				<li><a href="#id=whatis_wxdemetadata">Metadata</a> that describes the data contained in the Weather Data Environment.</li>
+			</ul>
+		]]></answer>
+		<visible>true</visible>
+		</faq>
+		<faq>
+			<id>wxdedata_limitations</id>
+			<question>
+				Are there limitations to the use of Weather Data Environment data?
+			</question>
+			<answer><![CDATA[
+				<P>Yes. Some organizations that provide data to the Weather Data Environment may place restrictions on the use of the data they provide and/or disclaimers
+				regarding the use of the data they provide. If an organization restricts access to the data they provide, the Weather Data Environment enforces those 
+				restrictions (e.g., by only allowing approved users to access the data). Disclaimers and other provider-specific restrictions are listed in the Weather
+				Data Environment Data Sources feature.</P>
+				<P>The Weather Data Environment itself does not place any restrictions on the data other than those required by the data providers.</P>
+			]]></answer>
+			<visible>true</visible>
+		</faq>
+		<faq>
+			<id>wxdedata_access</id>
+			<question>
+				How do I access Weather Data Environment data?
+			</question>
+			<answer><![CDATA[
+				<P>There are several ways to access Weather Data Environment data. Recent data can be viewed on a <a href="#id=how_viewdatamap">map</a>.
+				Users can define <a href="#id=whatis_dataquery">queries</a> that retrieve recent and/or archived data and display the data in a table.
+				The data can also be downloaded onto the user’s local computer for analysis. Users can define subscriptions that periodically retrieve recent data and make
+				the data available for download.</P>
+			]]></answer>
+			<visible>true</visible>
+		</faq>
+
+		<faq>
+			<id>wxdedata_organized</id>
+			<question>
+				How are Weather Data Environment (WxDE) weather observation data organized?
+			</question>
+			<answer><![CDATA[
+				<P>In the Weather Data Environment, the following paradigm is used to organize weather observation data.</P>
+				<P>A weather observation is any data point related to weather that applies to a specific geographic location at a specific time. It could be an actual
+				observation of some weather condition, such as the air temperature observed at a <a href="#id=whatis_fixedstation">fixed station</a> at a specific time. It
+				could be an observation related to weather, such as the wipers on a <a href="#id=whatis_mobilestation">mobile station</a> operating
+				at a specific time. It could be a statistical value computed from observations, such as the average temperature observed along a road segment. Or, it could
+				be a derived or estimated value, such as an estimate of whether there is precipitation along a road segment based on a mixture of observations from fixed and
+				mobile stations and radar stations. In other words, the term &ldquo;weather observation&rdquo; is used to represent any value previously mentioned and that
+				is stored in the WxDE.</P>
+				<P>A weather observation applies to either a specific location or a specific geographic area. An example of weather observation applying to a specific location 
+				is one that is obtained from a fixed or mobile station. An example of a weather observation applying to a geographic area is the minimum and 
+				maximum temperature along a defined segment of roadway.</P>
+				<P>A weather observation also applies to either a specific point in time or to a particular time interval. An example of a weather observation applying to a
+				specific point in time is a temperature observation at a fixed station. An example of a weather observation applying to a particular time interval is the 
+				average temperature observed along a road segment computed over all observations that occur along that road segment during a specific period of time.</P>
+				<P>This context for understanding how to interpret a WxDE weather observation value comes from the metadata associated with each weather observation, as
+				described below.</P>
+				<ul>
+					<li>Each WxDE weather observation is of a specific observation type. Many of the observation types relate directly to weather variables, such as
+					essAirTemperature for air temperature and essRelativeHumdity for relative humidity, where the abbreviation ess stands for environmental sensor station. 
+					Other observation types relate to statistical averages of weather
+					variables, such as essMinTemp for the minimum temperature over some time period. In other words, the observation type provides basic information
+					about how to interpret the observation values and what those values measure.</li>
+					<li>Each WxDE weather observation is associated with a sensor; metadata about the sensor provides information about how the observed values
+					are generated. In most cases, a WxDE sensor represents a physical device, such as a specific model of temperature sensor. In some cases, a WxDE
+					sensor represents the software tool that generated the observation. For example, several sensor types were introduced to represent 
+					<a href="#id=whatis_vehicledatatranslator">Vehicle Data Translator</a> algorithms for producing weather observations. In other words, the sensor
+					provides information about how a weather observation was generated.</li>
+					<li>Each WxDE sensor is associated with a WxDE station. In most cases, the WxDE station represents a physical station that houses a physical
+					sensor, such as a temperature sensor built into an Environmental Sensor Station. However, a station can also represent a road segment to which weather
+					observations apply, such as the minimum and maximum temperature along a road segment produced by the Vehicle Data Translator. In other words, the
+					station provides information about the geographic region to which an observation applies.</li>
+					<li>Each WxDE station is associated with a contributor, which is the agency or organization that maintains and operates a physical station, such 
+					as an Environmental Sensor Station.  In the case of stations used to represent road segments for capturing Vehicle Data Translator statistical summaries 
+					of weather observations and assessments of road conditions along the segments, the contributor is the corresponding department of transportation for 
+					the State where the road segments belong.</li>
+				</ul>
+				<P>The WxDE also associates with each weather observation value several quality check values, which provide information about the expected validity of the
+				observation. For example, the WxDE applies a persistence test to all weather observations received from physical sensors; this test is intended to detect
+				when a sensor is “stuck” and continuously transmits the same value. The quality check values associated with each weather observation can help a user
+				determine which observations have suspicious values so they can be excluded from downstream processing.</P>
+			]]></answer>
+			<visible>true</visible>
+		</faq>
+	</faqcategory>
+
+	<faqcategory id="registration" catname="Registration and Privacy">
+		<faq>
+			<id>why_register</id>
+			<question>
+				Why should I register?
+			</question>
+			<answer><![CDATA[
+				<P>Registered users have greater access to Weather Data Environment (WxDE) data and features than non-registered users. Non-registered users are limited to using the 
+				WxDE map to view recent data and are limited to viewing data from organizations that do not place any access restrictions on the data they provide.
+				Registered users can also define queries to view and/or download historical data stored in the WxDE and subscriptions to 
+				download recently received data. Registered users also have access to other WxDE features, such as metadata about WxDE data.</P>
+			]]></answer>
+			<visible>true</visible>
+		</faq>
+		<faq>
+			<id>howis_privacyprotected</id>
+			<question>
+				How is my privacy protected as a registered WxDE user?
+			</question>
+			<answer><![CDATA[
+				<P>Information about registered users of the Weather Data Environment (WxDE) is used only for purposes related to WxDE operations and is never shared or distributed to others.
+				Summary statistics on WxDE usage are gathered for program evaluation purposes. Statistics on general categories of users may be gathered (e.g., academic, private sector,
+				government), but individual user statistics are not gathered.</P>
+			]]></answer>
+			<visible>true</visible>
+		</faq>
+		<faq>
+			<id>why_feedback</id>
+			<question>
+				Why should I provide feedback?
+			</question>
+			<answer><![CDATA[
+				<P>The Weather Data Environment (WxDE) is still being improved to better support the research, analysis, application development, and testing needs of the transportation
+				weather and connected vehicle communities. Your feedback will help the WxDE development team enhance the WxDE capabilities to better meet your needs. The WxDE
+				development team periodically reviews feedback provided on the WxDE and, from that feedback, maintains a list of potential WxDE future enhancements. The United States
+				Department of Transportation identifies which future enhancements should be implemented, as funding and scheduling permits.</P>
+			]]></answer>
+			<visible>true</visible>
+		</faq>
+		<faq>
+			<id>howis_dataprotected</id>
+			<question>
+				How is data privacy protected?
+			</question>
+			<answer><![CDATA[
+				<P>It is the intent that the data sets on the Weather Data Environment (WxDE) are free of any private or sensitive data. It is also the intent that data on the WxDE
+				cannot be combined with other data sources to infer private information. If there are any privacy concerns related to data on the WxDE, please use the “Feedback”
+				feature to alert the WxDE managers.</P>
+			]]></answer>
+			<visible>true</visible>
+		</faq>
+	</faqcategory>
+
+	<faqcategory id="usingwxde" catname="Using the Weather Data Environment">
+		<faq>
+			<id>how_changeuserinfo</id>
+			<question>
+				How do I change my user information?
+			</question>
+			<answer><![CDATA[
+				<P>A registered user can change his or her user information (e.g., update email address, change password). To change user information, the user must first log
+				in to the Weather Data Environment, then follow the steps below:</P>
+				<ol>
+					<li>Move the cursor over the user name, which is displayed at the far right of the menu bar, then click on the Manage menu option.</li>
+					<li>Change any information. Note that you are required to change your password when changing user information and that all fields
+					are required and cannot be blank.</li>
+					<li>Click on the Save button to save the changes or the Cancel button to cancel the changes.</li>
+				</ol>
+				<P>If you have made changes, you will receive an email notifying you that your Weather Data Environment account information has been changed.</P>
+			]]></answer>
+			<visible>true</visible>
+		</faq>
+		<faq>
+			<id>how_createcontributorsubscription</id>
+			<question>
+				How do I create a subscription based on contributors?
+			</question>
+			<answer><![CDATA[
+				<P>A user can use the Contributor wizard to specify criteria for creating a subscription to periodically select data provided by a specific contributor. The initial
+				steps for creating a subscription are identical to the steps for creating a data query and identifying the desired observations. The difference comes when specifying
+				the time period for the request. With a data query, you specify the time period for the data request. For a subscription, you specify the period of time for which the
+				subscription should run (e.g., every 5 minutes). The steps for creating a subscription based on contributor(s) are:</P>
+				<ol>
+					<li>Select the Data - Observations - Contributor menu option. This option is only available to registered users.</li>
+					<li>Select one or more contributors from the All Contributors list and click the “>>” button to transfer those contributors to the Selected Contributors list.
+					After selecting all the contributors of interest, click the &ldquo;Next Page&rdquo; button.</li>
+					<li>Select one or more stations from the All Stations list and click the down button to transfer those stations to the Selected Stations list. To transfer
+					all stations, click on the first station in the All Stations list, click on the scroll bar button and hold down the left mouse button while
+					dragging the scroll bar to the bottom of the All Stations list, hold down the Shift key and click on the last item in the All Stations list.
+					Click the down button. Click the “Next Page” button after selecting all the stations of interest.</li>
+					<li>Select the observation type of interest from the Observation Type drop-down list, or select the “All Observations” option from this list to select
+					all observation types. If you select an observation type, go to step 5. Otherwise, skip to step 6.</li>
+					<li>If you select an observation type, you can specify selection criteria for the observations. If you do not want to filter the observations, skip to step 6.
+					Otherwise, specify values in the Minimum and Maximum text boxes to filter the observations that are outside the specified range and select options in the
+					Quality Checks drop-down boxes to filter observations that either do (select &ldquo;P&rdquo;) or do not (select &ldquo;N&rdquo;) pass specific quality
+					checks.  One of the quality checks that applies to certain observation types is the IQR, and it stands for Interquartile Range.</li>
+					<li>Click the Subscribe button.</li>
+					<li>Enter the security code shown in the Security Code box. If you wish to prevent other users from accessing the subscription data, enter a password in the
+					Password box. Select the frequency with which the subscription data should be generated in the Interval drop-down box. Set the output format for the
+					subscription with the Output Format drop-down box. Then, click Subscribe to create the subscription.</li>
+					<li>Record the subscription URL, which is used to access the subscription data.</li>
+				</ol>
+				<P>After creating the subscription, the first subscription file will be created within the time period specified under frequency in step 7 above. You can access
+				the subscription files by entering the URL recorded in step 8 in your browser.  Your subscription will continue to run as long as you periodically download the
+				subscription data. If fourteen days elapse without anyone downloading subscription data, the subscription is retired.</P>
+				<P>Note that the first 5 steps of this process are identical to the steps for creating a coordinate-based query. See <a href="#id=how_contributorquery">&ldquo;How
+				do I query data by contributor?&rdquo;</a></P>
+			]]></answer>
+			<visible>true</visible>
+		</faq>
+		<faq>
+			<id>how_createcoordinatesubscription</id>
+			<question>
+				How do I create a subscription based on coordinates?
+			</question>
+			<answer><![CDATA[
+				<P>A user can use the Coordinate wizard to specify criteria for creating a subscription to periodically select data within a specific geographic region. The initial steps
+				for creating a subscription are identical to the steps for creating a data query. The difference comes when specifying the time period
+				for the request. With a data query, you specify the time period for the data request. For a subscription, you specify the period of time the subscription should run
+				(e.g., every 5 minutes). The steps for creating a subscription based on coordinates are:</P>
+				<ol>					
+					<li>Select the Data - Observations - Coordinates menu option.</li>
+					<li>Select an approach for specifying the geographic region of interest by clicking on the Bounding Box button to select data within a rectangular region or
+					the Point & Radius button to select data within a circular region.  The Bounding Box button is selected and grayed out by default.</li>
+					<li>If selecting Bounding Box, enter the minimum latitude and longitude values in the Latitude 1 and Longitude 1 text boxes, respectively. Then, 
+					enter the maximum latitude and longitude values in the Latitude 2 and Longitude 2 text boxes and click Next Page button.</li>
+					<li>If selecting Point and Radius, enter the latitude and longitude of the mid-point of the circular region in the Latitude and Longitude text boxes,
+					and the radius of the circular region in kilometers in the Radius text box, and click the Next Page button.</li>
+					<li>Select the observation type of interest from the Observation Type drop-down list, or select the “All Observations” option from this list to select all
+					observation types. If you select an observation type, go to step 6. Otherwise, skip to step 7.</li>
+					<li>If you select an observation type, you can specify selection criteria for the observations. One of the criteria that applies to certain observation types is the
+					IQR, which stands for Interquartile Range.  If you do not want to filter the observations, skip to step 7.
+					Otherwise, specify values in the Minimum and Maximum text boxes to filter the observations that are outside the specified range and select options in
+					the Quality Checks drop-down boxes to filter observations that either do (select &ldquo;P&rdquo;) or do not (select &rdquo;N&ldquo;) pass specific quality
+					checks.</li>
+					<li>Click the Subscribe button.</li>
+					<li>Enter the security code shown in the Security Code box. If you wish to prevent other users from accessing the subscription data, enter a password in
+					the Password box. Select the frequency with which the subscription data should be generated in the Interval drop-down box. Set the output format for the
+					subscription with the Output Format drop-down box. Then, click Subscribe to create the subscription.</li>
+					<li>Record the subscription URL, which is used to access the subscription data.</li>
+				</ol>
+				<P>After creating the subscription, the first subscription file will be created within the time period specified under frequency in step 8 above. You can access the
+				subscription files by entering the URL recorded in step 9 in your browser.  Your subscription will continue to run as long as you periodically download the subscription
+				data. If fourteen days elapse without anyone downloading subscription data, the subscription is retired.</P>
+				<P>Note that the first six steps of this process are identical to the steps for creating a coordinate-based query. See <a href="#id=how_coordinatequery">&ldquo;How
+				do I query data by coordinates?&rdquo;</a></P>
+			]]></answer>
+			<visible>true</visible>
+		</faq>
+		<faq>
+			<id>how_downloaddata</id>
+			<question>
+				How do I download data?
+			</question>
+			<answer><![CDATA[
+				<P>See the topic <a href="#id=how_querydata">&ldquo;How do I query data?&rdquo;</a></P>
+			]]></answer>
+			<visible>true</visible>
+		</faq>
+		<faq>
+			<id>how_login</id>
+			<question>
+				How do I log in?
+			</question>
+			<answer><![CDATA[
+				<P>When a user first accesses the Weather Data Environment, the accessible features are limited. A user who has registered can access additional features
+				by logging in, using the following process:</P>
+				<ol>
+					<li>Click on the Login menu option.</li>
+					<li>Enter your name and password in the User Name and Password text boxes. If you have forgotten your user name or password, click on the 
+					&ldquo;Can’t access your account?&rdquo;</a> link to recover user information. See <a href="#id=how_recoveruserinfo">&ldquo;How do I recover a 
+					forgotten user name or password?&rdquo;</a> for more information.</li>
+					<li>Click on the Login button to complete the process. If either the user name or the password is mistyped, a login failure warning message is displayed
+					and you can either click on the Login button to re-enter that information or click the &ldquo;Can’t access your account?&rdquo; link to recover user
+					information.</li>
+				</ol>
+				<P>After logging in, you will be returned to the Weather Data Environment home page. When you are logged in, the “Login” menu option will be replaced with your
+				user name.</P>
+			]]></answer>
+			<visible>true</visible>
+		</faq>
+		<faq>
+			<id>how_logout</id>
+			<question>
+				How do I log out?
+			</question>
+			<answer><![CDATA[
+				<P>If you are logged in, your user name displays at the far right of the menu bar; otherwise, &ldquo;Login&rdquo; is displayed. To log out, hover the
+				cursor over your user name on the menu bar and click on the Logout menu option. You will be logged out and returned to the Weather Data Environment home page.</P>
+			]]></answer>
+			<visible>true</visible>
+		</faq>
+		<faq>
+			<id>how_querydata</id>
+			<question>
+				How do I query data?
+			</question>
+			<answer><![CDATA[
+				<P>A user can query the Weather Data Environment (WxDE) to view data archived in the WxDE and download data after viewing it. The user specifies criteria that
+				define the data to view (e.g., from which stations, for what date range, for what observation types), and the WxDE returns the data that meets the
+				specified criteria. The WxDE includes two wizards to specify the query criteria: (1) a Contributor wizard that helps select data provided by
+				a specific contributor, and (2) a Coordinate wizard that helps select data within a specific geographic region. See <a href="#id=how_contributorquery">&ldquo;How
+				do I query data by contributor?&rdquo;</a> for more information on the the Contributor wizard and <a href="#id=how_coordinatequery">&ldquo;How do I query
+				data by coordinates?&rdquo;</a> for more information on the Coordinate wizard.</P>
+			]]></answer>
+			<visible>true</visible>
+		</faq>
+		<faq>
+			<id>how_contributorquery</id>
+			<question>
+				How do I query data by contributor?
+			</question>
+			<answer><![CDATA[
+				<P>A user can use the Contributor wizard to specify criteria for selecting data provided by a specific contributor by:</P>
+				<ol>
+					<li>Select the Data - Observations - Contributor menu option.</li>
+					<li>Select one or more contributors from the All Contributors list and click the “>>” button to transfer those contributors to the Selected Contributors list.
+					After selecting all the contributors of interest, click the “Next Page” button.</li>
+					<li>Select one or more stations from the All Stations list and click the down button to transfer those stations to the Selected Stations list. To
+					transfer all stations, click on the first station in the All Stations list, click on the scroll bar button and hold down the left mouse button
+					while dragging the scroll bar to the bottom of the All Stations list, hold down the Shift key while clicking on the last item in the All Stations list,
+					and click the down button. Click the &ldquo;Next Page&rdquo; button after selecting all the stations of interest.</li>
+					<li>Select the observation type of interest from the Observation Type drop-down list, or select the &ldquo;All Observations&rdquo; option from this list to
+					select all observation types. If you select an observation type, go to step 5. Otherwise, skip to step 6.</li>
+					<li>If selecting an observation type, you can specify selection criteria for the observations. If you do not want to filter the observations, skip to step 6.
+					Otherwise, specify values in the Minimum and Maximum text boxes to filter the observations that are outside the specified range and select options in
+					the Quality Checks drop-down boxes to filter observations that either do (select “P”) or do not (select “N”) pass specific quality checks.</li>
+					<li>Click the Run Report button.</li>
+					<li>Specify Start Date + Start Time and End Date + End Time values to filter observations that are outside the specified date-and-time range. Specify
+					a data format: CMML for Canadian Meteorological Markup Language, CSV for Comma-Separated Value, or XML for eXtensible Markup Language. Then, click the 
+					Run Query button to run the query.</li>
+				</ol>
+				<P>You can then view the data returned by the query in the browser window, or select the Save Data button to save the data to your local hard drive.</P>
+				<P>Note that the first five steps of this process are identical to the steps for creating a contributor-based subscription. See 
+				<a href="#id=how_createcontributorsubscription">&ldquo;How do I create a subscription based on contributors?&rdquo;</a> for more information.</P>
+			]]></answer>
+			<visible>true</visible>
+
+		</faq>
+		<faq>
+			<id>how_coordinatequery</id>
+			<question>
+				How do I query data by coordinates?
+			</question>
+			<answer><![CDATA[
+				<P>A user can use the Coordinate wizard to specify criteria for selecting data within a specific geographic region by:</P>
+				<ol>
+					<li>Select the Data - Observations - Coordinates menu option.</li>
+					<li>Select an approach for specifying the geographic region of interest by clicking on the Bounding Box button to select data within a rectangular region
+					or the Point and Radius button to select data within a circular region.</li>
+					<li>If selecting Bounding Box, enter the minimum latitude and longitude values in the Latitude 1 and Longitude 1 text boxes, respectively. Then, enter
+					the maximum latitude and longitude values in the Latitude 2 and Longitude 2 text boxes and click Next Page button.</li>
+					<li>If selecting Point & Radius, enter the latitude and longitude of the mid-point of the circular region in the Latitude and Longitude text boxes,
+					and the radius of the circular region in kilometers in the Radius text box, and click the Next Page button.</li>
+					<li>Select the observation type of interest from the Observation Type drop-down list, or select the “All Observations” option from this list to select
+					all observation types. If you select an observation type, go to step 6. Otherwise, skip to step 7.</li>
+					<li>If you select an observation type, you can specify selection criteria for the observations. If you do not want to filter the observations, skip to
+					step 7. Otherwise, specify values in the Minimum and Maximum text boxes to filter the observations that are outside the specified range and select
+					options in the Quality Checks drop-down boxes to filter observations that either do (select “P”) or do not (select &ldquo;N&rdquo;) pass specific
+					quality checks.</li>
+					<li>Click the Run Report button.</li>
+					<li>Specify Start Date + Start Time and End Date + End Time values to filter observations that are outside of the specified date-and-time range.
+					Specify a data format: CMML for Canadian Meteorological Markup Language, CSV for Comma-Separated Value, and XML for eXtensible Markup Language. Then, 
+					click the Run Query button to run the query.</li>
+				</ol>
+				<P>You can then view the data returned by the query in the browser window, or select the Save Data button to save the data to your local hard drive.</P>
+				<P>Note that the first six steps of this process are identical to the steps for creating a coordinate-based subscription. See <a href="#id=how_createcoordinatesubscription">
+				&ldquo;How do I create a subscription based on coordinates?&rdquo;</a> for more information.</P>
+			]]></answer>
+			<visible>true</visible>
+		</faq>
+		<faq>
+		    <id>what_qualitycheckflags</id>
+		    <question>
+		        What do quality check flags mean?
+		    </question>
+		    <answer><![CDATA[
+				<P>Quality checking results are interpreted from the output as follows:</P>
+				<ol>
+					<li>"P" - The observation passed the quality check.</li>
+					<li>"N" - The observation did not pass the quality check.</li>
+					<li>"-" - The quality check was not run for the observation, usually due to insufficient background field data.</li>
+					<li>"/" - The quality check was not configured for the observation type.</li>
+				</ol>
+			]]></answer>
+			<visible>true</visible>
+		</faq>
+		<faq>
+			<id>how_recoveruserinfo</id>
+			<question>
+				How do I recover a forgotten user name or password?
+			</question>
+			<answer><![CDATA[
+				<P>A user who has forgotten his or her user name or password can request that the Weather Data Environment (WxDE) send an email that allows the user to recover 
+				the information by the following process:</P>
+				<ol>
+					<li>Click on the Login menu option. (If you do not see the Login menu option, it indicates that you are already logged in to the Weather Data Environment (WxDE) and you must first
+					<a href="#id=how_logout">log out</a> before you can recover user information.)</li>
+					<li>Click on the “Can’t access your account?” link.</li>
+					<li>Select either the “I Forgot my Password” or “I Forgot my User ID” button.</li>
+					<li>Enter the business email address you used when creating your WxDE account.</li>
+					<li>Click the Submit button and follow the instructions provided.</li>
+				</ol>
+				<P>If you have forgotten your user name, you will receive an email that reminds you of your user name.</P>
+				<P>If you have forgotten your password, you will receive an email that includes a link for resetting your password. Click on the link. (If your
+				email client does not allow you to click on hyperlinks, then open a Web browser and copy and paste the hyperlink into the browser URL box.)
+				This will bring you to a WxDE password reset screen. Enter and verify your new password and click the Save button. Your password is now reset.</P>
+			]]></answer>
+			<visible>true</visible>
+		</faq>
+		<faq>
+			<id>how_register</id>
+			<question>
+				How do I register?
+			</question>
+			<answer><![CDATA[
+				<P>Registered users have access to more Weather Data Environment (WxDE) features than nonregistered users. 
+				(See <a href="#id=why_register">&ldquo;Why should I register?&rdquo;</a> for more information.) Follow the steps below to register:</P>
+				<ol>
+					<li>Click on the Login – Registration menu option.</li>
+					<li>Enter a user name in the User Name text box. Note that the User Name must be unique. If another user
+					has already registered with the requested user name, you will receive a warning when you click the Save
+					button and will need to select a different user name.</li>
+					<li>Enter an email address in the Business Email text box. Only one user can be associated with each email
+					address. If you enter an email address that has already been associated with another user name, you will receive 
+					a warning when you click the Save button and will need to enter a different email address.</li>
+					<li>Enter a password in the Password text box and re-enter the same password in the Verify Password text box.
+					The password must be at least seven characters in length.</li>
+					<li>Enter your first and last name, the name of the organization with which you are associated, the type of
+					organization, and the country in which you live in the next five boxes.</li>
+					<li>Click the Save button to complete the registration.</li>
+				</ol>
+				<P>After you complete the registration process, an email will be sent to you that includes a link for verifying your
+				email address. When you receive this email, click on the link to verify your email address.</P>
+			]]></answer>
+			<visible>true</visible>
+		</faq>
+		<faq>
+			<id>how_reportproblem</id>
+			<question>
+				How do I report a problem?
+			</question>
+			<answer><![CDATA[
+				<P>You can report a problem with the Weather Data Environment (WxDE) via the following process:</P>
+				<ol>
+					<li>Select the Feedback menu option.</li>
+					<li>Click on the Bug Report button.</li>
+					<li>Enter your name and a business email address. (If you are a registered user who has logged in, this information
+					will be automatically populated from your account information.)</li>
+					<li>The section will be automatically populated with a reference to the WxDE page you were on when you selected
+					the Feedback menu option.</li>
+					<li>Select the type of problem you are reporting by selecting a Bug Report option and enter a description of
+					the problem in the Description text box.</li>
+					<li>Click on the Submit Feedback button to report the problem, or click on the Cancel button to cancel the
+					problem report.</li>
+				</ol>
+			]]></answer>
+			<visible>true</visible>
+		</faq>
+		<faq>
+			<id>how_suggestenhancement</id>
+			<question>
+				How do I suggest an enhancement?
+			</question>
+			<answer><![CDATA[
+				<P>The United States Department of Transportation (USDOT) and the Weather Data Environment (WxDE) development team are 
+				constantly trying to improve the WxDE so it can
+				better serve the transportation weather and connected vehicle user communities. In order to do that, it is important
+				for users to provide suggestions for enhancements that would help the WxDE better meet your needs. You can suggest WxDE
+				enhancements via the following process:</P>
+				<ol>
+					<li>Select the Feedback menu option.</li>
+					<li>Click on the New Feature button.</li>
+					<li>Enter your name and a business email address. (If you are a registered user who has logged in, this information
+					will automatically be populated from your account information.)</li>
+					<li>The Section will be automatically populated with a reference to the WxDE page you were on when you selected
+					the Feedback menu option.</li>
+					<li>Enter a description of the enhancement in the Description text box.</li>
+					<li>Click on the Submit Feedback button to submit your feedback for suggestions, or click on the Cancel button to 
+					cancel the feedback.</li>
+				</ol>
+			]]></answer>
+			<visible>true</visible>
+		</faq>
+		<faq>
+			<id>how_viewdatamap</id>
+			<question>
+				How do I view data in a map?
+			</question>
+			<answer><![CDATA[
+				<P>A user can view Weather Data Environment (WxDE) data via a map that shows the positions at which WxDE observations
+				are available and can view the observations by clicking on one of the dots or lines that represent those locations. To
+				access the WxDE observation map:</P>
+				<ol>
+					<li>Select the Data – Summary Map menu option.</li>
+					<li>Click on one of the regions in the Summary Map display to select a region of interest. (Note that the regions
+					are color coded to indicate the status of WxDE data for each region. A region is colored brown if the WxDE
+					receives data from the region and the data provider has authorized the WxDE to make the data available to WxDE
+					users. A region is colored purple if the WxDE receives data from the region, but the data provider has not 
+					authorized the WxDE to make the data available to WxDE users. A region is colored gray if the WxDE does not
+					receive data from the region.)</li>
+				</ol>
+				<P>After selecting a region, the WxDE data map is displayed, centered and zoomed to the selected region. The map
+				displays the background geography with the following layers of data:</P>
+				<ul>
+					<li>The locations of fixed stations are displayed as either pink dots (if data from the station are currently
+					available) or gray dots (if data from the station are not currently available or the contributor has not signed
+					a data-sharing agreement).</li>
+					<li>The points at which WxDE mobile data are available are displayed as blue dots.</li>
+					<li>The points at which VDT mobile data are available are displayed as brown dots.</li>
+					<li>The road segments are displayed as either purple lines (if data on the segment are currently available) or
+					gray lines (if data on the segment are not currently available).</li>
+				</ul>
+				<P>If you click on any one of the pink dots representing a fixed station or purple lines representing a road segment, 
+				the most recent data from that station or segment will be displayed.  The data in the display are sorted by observation
+				type and time.  For a WxDE or VDT mobile station, the corresponding dot on the map is displayed at the last location 
+				where data from the station have been collected.  If you hover your mouse on the associated mobile data dot, a yellow 
+				trail will show up if the WxDE has collected enough data from the station at different locations within the last hour.  
+				If you click on the mobile dot, the data obtained from the mobile station within the last hour will be displayed.  
+				If a yellow trail is displayed for the mobile data dot, each data row in the display is associated with a small black 
+				circle on the trail, thus you can hover your mouse on different rows, which are sorted by time, to view how the mobile 
+				station has traveled along the trail in the last hour.</P>
+				<P>You can select any of the following options to modify the data map display:</P>
+				<ul>
+					<li>Select a region in the “Re-center map on” drop-down box at the upper left to re-center and zoom in
+					to a different location on the map.</li>
+					<li>You can select the InfoWindow and Shade option to the right of the "Re-center map on" drop-down box to toggle
+					between displaying observations in either the info window or the sidebar, aka the Shade.</li>
+					<li>You can select an observation type in the drop-down box at the bottom left, and the most recent observation
+					of that observation type will be displayed for each fixed station and mobile data location.</li>
+					<li>You can select the Metric or English option to toggle between displaying observations in metric or English units.</li>
+					<li>You can click on the check boxes at the bottom of the map to indicate which types of data you want displayed.</li>
+				</ul>
+			]]></answer>
+			<visible>true</visible>
+		</faq>
+	</faqcategory>
+
+	<faqcategory id="terms" catname="Weather Data Environment Terminology">
+
+		<faq>
+			<id>whatis_dataquery</id>
+			<question>
+				What is a data query?
+			</question>
+			<answer><![CDATA[
+				<P>A data query is used to download data from the Weather Data Environment (WxDE). The data query definition consists of a
+				specification of the data that are desired and the format of the requested data. For example, a user could specify that he or she wants
+				air temperature data from <a href="#id=whatis_fixedstation">fixed stations</a> in Minnesota
+				for the period from December 1, 2012 through December 31, 2012 in XML format. The WxDE processes the data query definition
+				to produce the requested data and display the data for the user. The user also has the choice to download the data to his or her
+				local computer.</P>
+				<P>Currently, the WxDE supports two wizards for defining data queries: (1) a <a href="#id=how_contributorquery">
+				Contributor wizard</a> for selecting data based	on the contributor that provides it and (2) a <a href="#id=how_coordinatequery">
+				Coordinate wizard</a> for selecting data based on a geographic region.</P>
+				<P>A related topic is a <a href="#id=whatis_datasubscription">data subscription</a>, which
+				differs from a data query in that a data query is used once, typically to obtain historical data, and a data subscription
+				is run periodically to obtain the most recent data received by the WxDE.</P>
+			]]></answer>
+			<visible>true</visible>
+		</faq>
+		<faq>
+			<id>whatis_datasharingagreement</id>
+			<question>
+				What is a data-sharing agreement?
+			</question>
+			<answer><![CDATA[
+				<P>A data-sharing agreement is an agreement signed by an organization that contributes data to the Weather Data Environment
+				(WxDE) that describes the limitations, if any, on how the WxDE can share with others the data received from that organization.
+				The United States Department of Transportation (USDOT) developed a standard data-sharing agreement that allows free and open 
+				sharing of data, and most WxDE contributors have signed that standard agreement. Once the WxDE is provided with access to a 
+				contributor’s data and a data-sharing agreement is in place, the data from that contributor is made available to users through the WxDE site.</P>
+				<P>In some cases, the WxDE was provided access to data from a contributor before a data-sharing agreement was in place. In
+				those cases, WxDE users will be able to see that data are available from that user, but will not be able to access that data.</P>
+			]]></answer>
+			<visible>true</visible>
+		</faq>
+		<faq>
+			<id>whatis_datasubscription</id>
+			<question>
+				What is a data subscription?
+			</question>
+			<answer><![CDATA[
+				<P>A data subscription is used to obtain data periodically from the Weather Data Environment (WxDE). The data subscription
+				definition consists of a specification of the data desired, the format of the requested data, and the frequency with
+				which the data should be generated. For example, one could specify they want air temperature data from <a href="#id=whatis_fixedstation">
+				fixed stations</a> in Minnesota every 20 minutes in XML format. The WxDE would process this request every 20 minutes to generate
+				a file containing the air temperature data from Minnesota fixed stations obtained in the 20-minute period prior to the time
+				the request was processed and would generate an XML file containing these data. This file would be placed on the WxDE server and
+				available for download by the user.</P>
+				<P>Currently, the WxDE supports two wizards for defining data subscriptions: (1) a <a href="#id=how_createcontributorsubscription">
+				Contributor wizard</a> for selecting data based on the contributor that provides it and (2) a <a href="#id=how_createcoordinatesubscription">
+				Coordinate wizard</a> for selecting data based on a geographic region.</P>
+				<P>A related topic is a <a href="#id=whatis_dataquery">data query</a>, which differs from a data
+				subscription in that a data query is used once, typically to obtain historical data, and a data subscription is run 
+				periodically to obtain the most recent data received by the WxDE.</P>
+			]]></answer>
+			<visible>true</visible>
+		</faq>
+		<faq>
+			<id>whatis_feedback</id>
+			<question>
+				What is feedback?
+			</question>
+			<answer><![CDATA[
+				<P>Feedback is any information a Weather Data Environment (WxDE) user wants to provide to the WxDE development team. For example,
+				a user may want to recommend an enhancement to the WxDE or report a bug. For information on how to submit feedback, see the
+				<a href="#id=how_reportproblem">&ldquo;How do I report a problem?&rdquo;</a> and
+				<a href="#id=how_suggestenhancement">&ldquo;How do I suggest an enhancement?&rdquo;</a> topics.</P>
+			]]></answer>
+			<visible>true</visible>
+		</faq>
+		<faq>
+			<id>whatis_fixedstation</id>
+			<question>
+				What is a fixed station?
+			</question>
+			<answer><![CDATA[
+				<P>In the Weather Data Environment (WxDE), a fixed station refers to a collection of weather sensors located together at a fixed
+				location that collect weather observations and provide those observations to the WxDE. A fixed station can either be permanent
+				(meaning that it cannot be moved) or transportable (meaning that the weather sensors are attached to a trailer that can be moved, but
+				typically operates at a fixed location for extended periods of time between moves). In the literature, a WxDE fixed station is
+				sometimes referred to as an Environmental Sensor Station, or simply as a weather station.</P>
+				<P>Contrast a fixed station with a <a href="#id=whatis_mobilestation">mobile station</a>, which is a vehicle from
+				which weather observation data are collected.</P>
+			]]></answer>
+			<visible>true</visible>
+		</faq>
+		<faq>
+			<id>whatis_mobilestation</id>
+			<question>
+				What is a mobile station?
+			</question>
+			<answer><![CDATA[
+				<P>In the Weather Data Environment (WxDE), a mobile station refers to a vehicle equipped to collect weather observations and
+				transmit those observations to the WxDE. These observations may come from sensors typically built into the vehicle (e.g., air
+				temperature observations collected to adjust engine performance and available from the vehicle’s controller area network). 
+				Other observations may come from sensors placed on a vehicle specifically to measure weather conditions (e.g., air-temperature
+				sensors placed on de-icing trucks).</P>
+				<P>Contrast a mobile station with a <a href="#id=whatis_fixedstation">fixed station</a>, which is a weather station
+				that remains stationary.</P>
+			]]></answer>
+			<visible>true</visible>
+		</faq>
+		<faq>
+			<id>whatare_nonmobiledata</id>
+			<question>
+				What are nonmobile data?
+			</question>
+			<answer><![CDATA[
+				<P>Nonmobile data refer to weather observation data collected from a <a href="#id=whatis_fixedstation">
+				fixed station</a>. This term is used as a label for check boxes on the Weather Data Environment Data Map. If the associated
+				check box is checked, data from fixed stations are included in the map display; otherwise, data from fixed stations are
+				excluded from the display.</P>
+			]]></answer>
+			<visible>true</visible>
+		</faq>
+		<faq>
+			<id>whatare_mobiledata</id>
+			<question>
+				What are mobile data?
+			</question>
+			<answer><![CDATA[
+				<P>Mobile data refer to weather observation data collected from a <a href="#id=whatis_mobilestation">
+				mobile station</a>. In the Weather Data Environment (WxDE), there are currently two forms of mobile data: (1) 
+				<a href="#id=whatis_wxdemobiledata">WxDE mobile data</a> (data received by the WxDE directly from a contributor),
+				and (2) <a href="#id=whatare_vdtmobiledata">VDT mobile data</a> (data received by the WxDE after 
+				being first processed by the VDT).</P>
+			]]></answer>
+			<visible>true</visible>
+		</faq>
+		<faq>
+			<id>whatis_qualitymetrics</id>
+			<question>
+				What are quality control metrics?
+			</question>
+			<answer><![CDATA[
+				<P>Quality control metrics in the Weather Data Environment (WxDE) are values computed with each observation that give an indication
+				of the quality of that observation. For example, the quality metrics for an observation that is significantly different from
+				historical norms for the observation area or significantly different from nearby observations would indicate that the 
+				observation was questionable. See the topics on <a href="#id=whatis_wxdequalitymetrics">Weather Data Environment quality control metrics</a> and
+				<a href="#id=whatare_vdtqualitymetrics">Vehicle Data Translator quality control metrics</a> for more information.</P>
+			]]></answer>
+			<visible>true</visible>
+		</faq>
+		<faq>
+			<id>whatare_roadsegmentdata</id>
+			<question>
+				What are road segment data?
+			</question>
+			<answer><![CDATA[
+				<P>Road segment data refers to weather observation data that apply to a specific road segment. For example, the 
+				<a href="#id=whatis_vehicledatatranslator">Vehicle Data Translator (VDT)</a> produces statistical summaries
+				of weather observations and assessments that summarize weather-related road conditions along road segments. This term is used as a
+				label for check boxes on the Weather Data Environment Data Map. If the associated check box is checked, road segment data produced
+				by the VDT are included in the map display; otherwise, these data are excluded from the display.</P>
+			]]></answer>
+			<visible>true</visible>
+		</faq>
+		<faq>
+			<id>whatare_vdtmobiledata</id>
+			<question>
+				What are Vehicle Data Translator (VDT) mobile data?
+			</question>
+			<answer><![CDATA[
+				<P>Vehicle Data Translator (VDT) mobile data refers to weather observation data originally collected from a <a href="#id=whatis_mobilestation">
+				mobile station</a> and that are pre-processed by the <a href="#id=whatis_vehicledatatranslator">Vehicle
+				Data Translator (VDT)</a> before being integrated into the Weather Data Environment. Because it is pre-processed by the VDT, each VDT
+				mobile data weather observation has VDT quality check values associated with it.
+				This term is specifically used as a label for check boxes on the Weather Data Environment Data Map. If the associated check box is
+				checked, mobile data from the VDT are included in the map display; otherwise, these data are excluded from the display.</P>
+			]]></answer>
+			<visible>true</visible>
+		</faq>
+		<faq>
+			<id>whatare_vdtqualitymetrics</id>
+			<question>
+				What are Vehicle Data Translator (VDT) quality control metrics?
+			</question>
+			<answer><![CDATA[
+				<P>The <a href="#id=whatis_vehicledatatranslator">Vehicle Data Translator (VDT)</a> is a system that runs
+				as part of the Weather Data Environment (WxDE) and produces estimated weather observation values. The VDT 
+				computes the following quality metrics for mobile observations:</P>
+				<ul>
+					<li>Sensor Range Test. The sensor range test detects readings that fall outside the range of sensor hardware specifications or 
+					theoretical limits (i.e., a maximum and minimum value). If the observation value is greater than or equal to the minimum, and less 
+					than or equal to the maximum, the sensor reading passes this quality check. </li>
+					<li>Spatial Test – Barnes and Interquartile Range (IQR).  Quality checks for air and pavement temperature and pressure leverage work performed for 
+					the WxDE specifically for spatial quality checks.  The Pressure Spatial Test (PST) will compare the observations (adjusted to 
+					sea level) with the closest surface stations (adjusted to sea level) in space and time. The nearest stations are currently defined 
+					as being within a 69-mile radius and 5-minute observation time from the data point.  Where there are more than 5 observations within 
+					a 69-mile radius and 5-minute observation time, the IQR is used as a more robust method for spatial quality
+					check. In the instance where there are fewer observations than required for an IQR, the Barnes Spatial quality check will be used. </li>
+					<li>Model Analysis Test. The Model Analysis Test compares the temperature and pressure observations from the vehicles to those of 
+					a numerical weather model analysis field for the closest grid point. </li>
+					<li>Neighboring Vehicle Test. The Neighboring Vehicle Test compares the given vehicle observation to neighboring vehicles in the 
+					road segment. Specifically, the standard deviation and the mean of the observations along a 1-mile road segment during a 5-minute 
+					snapshot are taken, and then each observation is checked to be sure it falls within a standard deviation, multiplied by a constant, 
+					of the mean of the road segment. </li>
+					<li>Climate Range Test. The climate range test detects sensor readings that fall outside predetermined climate range values. The 
+					climate range data were drawn from 30 years of National Centers for Environmental Prediction - Department of Energy (NCEP-DOE) 
+					Reanalysis 2 data.  Bounds for the climate range test were determined by computing monthly minimum and maximum values over a 
+					two-and-a-half degree by two-and-a-half degree fixed latitude-longitude grid. </li>
+					<li>Persistence Test. The persistence test detects whether sensor readings remain constant for a predefined variable-specific period 
+					of time. Each time this test is invoked, it is given a single sensor reading, which then determines the persistence time period. 
+					Consecutive sensor readings from the same sensor over that period of time preceding the current observation are then obtained. 
+					If one or more of the consecutive sensor values are different, the current sensor reading passes the persistence quality check. 
+					If all consecutive sensor values over the given time period are equivalent, the current sensor does not pass the persistence 
+					quality check. </li>
+					<li>Data Filtering Test. In special conditions, such as tunnels, data may be misleading (e.g., headlights and wiper status may 
+					differ in a tunnel). At present, it is used to monitor latitude and longitude values. </li>
+					<li>Combined Algorithm Test. The Combined Algorithm Test is designed to take the results of all the previous quality check tests 
+					and combine them in order to assign a confidence to the observation that is being quality checked. It does not equate directly 
+					to pass/fail as do the other tests. </li>
+				</ul>
+				<P>See the description of <a href="#id=whatis_wxdequalitymetrics">Weather Data Environment quality
+				control metrics</a> for information on other quality metrics computed by the Weather Data Environment.</P>
+			]]></answer>
+			<visible>true</visible>
+		</faq>
+		<faq>
+			<id>whatis_vehicledatatranslator</id>
+			<question>
+				What is the Vehicle Data Translator (VDT)?
+			</question>
+			<answer><![CDATA[
+				<P>The Vehicle Data Translator (VDT) is a software system developed by the National Center of Atmospheric Research (NCAR) to develop and
+				improve the role of connected vehicles in road weather information. The VDT collects <a href="#id=whatare_mobiledata">
+				mobile data</a>, such as the kind of data that might be collected from connected vehicles, and combines them with other types of weather data (e.g., observations from
+				<a href="#id=whatis_fixedstation">fixed stations</a>, observations from Doppler radar stations, estimates from
+				weather analysis models) and uses the combination of these data to estimate the following types of weather data:</P>
+				<ul>
+					<li><a href="#id=whatare_vdtmobiledata">VDT mobile data</a>, which is data from 
+					<a href="#id=whatis_mobilestation">mobile stations</a> to which VDT quality tests are applied in order
+					to associate VDT quality check values with each mobile observation.</li>
+					<li>Road segment statistics, which are statistical measures of weather variables along a road segment, such as the minimum, average,
+					and maximum air temperature along a road segment.</li>
+					<li>Road segment assessments, which are summaries of weather-related road conditions along a road segment.</li>
+					<li>Grid statistics, which are statistical measures of weather variables for geographic regions, such as the minimum, average, and
+					 maximum air temperature inside a specific rectangular area.</li>
+				</ul>
+				<P>VDT version 3 has been integrated with the Weather Data Environment (WxDE). This integrated VDT obtains fixed and mobile data from
+				the WxDE, and the VDT mobile data, road segment statistics, and road segment assessment data produced by this version of the VDT are processed
+				by the WxDE and integrated into the WxDE database and data displays.</P>
+			]]></answer>
+			<visible>true</visible>
+		</faq>
+		<faq>
+			<id>whatis_wxdemetadata</id>
+			<question>
+				What is Weather Data Environment metadata?
+			</question>
+			<answer><![CDATA[
+				<P>Weather Data Environment (WxDE) metadata is a collection of background information about the weather observations contained within the WxDE.
+				For example, the metadata related to each weather observation provides information about (a) the type of observation (e.g., air temperature);
+				(b) the sensor used to collect or generate that data; (c) the station on which the sensor is located or associated; and (d) the organization
+				responsible for that station.</P>
+				<P>See <a href="#id=wxdedata_organized">&ldquo;How are Weather Data Environment (WxDE) weather observation
+				data organized?&rdquo;</a> for a description of how data are organized within the WxDE and the types of metadata available that describes that
+				organization.
+			]]></answer>
+			<visible>true</visible>
+		</faq>
+		<faq>
+			<id>whatis_wxdequalitymetrics</id>
+			<question>
+				What are Weather Data Environment quality control metrics?
+			</question>
+			<answer><![CDATA[
+				<P>One of the features of the Weather Data Environment (WxDE) is that it calculates quality control metrics for each weather observation
+				collected by the WxDE. These quality control metrics are intended to indicate the expected quality and reliability of the weather observation
+				by testing for specific types of failures that could indicate the observation is flawed. The WxDE quality checks are:</P>
+				<ul>
+					<li>Persistence Test. This test verifies that the time-series of observations from a single sensor are not constant, which would
+					indicate that the sensor has failed and is repeatedly reporting the same value.</li>
+					<li>Sensor Range Test. This test verifies that an observations is within the range for which the sensor used to generate the
+					observation can provide accurate data. It is only applied when information about the valid range of observations from a
+					sensor is known.</li>
+					<li>Step Test. This test verifies that the change between an observation and previous observations from the same sensor is less
+					than the maximum rate of change allowed for the sensor that produced the observations.</li>
+					<li>Climate Range Test. This test verifies that an observation is within a range of values expected for the location at which the
+					observation was made at the time of year when the observation was made.</li>
+					<li>Like Instrument Test. This test verifies that observations from similar sensors on the same station are close to each other.</li>
+					<li>Barnes Spatial Test. This test verifies that observations from similar sensors in the same geographic area are close to each other.</li>
+					<li>IQR Spatial Test. This test is an alternative to the Barnes Spatial Test that verifies that observations from similar sensors
+					in the same geographic area are close to each other.</li>
+					<li>The Dew Point Test. This test is an application of the Barnes Spatial Test to dewpoint temperature values that are computed from
+					air temperature and relative humidity values.</li>
+					<li>Sea Level Pressure Test. This test is an application of the Barnes Spatial Test to sea level pressure estimates computed by
+					correcting barometric pressure measurements for elevation.</li>
+					<li>Precipitation Accumulation Test. This test verifies that the precipitation accumulation values in the same geographic area
+					are close to each other.</li>
+					<li>Complete Test. This test indicates whether the WxDE quality check calculations completed.</li>
+				</ul>
+
+				<P>The WxDE also includes quality metrics computed by the Vehicle Data Translator. See the topic 
+				<a href="#id=whatare_vdtqualitymetrics">&ldquo;What are Vehicle Data Translator (VDT) quality control metrics?&rdquo;</a>
+				for more information.</P>
+			]]></answer>
+			<visible>true</visible>
+		</faq>
+		<faq>
+			<id>whatis_wxdemobiledata</id>
+			<question>
+				What is WxDE mobile data?
+			</question>
+			<answer><![CDATA[
+				<P>Weather Data Environment (WxDE) mobile data refers to weather observation data that is collected by the WxDE without preprocessing by
+				the Vehicle Data Translator (VDT). (See the description of <a href="#id=whatare_vdtmobiledata">Vehicle Data Translator (VDT) mobile data</a>
+				for the other type of mobile data included in the WxDE.) As these data are processed by the WxDE, quality tests are applied and quality check
+				values are associated with each observation. This term is specifically used as a label for checkboxes on the Weather Data Environment Data Map.
+				If the associated check box is checked, WxDE mobile data are included in the map display; otherwise, these data are excluded from the display.</P>
+			]]></answer>
+			<visible>true</visible>
+		</faq>
+	</faqcategory>
+
+
+</faqs>

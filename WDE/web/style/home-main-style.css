@@ -1,0 +1,317 @@
+input[type="text"]:focus, input[type="email"]:focus, input[type="password"]:focus {
+	-webkit-box-shadow: 0 0 5px rgba(255, 127, 0, 1);
+	-moz-box-shadow: 0 0 5px rgba(255, 127, 0, 1);
+	background: lemonchiffon;
+}
+
+#header {
+	background-image: url("../image/WeatherPics/sky_banner.jpg");
+	background-position: top;
+	height: 227px;
+	width: 962px;
+}
+
+#headerText {
+	font-size: xx-large;
+	font-weight: bold;
+	color: white;
+	padding-top: 170px;
+	padding-left: 30px;
+}
+
+#area {
+	width: 965px;
+	margin: 0px;
+	float: left;
+}
+
+#search {
+	width: 265px;
+	height: 1000px;
+	border-right: 1px solid silver;
+	float: left;
+}
+
+.whitetext {
+	color: white;
+}
+
+.blue {
+	background-color: #4f6b83;
+}
+
+.ui-tooltip,.arrow:after {
+	background: black;
+	border: 2px solid white;
+}
+
+.ui-tooltip {
+	padding: 10px 20px;
+	color: white;
+	border-radius: 20px;
+	font: bold 14px "Helvetica Neue", Sans-Serif;
+	text-transform: uppercase;
+	box-shadow: 0 0 7px black;
+}
+
+.arrow {
+	width: 70px;
+	height: 16px;
+	overflow: hidden;
+	position: absolute;
+	left: 50%;
+	margin-left: -35px;
+	bottom: -16px;
+}
+
+.arrow.top {
+	top: -16px;
+	bottom: auto;
+}
+
+.arrow.left {
+	left: 20%;
+}
+
+.arrow:after {
+	content: "";
+	position: absolute;
+	left: 20px;
+	top: -20px;
+	width: 25px;
+	height: 25px;
+	box-shadow: 6px 5px 9px -9px black;
+	-webkit-transform: rotate(45deg);
+	-moz-transform: rotate(45deg);
+	-ms-transform: rotate(45deg);
+	-o-transform: rotate(45deg);
+	tranform: rotate(45deg);
+}
+
+.arrow.top:after {
+	bottom: -20px;
+	top: auto;
+}
+#tabs {
+	width:400px;
+	height:150px;
+	margin-left: auto;
+	margin-right: auto;
+}
+#cntEquipment{
+	width:150px;
+	margin-left: auto;
+	margin-right: auto;
+}
+#body {
+	width: 700px;
+	height: 1000px;
+	float: left;
+}
+#metadata {
+	font-size: 14px;
+}
+#footer {
+	padding: 0.5em;
+	color: white;
+	background-color: gray;
+	clear: left;
+}
+
+/****************************/
+/*     Main Body Style      */
+/****************************/
+div{
+    border-radius:5px;
+}
+h2{
+    margin-bottom:0;
+    margin-left: 10px;
+}
+.main-container{
+    position: relative;
+    height: auto;
+    margin: 0 auto;
+    margin-bottom: -5px;
+    width: 1000px;
+    padding: 8px 0px;
+    color: #000;
+    background-color: none;
+    font-size: 14px;
+    font-family: 'Metrophobic', sans-serif;
+}
+.main-container a{
+    color: #069;
+    text-decoration: none;
+}
+.main-container a:hover{
+    text-decoration: underline;
+}
+
+.welcome-div{
+    color: #444;
+    text-shadow: 0px 1px 0px #FFF;
+    background-color: #fcfcfc;
+    background-image: linear-gradient(#f0f0f0,#efefef);
+    background-image: -o-linear-gradient(#f0f0f0,#efefef);
+    background-image: -moz-linear-gradient(#f0f0f0,#efefef);
+    background-image: -webkit-linear-gradient(#f0f0f0,#efefef);
+}
+.latest-news-div{
+    color: #fff;
+    text-shadow: 0px 1px 0px #036;
+    background-color: #48647a;
+    background-image: linear-gradient(#6f8ba1,#48647a);
+    background-image: -o-linear-gradient(#6f8ba1,#48647a);
+    background-image: -moz-linear-gradient(#6f8ba1,#48647a);
+    background-image: -webkit-linear-gradient(#6f8ba1,#48647a);
+    padding-bottom: 0px;
+}
+.news-slide-selectors{
+    float: left;
+    margin-top: 0;
+    font-size: 1.8em;
+}
+.news-slide-selectors a{
+    margin-right: 5px;
+    color: #fff;
+    opacity: .8;
+}
+.news-slide-selectors a:hover{
+    text-decoration: none;
+    opacity: 1;
+}
+.read-more{
+    float: right;
+    margin-top: 0;
+    font-family: 'Metrophobic', sans-serif;
+}
+a.button-white{
+    display: block;
+    padding: 5px;
+    margin-top: 5px;
+    font-size: .8em;
+    color: none;
+    opacity: .8;
+    background-color: #FFF;
+    border-radius: 2px;
+    text-shadow: none;
+}
+a.button-white:hover{
+    text-decoration: none;
+    opacity: 1;
+}
+a.register-button{
+    display: block;
+    width: 384px;
+    margin-left: 5px;
+    padding: 14px 0px 20px 0px;
+    color: #f90;
+    font-size: 2em;
+    text-align: center;
+    border: solid 3px #fa0;
+}
+a.register-button:hover{
+    text-decoration: none;
+    color: #FFF;
+    background-color: #fa0;
+    background-image: linear-gradient(#fc3,#fa0);
+    background-image: -o-linear-gradient(#fc3,#fa0);
+    background-image: -moz-linear-gradient(#fc3,#fa0);
+    background-image: -webkit-linear-gradient(#fc3,#fa0);
+    padding: 14px 0px 20px 0px;
+    border: none;
+    width: 390px;
+}
+.quick-links-header{
+    color: #FFF;
+    background-color: #555;
+    border-radius: 5px 5px 0px 0px;
+}
+.quick-links-links{
+    background-color: #ccc;
+}
+a.quick-links-link{
+    display: block;
+    width: 390px;
+    padding: 10px 0px;
+    margin-left: 5px;
+    color: #333;
+    font-size: 1.2em;
+    text-align: center;
+    background-color: #ccc;
+    background-image: linear-gradient(#eee,#ccc);
+    background-image: -o-linear-gradient(#eee,#ccc);
+    background-image: -moz-linear-gradient(#eee,#ccc);
+    background-image: -webkit-linear-gradient(#eee,#ccc);
+}
+a.quick-links-link:hover{
+    text-decoration: none;
+    color: #fff;
+    background-color: #555;
+    background-image: linear-gradient(#888,#555);
+    background-image: -o-linear-gradient(#888,#555);
+    background-image: -moz-linear-gradient(#888,#555);
+    background-image: -webkit-linear-gradient(#888,#555);
+}
+.col-2{
+    float: left;
+    max-width: 250px;
+    min-width: 250px;
+    height: auto;
+}
+.col-4{
+    float: left;
+    max-width: 399px;
+    min-width: 399px;
+    height :auto;
+}
+.col-5{
+    float: left;
+    max-width: 499px;
+    min-width: 499px;
+    height: auto;
+}
+.col-6{
+    float: left;
+    max-width: 600px;
+    height: auto;
+} 
+.col-7{
+    float: left;
+    max-width: 700px;
+    height: auto;
+}
+.col-10{
+    float: left;
+    max-width: 100%;
+    height: auto;
+}
+.col-2 div, .col-4 div, .col-5 div, .col-6 div, .col-7 div, .col-10 div{
+    margin: 5px;
+    padding: 10px;
+}
+
+.col-10 > p {
+	margin-top: 0px;
+	margin-left: 10px;
+}
+
+.wxde-slider{
+    padding: 0px;
+    border: none;
+}
+.wxde-slider *{
+    margin: 0;
+    padding: 0;
+}
+h1.wxde-typography{
+	font-size:1.65em;
+}
+	
+/* limiting the width of news fader news title*/
+
+b.news-title {
+	display: inline-block;
+	max-width: 60%;
+}

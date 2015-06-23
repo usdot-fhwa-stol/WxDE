@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="wde.FeedbackMapper">
+
+	<resultMap id="FeedbackResultMapper" type="Feedback">
+		<id property="feedbackId" jdbcType="INTEGER"  column="id" />
+		<result property="userName" column="user_name" />
+		<result property="name" column="name" />
+		<result property="email" column="email" />
+		<result property="section" column="section" />
+		<result property="description" column="description" />
+		<result property="dateCreated" column="date_created" />
+		<result property="tsCreated" column="timestamp_created"/>
+		<association property="feedbackType" column="tid" javaType="FeedbackType" resultMap="FeedbackTypeMapper">
+		</association>
+	</resultMap>
+	
+	<resultMap id="FeedbackTypeMapper" type="FeedbackType">
+		<id property="id" jdbcType="INTEGER" column="tid"/>
+		<result property="name" column="tname"/>
+	</resultMap>
+	
+	<insert id="insertNewFeedback" parameterType="Feedback">
+		INSERT INTO auth.feedback(
+	            name, email, section, description, feedback_type_id, user_name, date_created, timestamp_created)
+	    VALUES (#{name}, #{email}, #{section}, #{description}, #{feedbackType.id}, #{userName}, #{dateCreated}, #{tsCreated});
+	</insert>
+
+	<select id="selectFeedbacks" resultMap="FeedbackResultMapper">
+		select f.id, f.name, f.email, f.section, f.description, t.id as "tid", t.name as "tname", f.user_name, f.date_created, f.timestamp_created
+		from auth.feedback f 
+		inner join auth.feedback_type t 
+		on f.feedback_type_id=t.id
+		order by f.timestamp_created
+	</select>	
+</mapper>
