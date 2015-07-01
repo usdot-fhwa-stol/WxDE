@@ -32,6 +32,7 @@ Modification History:
 	<property name="cs_deployment_dir" location="deploy/wde_cs"/>
 	<property name="qchs_deployment_dir" location="deploy/wde_qchs"/>
 	<property name="warfile" value="ROOT"/>
+    <property name="deploy" location="deploy"/>
 
 	<property name="app-type" value="web"/>
 	<property name="build-type" value="archive"/>
@@ -68,6 +69,7 @@ Modification History:
 		<!-- Delete the ${build} and ${assembly} directory trees -->
 		<delete dir="${build}"/>
 		<delete dir="${assembly}"/>
+        <delete dir="${deploy}"/>
 	</target>
 
 	<target name="assemble" depends="clean,compile">
@@ -172,12 +174,13 @@ Modification History:
 	
 	<target name="deploy-to-war" >
 		<war destfile="${warfile}.war" webxml="${webapp_deployment_dir}/WEB-INF/web.xml" update="true">
-		<fileset dir="${webapp_deployment_dir}">
-			<exclude name="**/lib/*.jar"/>
-			<exclude name="WEB-INF/web.xml"/>
-			<exclude name="**/auth2/metadata/"/>
-			<exclude name="**/admin/reports/"/>
-		</fileset>
+			<fileset dir="${webapp_deployment_dir}">
+                <!--<include name="**/lib/commons-*.jar"/>-->
+				<exclude name="**/lib/*.jar"/>
+				<exclude name="WEB-INF/web.xml"/>
+				<exclude name="**/auth2/metadata/"/>
+				<exclude name="**/admin/reports/"/>
+			</fileset>
 		</war>
 	</target>
 	

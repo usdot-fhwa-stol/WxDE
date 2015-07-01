@@ -87,10 +87,12 @@
 				resourceName="UserDatabase"/>
 				-->
 
-			<Realm className="org.apache.catalina.realm.JDBCRealm" driverName="org.postgresql.Driver" 
-				connectionURL="jdbc:postgresql://localhost:5432/wxde?user=wxde&amp;password=d0t_dev$" 
-				userTable="auth.user_table" userNameCol="user_name" userCredCol="user_password" 
-				userRoleTable="auth.user_role" roleNameCol="user_role" digest="SHA-256" />
+			<Realm className="org.apache.catalina.realm.LockOutRealm">
+				<Realm className="org.apache.catalina.realm.JDBCRealm" driverName="org.postgresql.Driver"
+					connectionURL="jdbc:postgresql://localhost:5432/wxde?user=wxde&amp;password=d0t_dev$"
+					userTable="auth.user_table" userNameCol="user_name" userCredCol="user_password"
+					userRoleTable="auth.user_role" roleNameCol="user_role" digest="SHA-256" />
+			</Realm>
 
 			<Host appBase="webapps" autoDeploy="true" name="localhost"
 				unpackWARs="true">

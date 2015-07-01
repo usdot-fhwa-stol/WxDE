@@ -237,8 +237,13 @@ public class Subscription {
         if (sList != null && sList.length() > 0) {
             String[] sIds = sList.split(",");
             int nIndex = sIds.length;
-            while (nIndex-- > 0)
-                oList.add(new Integer(Integer.parseInt(sIds[nIndex])));
+            while (nIndex-- > 0) {
+                try {
+                    oList.add(new Integer(Integer.parseInt(sIds[nIndex])));
+                } catch (Exception ex) {
+                    logger.error(ex);
+                }
+            }
 
             Collections.sort(oList);
         }
@@ -302,6 +307,7 @@ public class Subscription {
      */
     public void setStations(String sStationList) {
         logger.debug("setStations(" + sStationList + ")");
+
         m_oPlatformIds.clear();
         stringsToArray(sStationList, m_oPlatformIds);
     }
