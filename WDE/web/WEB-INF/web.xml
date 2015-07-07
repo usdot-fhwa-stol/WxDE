@@ -1,157 +1,149 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<web-app version="2.5" xmlns="http://java.sun.com/xml/ns/javaee" 
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
-	xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd">
+<web-app version="2.5" xmlns="http://java.sun.com/xml/ns/javaee"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd">
 
 
-	<display-name>WXDE</display-name>
-	<welcome-file-list>
-		<welcome-file>index.html</welcome-file>
-		<welcome-file>index.htm</welcome-file>
-		<welcome-file>index.jsp</welcome-file>
-		<welcome-file>default.html</welcome-file>
-		<welcome-file>default.htm</welcome-file>
-		<welcome-file>default.jsp</welcome-file>
-	</welcome-file-list>
-<!-- 
-<servlet>
-    <servlet-name>tiles</servlet-name>
-    <servlet-class>org.apache.tiles.web.startup.TilesServlet</servlet-class>
-    <init-param>
-        <param-name>
-          org.apache.tiles.impl.BasicTilesContainer.DEFINITIONS_CONFIG
-        </param-name>
-        <param-value>
-          /WEB-INF/myTilesConfigFile.xml,/org/apache/tiles/classpath-defs.xml
-        </param-value>
-    </init-param>
-    <load-on-startup>2</load-on-startup>
-</servlet>
-
-
-<listener>
-	<listener-class>org.apache.tiles.web.startup.TilesListener</listener-class>
-</listener>
-<context-param>
-	<param-name>
-		org.apache.tiles.impl.BasicTilesContainer.DEFINITIONS_CONFIG
-	</param-name>
-	<param-value>
-		/WEB-INF/tiles-defs.xml,/org/apache/tiles/classpath-defs.xml
-	</param-value>
-</context-param>
- -->
+    <display-name>WXDE</display-name>
+    <welcome-file-list>
+        <welcome-file>index.html</welcome-file>
+        <welcome-file>index.htm</welcome-file>
+        <welcome-file>index.jsp</welcome-file>
+        <welcome-file>default.html</welcome-file>
+        <welcome-file>default.htm</welcome-file>
+        <welcome-file>default.jsp</welcome-file>
+    </welcome-file-list>
 
     <servlet>
-		<servlet-name>CsHttp</servlet-name>
-		<servlet-class>wde.cs.CsHttp</servlet-class>
-		<init-param>
-			<description>millisecond startup delay</description>
-			<param-name>delay</param-name>
-			<param-value>0</param-value>
-		</init-param>
-		<load-on-startup>1</load-on-startup>
-	</servlet>
+        <servlet-name>Kaptcha</servlet-name>
+        <servlet-class>com.google.code.kaptcha.servlet.KaptchaServlet</servlet-class>
+    </servlet>
 
-	<servlet-mapping>
-		<servlet-name>CsHttp</servlet-name>
-		<url-pattern>/CsHttp</url-pattern>
-	</servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>Kaptcha</servlet-name>
+        <url-pattern>/kaptcha.jpg</url-pattern>
+    </servlet-mapping>
 
-	<servlet>
-		<servlet-name>csvc</servlet-name>
-		<servlet-class>wde.cs.HttpPush</servlet-class>
+    <filter>
+        <filter-name>KaptchaLoginFilter</filter-name>
+        <filter-class>wde.security.KaptchaLoginFilter</filter-class>
+    </filter>
 
-		<init-param>
-			<description>REQUIRED: destination directory for uploaded files</description>
-			<param-name>dest-dir</param-name>
-			<param-value>/opt/collectors/DE/data/</param-value>
-		</init-param>
+    <filter-mapping>
+        <filter-name>KaptchaLoginFilter</filter-name>
+        <url-pattern>/j_security_check</url-pattern>
+    </filter-mapping>
 
-		<init-param>
-			<description>REQUIRED: semicolon separated network address filters</description>
-			<param-name>addresses</param-name>
-			<param-value>167.21.</param-value>
-		</init-param>
-
-		<init-param>
-			<description>REQUIRED: semicolon separated filename filters</description>
-			<param-name>files</param-name>
-			<param-value>atmospheric.txt;subsurface.txt;surface.txt</param-value>
-		</init-param>
-
-		<init-param>
-			<description>OPTIONAL: minimum milliseconds between upload attempts, 5 minute default</description>
-			<param-name>min-interval</param-name>
-			<param-value>300000</param-value>
-		</init-param>
-
-		<init-param>
-			<description>OPTIONAL: maximum bytes allowed for each file, 4KB default</description>
-			<param-name>max-filesize</param-name>
-			<param-value>4096</param-value>
-		</init-param>
-
+    <servlet>
+        <servlet-name>CsHttp</servlet-name>
+        <servlet-class>wde.cs.CsHttp</servlet-class>
+        <init-param>
+            <description>millisecond startup delay</description>
+            <param-name>delay</param-name>
+            <param-value>0</param-value>
+        </init-param>
         <load-on-startup>1</load-on-startup>
-	</servlet>
+    </servlet>
 
-	<servlet-mapping>
-		<servlet-name>csvc</servlet-name>
-		<url-pattern>/csvc</url-pattern>
-	</servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>CsHttp</servlet-name>
+        <url-pattern>/CsHttp</url-pattern>
+    </servlet-mapping>
 
-	<servlet>
-		<servlet-name>QedsMgr</servlet-name>
-		<servlet-class>wde.qeds.QedsMgr</servlet-class>
-		<load-on-startup>1</load-on-startup>
-	</servlet>
-
-	<servlet-mapping>
-		<servlet-name>QedsMgr</servlet-name>
-		<url-pattern>/QedsMgr</url-pattern>
-	</servlet-mapping>
-
-	<servlet>
-		<servlet-name>ListObsTypes</servlet-name>
-		<servlet-class>wde.qeds.ListObsTypes</servlet-class>
-		<load-on-startup>1</load-on-startup>
-	</servlet>
-
-	<servlet-mapping>
-		<servlet-name>ListObsTypes</servlet-name>
-		<url-pattern>/ListObsTypes</url-pattern>
-	</servlet-mapping>
-
-	<servlet>
-		<servlet-name>GetPlatformsForRegion</servlet-name>
-		<servlet-class>wde.qeds.GetPlatformsForRegion</servlet-class>
+    <servlet>
+        <servlet-name>csvc</servlet-name>
+        <servlet-class>wde.cs.HttpPush</servlet-class>
 
         <init-param>
-			<description>
-      			OPTIONAL: Turns debug mode on and off, debug mode outputs all stations regardless of distribution group
-      		</description>
-			<param-name>debug</param-name>
-			<param-value>true</param-value>
-		</init-param>
+            <description>REQUIRED: destination directory for uploaded files</description>
+            <param-name>dest-dir</param-name>
+            <param-value>/opt/collectors/DE/data/</param-value>
+        </init-param>
+
+        <init-param>
+            <description>REQUIRED: semicolon separated network address filters</description>
+            <param-name>addresses</param-name>
+            <param-value>167.21.</param-value>
+        </init-param>
+
+        <init-param>
+            <description>REQUIRED: semicolon separated filename filters</description>
+            <param-name>files</param-name>
+            <param-value>atmospheric.txt;subsurface.txt;surface.txt</param-value>
+        </init-param>
+
+        <init-param>
+            <description>OPTIONAL: minimum milliseconds between upload attempts, 5 minute default</description>
+            <param-name>min-interval</param-name>
+            <param-value>300000</param-value>
+        </init-param>
+
+        <init-param>
+            <description>OPTIONAL: maximum bytes allowed for each file, 4KB default</description>
+            <param-name>max-filesize</param-name>
+            <param-value>4096</param-value>
+        </init-param>
 
         <load-on-startup>1</load-on-startup>
-	</servlet>
+    </servlet>
 
-	<servlet-mapping>
-		<servlet-name>GetPlatformsForRegion</servlet-name>
-		<url-pattern>/GetPlatformsForRegion</url-pattern>
-	</servlet-mapping>
-	
-	<servlet>
-		<servlet-name>ApplicationInterfaceServlet</servlet-name>
-		<servlet-class>wde.qeds.ApplicationInterfaceServlet</servlet-class>
-		<load-on-startup>1</load-on-startup>
-	</servlet>
-		
-	<servlet-mapping>
-		<servlet-name>ApplicationInterfaceServlet</servlet-name>
-		<url-pattern>/downloadSubscription</url-pattern>
-	</servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>csvc</servlet-name>
+        <url-pattern>/csvc</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>QedsMgr</servlet-name>
+        <servlet-class>wde.qeds.QedsMgr</servlet-class>
+        <load-on-startup>1</load-on-startup>
+    </servlet>
+
+    <servlet-mapping>
+        <servlet-name>QedsMgr</servlet-name>
+        <url-pattern>/QedsMgr</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>ListObsTypes</servlet-name>
+        <servlet-class>wde.qeds.ListObsTypes</servlet-class>
+        <load-on-startup>1</load-on-startup>
+    </servlet>
+
+    <servlet-mapping>
+        <servlet-name>ListObsTypes</servlet-name>
+        <url-pattern>/ListObsTypes</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>GetPlatformsForRegion</servlet-name>
+        <servlet-class>wde.qeds.GetPlatformsForRegion</servlet-class>
+
+        <init-param>
+            <description>
+                OPTIONAL: Turns debug mode on and off, debug mode outputs all stations regardless of distribution group
+            </description>
+            <param-name>debug</param-name>
+            <param-value>true</param-value>
+        </init-param>
+
+        <load-on-startup>1</load-on-startup>
+    </servlet>
+
+    <servlet-mapping>
+        <servlet-name>GetPlatformsForRegion</servlet-name>
+        <url-pattern>/GetPlatformsForRegion</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>ApplicationInterfaceServlet</servlet-name>
+        <servlet-class>wde.qeds.ApplicationInterfaceServlet</servlet-class>
+        <load-on-startup>1</load-on-startup>
+    </servlet>
+
+    <servlet-mapping>
+        <servlet-name>ApplicationInterfaceServlet</servlet-name>
+        <url-pattern>/downloadSubscription</url-pattern>
+    </servlet-mapping>
 
     <servlet>
         <servlet-name>ServletAdaptor</servlet-name>
@@ -159,106 +151,88 @@
         <load-on-startup>1</load-on-startup>
     </servlet>
 
-	<servlet-mapping>
+    <servlet-mapping>
         <servlet-name>ServletAdaptor</servlet-name>
         <url-pattern>/resources/*</url-pattern>
     </servlet-mapping>
 
     <resource-ref>
-		<description>wxde</description>
-		<res-ref-name>jdbc/wxde</res-ref-name>
-		<res-type>javax.sql.DataSource</res-type>
-		<res-auth>Container</res-auth>
-	</resource-ref>
-	
-	<security-role>
-		<role-name>wde_admin</role-name>
-	</security-role>
+        <description>wxde</description>
+        <res-ref-name>jdbc/wxde</res-ref-name>
+        <res-type>javax.sql.DataSource</res-type>
+        <res-auth>Container</res-auth>
+    </resource-ref>
 
-	<security-constraint>
-		<web-resource-collection>
-			<web-resource-name>wxde</web-resource-name>
-			<url-pattern>/admin/*</url-pattern>
-			<url-pattern>/resources/admin/*</url-pattern>
-			<http-method>GET</http-method>
-			<http-method>POST</http-method>
-		</web-resource-collection>
-		<auth-constraint>
-			<role-name>wde_admin</role-name>
-		</auth-constraint>
-	</security-constraint>
-	
-	<security-role>
-		<role-name>wde_user</role-name>
-	</security-role>
+    <security-role>
+        <role-name>wde_admin</role-name>
+    </security-role>
 
-	<security-constraint>
-		<web-resource-collection>
-			<web-resource-name>wxde</web-resource-name>
-			<url-pattern>/auth2/*</url-pattern>
-			<url-pattern>/resources/auth2/*</url-pattern>
-			<http-method>GET</http-method>
-			<http-method>POST</http-method>
-		</web-resource-collection>
-		<auth-constraint>
-			<role-name>wde_admin</role-name>	
-			<role-name>wde_user</role-name>
-		</auth-constraint>
-	</security-constraint>
+    <security-constraint>
+        <web-resource-collection>
+            <web-resource-name>wxde</web-resource-name>
+            <url-pattern>/admin/*</url-pattern>
+            <url-pattern>/resources/admin/*</url-pattern>
+            <http-method>GET</http-method>
+            <http-method>POST</http-method>
+        </web-resource-collection>
+        <auth-constraint>
+            <role-name>wde_admin</role-name>
+        </auth-constraint>
+    </security-constraint>
 
-	<security-role>
-		<role-name>wde_limited</role-name>
-	</security-role>
+    <security-role>
+        <role-name>wde_user</role-name>
+    </security-role>
 
-	<security-constraint>
-		<web-resource-collection>
-			<web-resource-name>wxde</web-resource-name>
-			<url-pattern>/auth/*</url-pattern>
-			<url-pattern>/resources/auth/*</url-pattern>
-			<http-method>GET</http-method>
-			<http-method>POST</http-method>
-		</web-resource-collection>
-		<auth-constraint>
-			<role-name>wde_admin</role-name>
-			<role-name>wde_user</role-name>
-			<role-name>wde_limited</role-name>
-		</auth-constraint>
-	</security-constraint>
-	
-	<login-config>
-		<auth-method>FORM</auth-method>
-		<form-login-config>
-			<form-login-page>/userLogin.jsp</form-login-page>
-			<form-error-page>/userLoginFailed.jsp</form-error-page>
-		</form-login-config>
-	</login-config>
-	
-	<error-page>
-	    <error-code>404</error-code>
-	    <location>/error/404.jsp</location>
-	</error-page>
+    <security-constraint>
+        <web-resource-collection>
+            <web-resource-name>wxde</web-resource-name>
+            <url-pattern>/auth2/*</url-pattern>
+            <url-pattern>/resources/auth2/*</url-pattern>
+            <http-method>GET</http-method>
+            <http-method>POST</http-method>
+        </web-resource-collection>
+        <auth-constraint>
+            <role-name>wde_admin</role-name>
+            <role-name>wde_user</role-name>
+        </auth-constraint>
+    </security-constraint>
 
-	<error-page>
-		<error-code>500</error-code>
-		<location>/error/500.jsp</location>
-	</error-page>
+    <security-role>
+        <role-name>wde_limited</role-name>
+    </security-role>
+
+    <security-constraint>
+        <web-resource-collection>
+            <web-resource-name>wxde</web-resource-name>
+            <url-pattern>/auth/*</url-pattern>
+            <url-pattern>/resources/auth/*</url-pattern>
+            <http-method>GET</http-method>
+            <http-method>POST</http-method>
+        </web-resource-collection>
+        <auth-constraint>
+            <role-name>wde_admin</role-name>
+            <role-name>wde_user</role-name>
+            <role-name>wde_limited</role-name>
+        </auth-constraint>
+    </security-constraint>
+
+    <login-config>
+        <auth-method>FORM</auth-method>
+        <form-login-config>
+            <form-login-page>/userLogin.jsp</form-login-page>
+            <form-error-page>/userLoginFailed.jsp</form-error-page>
+        </form-login-config>
+    </login-config>
 
     <error-page>
-        <!--
-            The purpose of this error page configuration is to keep database exceptions from being
-            shown to the client in the HTTP response from the servlet.
-        -->
-        <exception-type>org.postgresql.util.PSQLException</exception-type>
-        <location>/error/restful/400.jsp</location>
+        <error-code>404</error-code>
+        <location>/error/404.jsp</location>
     </error-page>
 
     <error-page>
-        <!--
-            The purpose of this error page configuration is to keep database exceptions from being
-            shown to the client in the HTTP response from the servlet.
-        -->
-        <exception-type>org.apache.ibatis.exceptions.PersistenceException</exception-type>
-        <location>/error/restful/400.jsp</location>
+        <error-code>500</error-code>
+        <location>/error/500.jsp</location>
     </error-page>
 
 </web-app>

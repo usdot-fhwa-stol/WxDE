@@ -5,14 +5,17 @@ import wde.dao.orm.FeedbackDao;
 import wde.dao.orm.FeedbackDaoImpl;
 import wde.data.Feedback;
 
+import com.google.code.kaptcha.Constants;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
+import java.io.IOException;
 
 @Path("feedback")
 public class FeedbackResource {
@@ -28,14 +31,35 @@ public class FeedbackResource {
 
     @POST
     @Consumes({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
-    public void postNewFeedback(Feedback feedback) {
+    @Produces("application/json")
+    public String postNewFeedback(Feedback feedback) throws IOException {
 
-        feedbackDao = new FeedbackDaoImpl();
+        //
+        // Ensure the captcha provided is of the expected value.
+        //
+        String kaptchaExpected = (String) request.getSession()
+                .getAttribute(Constants.KAPTCHA_SESSION_KEY);
+        //String kaptchaReceived = request.getParameter("kaptcha");
+        String kaptchaReceived = feedback.getKaptcha();
 
-        if (request.getRemoteUser() != null) {
-            feedback.setUserName(request.getRemoteUser());
+        if (kaptchaReceived == null || !kaptchaReceived.equalsIgnoreCase(kaptchaExpected)) {
+            //response.sendError(HttpServletResponse.SC_UNAUTHORIZED);
+            return "{ \"status2\":\"Error\", \"message\":\"The captcha value provided was not correct.\", \"expected\":\"" + kaptchaExpected + "\", \"received\":\"" + feedback.getKaptcha() + "\" }";
         }
 
-        feedbackDao.insertNewFeedback(feedback);
+        try {
+            feedbackDao = new FeedbackDaoImpl();
+
+            if (request.getRemoteUser() != null) {
+                feedback.setUserName(request.getRemoteUser());
+            }
+
+            feedbackDao.insertNewFeedback(feedback);
+
+        } catch (Exception ex) {
+            return "{ \"status2\":\"Error\", \"message\":\"An error has occurred. Please consult with the system administrator.\" }";
+        }
+
+        return "{ \"status2\":\"Success\" }";
     }
 }

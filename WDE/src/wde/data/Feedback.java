@@ -25,10 +25,14 @@ public class Feedback {
     private Date dateCreated;
     private String dateCreated2;
     private String timeCreated;
+    private String kaptcha;
 
     @XmlJavaTypeAdapter(value = TimestampAdapter.class)
     private Timestamp tsCreated;
 
+    public void setKaptcha(String kaptcha) { this.kaptcha = kaptcha; }
+
+    public String getKaptcha() { return this.kaptcha; }
 
     public Integer getFeedbackId() {
         return feedbackId;

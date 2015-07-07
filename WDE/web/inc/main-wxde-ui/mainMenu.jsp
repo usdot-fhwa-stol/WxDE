@@ -57,6 +57,7 @@
                 feedbackInfo.section = $("#txtPageUrl").val();
                 feedbackInfo.description = $("#txtDescription").val();
                 var commentType = $("#rdCommentType input[type=radio]:checked")[0].id;
+
                 feedbackInfo.feedbackType = new Object();
                 if (commentType == "radio1") {
                     feedbackInfo.feedbackType.id = "1";
@@ -71,36 +72,61 @@
                         feedbackInfo.feedbackType.id = "5";
                     }
                 }
+                feedbackInfo.kaptcha = $("#kaptcha").val();
+
                 $.ajax({
                     url: "/resources/feedback",
                     type: "POST",
                     contentType: "application/json",
                     data: JSON.stringify(feedbackInfo),
-                    success: function () {
+                    dataType: 'json',
+                    success: function (data) {
+                        console.log('data', data);
+
+                        status = data.status2;
+                        message = data.message;
+
+                        if (status !== "Success") {
+                            //alert("ERROR: " + message);
+                        }
+
+                        $("#dialogFeedback").dialog("close");
                     },
-                    error: function () {
+                    error: function (xhr, ajaxOptions, thrownError) {
+                        console.log(xhr.status);
+                        console.log(thrownError);
                     }
                 });
-
-                $("#dialogFeedback").dialog("close");
             }
         });
 
         $("#dialogFeedback").dialog({
             autoOpen: false,
-            height: 520,
+            height: 650,
             width: 550,
             modal: true,
             open: function () {
                 $("#txtPageUrl").val($(location).attr('href'));
+                $('#kaptcha').attr('src', '/kaptcha.jpg?' + Math.floor(Math.random()*100) );
+
                 $.ajax({
                     url: "/resources/user",
                     dataType: "json",
-                    success: function (resp) {
-                        $("#txtName").val(resp.firstName + " " + resp.lastName);
-                        $("#txtEmail").val(resp.email);
+                    success: function (data) {
+                        console.log('data', data);
+
+                        if (data == null) {
+                            return;
+                        }
+
+                        $("#txtName").val(data.firstName + " " + data.lastName);
+                        $("#txtEmail").val(data.email);
                         $("#txtName").attr('readonly', true);
                         $("#txtEmail").attr('readonly', true);
+                    },
+                    error: function(xhr, ajaxOptions, thrownError) {
+                        console.log(xhr.status);
+                        console.log(thrownError);
                     }
                 });
             },
@@ -303,14 +329,28 @@
             </fieldset>
             </p>
         </div>
+
         <p>
             <label for="txtDescription">Description *</label>
             <textarea id="txtDescription" name="txtDescription" rows="9" cols="50" class="ui-widget-content"
                       required></textarea>
         </p>
-        <br>
 
-        <%--<p tabindex="0">* Required</p>--%>
+        <div>
+            <label for="kaptcha-div" style="float: left;">Verification Code *</label>
+            <div id="kaptcha-div" style="display: inline">
+                <input width="200px" type="text" value="" name="kaptcha" id="kaptcha">
+                <br>
+                <img width="200px" id="kaptchaImage" src="/kaptcha.jpg">
+                <br>
+                <small>Can't read the image? Click it to get a new one.</small>
+                <script type="text/javascript">
+                    $(function(){
+                        $('#kaptchaImage').click(function () { $(this).attr('src', '/kaptcha.jpg?' + Math.floor(Math.random()*100) ); })
+                    });
+                </script>
+            </div>
+        </div>
 
     </form>
 </div>
