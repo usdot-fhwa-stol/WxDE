@@ -1,0 +1,34 @@
+###################################################################################
+# DO NOT MODIFY THIS FILE
+###################################################################################
+
+# These are the datasources used by the application.
+# JNDI name,server address,database name,username,password,[port]
+datasource=java:comp/env/jdbc/wxde,@@database.host@@,wxde,@@database.user@@,@@database.password@@
+
+# file path for the collection report
+collectionreportpath=@@webapp.root@@/../data/reports/collectionReport.csv
+
+# Specify the observation set processing order
+order=wde.obs.ObsMgr
+order=wde.qchs.QChSMgr
+order=wde.obs.ObsArchiveMgr
+order=wde.qeds.PlatformMonitor
+order=wde.qeds.ContribMonitor
+
+# Specify service initialization order
+start=wde.util.threads.ThreadPool
+start=wde.util.Scheduler
+start=wde.dao.Units
+start=wde.emc.ClimateRecords
+start=wde.ems.EmsMgr
+start=wde.obs.ObsMgr
+start=wde.qeds.Contribs
+start=wde.qeds.PlatformMonitor
+start=wde.qeds.ContribMonitor
+# not sure whether the following should be before wde.qeds.Contribs
+start=wde.qchs.RAWINSONDE
+start=wde.qchs.QChSMgr
+start=wde.obs.ObsArchiveMgr
+start=wde.cs.CsMgr
+start=wde.vdt.VDTController

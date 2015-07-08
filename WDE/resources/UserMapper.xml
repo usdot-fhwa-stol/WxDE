@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="wde.UserMapper">
+
+	<resultMap id="UserResultMapper" type="User">
+		<id property="user" jdbcType="VARCHAR"  column="user_name" />
+		<result property="password" column="user_password" />
+		<result property="firstName" column="first_name" />
+		<result property="lastName" column="last_name" />
+		<result property="organization" column="organization" />
+		<result property="organizationType" column="organization_type" />
+		<result property="country" column="country" />
+		<result property="guid" column="guid" />
+		<result property="isVerified" column="verified" />
+		<result property="passwordGuid" column="password_guid" />
+		<result property="dateCreated" column="date_created" />
+	</resultMap>
+	
+	<select id="selectAllUsers" resultMap="UserResultMapper">
+		SELECT user_name, user_password, first_name, last_name, organization, 
+		       organization_type, country, email
+		FROM auth.user_table;
+	</select>	
+
+	<select id="selectUser" parameterType="String" resultMap="UserResultMapper">
+		SELECT user_name, user_password, first_name, last_name, organization, 
+		       organization_type, country, email
+		FROM auth.user_table
+		WHERE user_name = #{id};
+	</select>
+	
+	<select id="selectUserByGuid" parameterType="String" resultMap="UserResultMapper">
+		SELECT user_name, email, guid, verified
+		FROM auth.user_table
+		WHERE guid = #{guid};
+	</select>
+	
+	<select id="selectUserByPasswordGuid" parameterType="String" resultMap="UserResultMapper">
+		SELECT user_name, user_password, first_name, last_name, organization, 
+		       organization_type, country, email, guid, verified, password_guid, date_password_reset
+		FROM auth.user_table
+		WHERE password_guid = #{passwordGuid};
+	</select>
+	
+	<select id="selectUserByEmail" parameterType="String" resultMap="UserResultMapper">
+		SELECT user_name, email
+		FROM auth.user_table
+		WHERE LOWER(email) = LOWER(#{email});
+	</select>
+	
+	<select id="selectGuidByEmail" parameterType="String" resultMap="UserResultMapper">
+		SELECT guid
+		FROM auth.user_table
+		WHERE LOWER(email) = LOWER(#{email});
+	</select>
+	
+	<insert id="insertNewUser" parameterType="User">
+		INSERT INTO auth.user_table(
+            user_name, user_password, first_name, last_name, organization, 
+            organization_type, country, email, guid, verified, date_created)
+    	VALUES (#{user}, #{password}, #{firstName}, #{lastName}, #{organization},
+    		#{organizationType}, #{country}, #{email}, #{guid}, #{isVerified}, CURRENT_DATE);
+		INSERT INTO auth.user_role(
+            user_name, user_role)
+    	VALUES (#{user}, 'wde_user');
+	</insert>
+	
+	<update id="updatePasswordGuid" parameterType="User">
+		UPDATE auth.user_table 
+		SET password_guid = #{passwordGuid},
+			date_password_reset = #{datePassword}
+		WHERE user_name = #{user};
+	</update>
+	
+	<update id="updateNewPassword" parameterType="User">
+	    UPDATE auth.User_table
+	    SET user_password = #{password}, password_guid = #{passwordGuid},
+			date_password_reset = #{datePassword}
+	    WHERE user_name = #{user};
+	</update>
+	
+	<update id="updateUser" parameterType="User">
+		UPDATE auth.user_table
+		SET user_password=#{password}, first_name=#{firstName}, last_name=#{lastName}, organization=#{organization}, 
+			organization_type=#{organizationType}, country=#{country}, email=#{email}
+		WHERE user_name=#{user};
+	</update>
+	
+	<update id="updateUserVerifyEmail" parameterType="User">
+		UPDATE auth.user_table
+		SET guid=#{guid}, verified=#{isVerified}
+		WHERE user_name=#{user};
+	</update>
+	
+</mapper>

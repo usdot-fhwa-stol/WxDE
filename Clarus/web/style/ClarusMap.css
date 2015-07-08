@@ -1,0 +1,358 @@
+body
+{
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  color: #FFFFFF;
+  font-family: sans-serif, arial, verdana;
+  font-size: 10pt;
+  background: #263b50;
+}
+
+/*
+ *  Sidebar and sub-elements
+ */
+
+#sidebar
+{
+    position: absolute;
+    left: 0px;
+    top: 3px;
+    margin-left: 5px;
+}
+
+
+#titleArea
+{
+    width: 205px;
+    height: 82px;
+    background-image: url("../image/WeatherPics/Rainbow2a_small.jpg");
+    background-repeat: no-repeat;
+}
+
+#linkHome
+{
+    font-size: 90%;
+}
+
+#linkHome a
+{
+    color: #FFFFFF;
+}
+
+#titleText
+{
+    position: absolute;
+    margin-top: 10px;
+    margin-bottom: 0px;
+    margin-left: 10px;
+    margin-right: 0px;
+    font-weight: bold;
+    z-index: 1;
+}
+
+#titleTextShadow
+{
+    position: absolute;
+    margin-top: 12px;
+    margin-bottom: 0px;
+    margin-left: 12px;
+    margin-right: 0px;
+    color: #000000;
+    font-weight: bold;
+    z-index: 0;
+}
+
+#titleText2
+{
+    position: absolute;
+    margin-top: 45px;
+    margin-bottom: 0px;
+    margin-left: 35px;
+    margin-right: 0px;
+    font-weight: bold;
+    z-index: 1;
+}
+
+#titleText2Shadow
+{
+    position: absolute;
+    margin-top: 47px;
+    margin-bottom: 0px;
+    margin-left: 37px;
+    margin-right: 0px;
+    color: #000000;
+    font-weight: bold;
+    z-index: 0;
+}
+
+#mainHeader h3
+{
+    font-size: 10pt;
+    text-align: center;
+}
+
+#timeUTC
+{
+}
+
+#list1
+{
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+
+#list2
+{
+    padding-left: 5px;
+}
+
+#optUnits
+{
+    padding-bottom: 10px;
+}
+
+#latlong
+{
+}
+
+#stationCode
+{
+}
+
+.separator
+{
+    margin-top: 10px;
+    margin-bottom: 10px;
+    border-bottom: 1px solid #FFFFFF;
+}
+
+#optionArea
+{
+    margin-top: 25px;
+    margin-bottom: 20px;
+    padding-left: 5px;
+}
+
+
+#map
+{
+	width: 100%;
+}
+
+table.qualityChecks
+{
+  border-collapse: collapse;
+  border-spacing: 0;
+  text-align: center;
+  font-size: 100%;
+  color: #000000;
+  background-color: #ffffff;
+  border-bottom: 1px solid #000000;
+  border-right: 1px solid #000000;
+  white-space: nowrap;
+}
+
+
+table.qualityChecks thead
+{
+  font-weight: bold;
+  color: #000000;
+  background-color: #263b50;    /* #CCCCCC */
+}
+
+
+
+table.qualityChecks tr.even
+{
+  color: #000000;
+  background-color: #f7d17e;
+}
+
+
+
+table.qualityChecks tr.odd
+{
+  color: #000000;
+  background-color: #9b9bcd;
+}
+
+
+
+table.qualityChecks tr.inactive
+{
+  color: #000000;
+  background-color: #ffffff;
+}
+
+
+
+table.qualityChecks tfoot
+{
+  height: 16pt;
+  color: #000000;
+  background-color: #263b50;
+}
+
+
+
+table.qualityChecks td
+{
+  padding: 2px;
+  border-top: 1px solid #000000;
+  border-left: 1px solid #000000;
+}
+
+
+
+table.qualityChecks td.obsType
+{
+  padding: 2px;
+  border-top: 1px solid #000000;
+  border-left: 1px solid #000000;
+  text-align: left;
+}
+
+
+
+table.qualityChecks td.value
+{
+  padding: 2px;
+  border-top: 1px solid #000000;
+  border-left: 1px solid #000000;
+  text-align: right;
+}
+
+
+
+table.qualityChecks td.control
+{
+  border-top: 1px solid #000000;
+  border-left: 1px solid #000000;
+  color: #000000;
+  background-color: #263b50;
+}
+
+
+
+table.qualityChecks button
+{
+  width: 50px;
+  font-size: 80%;
+}
+
+
+
+#obsTypeList
+{
+}
+
+
+#jumpList
+{
+}
+
+
+#tablePageTop
+{
+    background-color: #263b50;
+}
+
+#tablePageTop td
+{
+    font-size: 90%;
+}
+
+
+.obs1 {
+	position: absolute;
+	z-index: 2;
+	font-family: Arial, Helvetica, sans-serif;
+	font-size: 11px;
+	font-weight: bold;
+	font-size: 16px;
+	color: #000000;
+	width: 250px;
+	text-decoration: none;
+}
+.obs2 {
+	top: 1px;
+	left: 1px;
+	position: absolute;
+	z-index: 1;
+	font-family: Arial, Helvetica, sans-serif;
+	font-size: 11px;
+	font-weight: bold;
+	font-size: 18px;
+	color: black;
+}
+
+#infoMarkerText
+{
+    width: 400px;
+    overflow: scroll;
+}
+
+#xmlData
+{
+    background-color: #FFFFFF;
+    color: #000000;
+}
+
+.progressLabel
+{
+	position: absolute;
+	z-index: 2;
+	font-family: Arial, Helvetica, sans-serif;
+	font-weight: bold;
+	font-size: 24px;
+	color: #FF3030;
+	width: 300px;
+	text-align: left;
+	text-decoration: none;
+}
+
+/* For queryResults.jsp */
+#results
+{
+    text-align: left;
+    padding: 0;
+    color: #000000;
+    font-family: fixed, courier;
+    font-size: 10pt;
+    background: #ffffff;
+}
+
+#map #dataOver
+{
+	color: #000000;
+	background-color: #ffffff;
+	border: 1px solid #000000;
+	font-weight: bold;
+	text-align: left;
+	white-space: nowrap;
+}
+
+#map #markeron
+{
+	position: absolute;
+	width: 12px;
+	height: 12px;
+	background: transparent url("../image/mm_12_purple.png") no-repeat scroll center;
+}
+
+#map #markeroff
+{
+	position: absolute;
+	width: 12px;
+	height: 12px;
+	background: transparent url("../image/mm_12_gray.png") no-repeat scroll center;
+}
+
+#map #markernws
+{
+	position: absolute;
+	width: 12px;
+	height: 12px;
+	background: transparent url("../image/mm_12_white.png") no-repeat scroll center;
+}

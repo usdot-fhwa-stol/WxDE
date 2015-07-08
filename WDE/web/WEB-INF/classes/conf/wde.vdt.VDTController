@@ -1,0 +1,30 @@
+###################################################################################
+# DO NOT MODIFY THIS FILE
+###################################################################################
+
+# File polling interval in minutes, default 5
+pollinginterval=5
+
+# Location of subscription files
+subscriptionfolder=@@webapp.root@@/../data/subscriptions/2013111100/
+
+# Location of madis files
+rawwxde=@@vdt.dataroot@@/raw/wxde/
+
+# Time delay in seconds to ensure that all data in the time window of interest have been captured 
+delay=60
+
+# Working folder for the VDT command
+vdtcommandfolder=/opt/vdt/modules
+
+# Command to launch VDT
+vdtcommand=./run_vdt.sh
+
+# Filename delimiter
+filedelimiter=.
+
+# Date format
+dateformat=yyyyMMdd
+
+# Time format
+timeformat=HHmm

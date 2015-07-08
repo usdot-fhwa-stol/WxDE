@@ -1,0 +1,30 @@
+#titleArea
+{
+    background-image: url("../image/WeatherPics/Rainbow1.jpg");
+}
+
+#tblCaptcha td
+{
+    padding-left: 10px;
+    padding-right: 10px;
+}
+
+#tblCaptcha th
+{
+    font-size: 100%;
+    font-weight: bold;
+    padding-top: 20px;
+    padding-bottom: 10px;
+    text-align: center;
+}
+
+#tblCaptcha select
+{
+    width: 60px;
+}
+
+#cellCaptchaPic
+{
+    text-align: center;
+}
+

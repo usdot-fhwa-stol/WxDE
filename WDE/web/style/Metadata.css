@@ -1,0 +1,23 @@
+#titleArea
+{
+    background-image: url("../image/WeatherPics/Sunset3.jpg");
+}
+
+#tblFolders td
+{
+    padding-left: 40px;
+    padding-right: 40px;
+    text-align: left;
+}
+
+#tblFolders th
+{
+    font-size: 100%;
+    font-weight: bold;
+    text-align: center;
+}
+
+#linkArea2
+{
+    padding-left: 60px;
+}

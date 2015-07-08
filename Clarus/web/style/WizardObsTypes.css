@@ -1,0 +1,54 @@
+#titleArea
+{
+    background-image: url("../image/WeatherPics/Snow1.jpg");
+}
+
+#obsArea
+{
+}
+
+#qcTestsArea
+{
+    width: 500px;
+    text-align: center;
+    padding-top: 10px;
+}
+
+
+#hdrTestArea
+{
+    padding-left: 20px;
+}
+
+#tblObs td
+{
+    padding-left: 20px;
+    padding-right: 20px;
+}
+
+#tblObs th
+{
+    font-size: 100%;
+    font-weight: bold;
+    padding-top: 20px;
+    padding-bottom: 10px;
+    text-align: center;
+}
+
+#tblObs select
+{
+    width: 220px;
+}
+
+#tblTests
+{
+    padding-top: -25px;
+}
+
+table.qualityCheckFlags td.label
+{
+    width: 120px;
+    text-align: right;
+}
+
+

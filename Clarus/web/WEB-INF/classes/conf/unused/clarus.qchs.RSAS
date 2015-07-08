@@ -1,0 +1,22 @@
+# Configuration to retrieve meteorology historic data in the form the GRIB2 data.
+
+# The FTP server in which to retrieve the GRIB data.
+ftpServer=ftp://ftp.ncep.noaa.gov
+
+# The remote directory on the FTP server in which the data is stored.
+dataDirectory=pub/data/nccf/com/rucs/prod/
+
+# Username used for FTP connection.
+ftpUsername=anonymous
+
+# Password used for FTP connection.
+ftpPassword=clarus@mixonhill.com
+
+# Defines the number of seconds between retrievals of GRIB data will occur.
+schedulerPeriod=3600
+
+# Defines the number of seconds from midnight from which the schedule should start.
+schedulerOffset=1320
+
+# The path/location to which the retrieved data is stored for future use.
+LocalTempGribFile=C:/Tomcat/webapps/clarus/WEB-INF/classes/RSAS.grib2

@@ -1,0 +1,30 @@
+#titleArea
+{
+    background-image: url("../image/WeatherPics/Rain1.jpg");
+}
+
+#timeUTC
+{
+    color: #000000;
+}
+
+#tblTossItems td
+{
+    padding-left: 10px;
+    padding-right: 10px;
+}
+
+#tblTossItems th
+{
+    font-size: 100%;
+    font-weight: bold;
+    padding-top: 20px;
+    padding-bottom: 10px;
+    text-align: center;
+}
+
+#tblTossItems select
+{
+    width: 175px;
+}
+

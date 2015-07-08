@@ -1,0 +1,13 @@
+###################################################################################
+# DO NOT MODIFY THIS FILE
+###################################################################################
+
+# File path to the location where subscriptions should be saved
+subsRoot=@@webapp.root@@/subscriptions/
+
+# The number of seconds to retain subscription files, i.e. 1 week = 604800 seconds
+lifetime=604800
+
+# Subscription and observation set datasource names
+subsDataSource=java:comp/env/jdbc/clarus_subs
+obsDataSource=java:comp/env/jdbc/clarus_qedc

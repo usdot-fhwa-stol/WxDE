@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="wde.UtilMapper">
+
+	<resultMap id="CountryResultMapper" type="Country">
+		<id property="code" jdbcType="CHAR" column="country_code" />
+		<result property="name" column="country_name" />
+	</resultMap>
+
+	<resultMap id="OrganizationTypeResultMapper" type="OrganizationType">
+		<id property="code" jdbcType="CHAR" column="organization_type" />
+		<result property="name" column="organization_type_name" />
+	</resultMap>
+
+	<select id="selectAllCountries" resultMap="CountryResultMapper">
+		SELECT country_code, country_name
+		FROM auth.country;
+	</select>
+
+	<select id="selectAllOrganizationTypes" resultMap="OrganizationTypeResultMapper">
+		SELECT organization_type, organization_type_name
+		FROM auth.organization_type;
+	</select>
+	
+	<!-- mappers for Boundary -->
+	<resultMap type="Boundary" id="BoundaryResultMapper">
+		<id property="postalCode" jdbcType="VARCHAR" column="postalcode" />
+		<result property="name" column="name" />
+		<result property="dataType" column="datatype" />
+		<result property="link" column="link" />
+		<result property="geometry" column="geometry" />
+	</resultMap>
+ 	
+	<select id="selectBoundariesKml" resultMap="BoundaryResultMapper" >
+		SELECT postalcode, name, datatype, link, geometry
+		FROM conf.boundary
+ 	</select>
+	
+	<!-- mappers for Boundary and Statuses-->
+	<resultMap type="Boundary" id="BoundaryAndStatusesResultMapper">
+		<id property="postalCode" jdbcType="VARCHAR" column="boundary_postalcode" />
+		<result property="name" column="boundary_name" />
+		<result property="dataType" column="boundary_datatype" />
+		<result property="link" column="boundary_link" />
+		<result property="geometry" column="boundary_geometry" />
+		<result property="centerLat" column="boundary_clat" />
+		<result property="centerLon" column="boundary_clon" />
+		<result property="centerZoom" column="boundary_czoom" />
+		<collection property="contributors" column="ct_postalcode" javaType="ArrayList" resultMap="ContributorSubResultMapper">
+  		</collection>
+  	</resultMap>
+ 	
+	<resultMap type="Contributor" id="ContributorSubResultMapper">
+		<id property="contributorId" jdbcType="INTEGER"  column="ct_id" />
+		<result property="name" column="ct_name" />
+		<result property="agency" column="ct_agency" />
+		<result property="postalCode" column="ct_postalcode" />
+  		<association property="collectionStatus" column="cs_id" javaType="CollectionStatus" resultMap="CollectionStatusMapper">
+		</association>
+	</resultMap>
+	
+ 	<resultMap type="CollectionStatus" id="CollectionStatusMapper">
+		<id property="contributorId" jdbcType="VARCHAR" column="cs_id" />
+ 	    <result property="updateTime" column="cs_updatetime" />
+		<result property="status" column="cs_status" />
+		<result property="statistics" column="cs_statistics" />
+	</resultMap>
+	
+ 	<select id="selectBoundariesAndStatuses" resultMap="BoundaryAndStatusesResultMapper" >
+		SELECT
+			b.name as boundary_name, 
+			b.postalcode as boundary_postalcode, 
+			b.datatype as boundary_datatype, 
+			b.geometry as boundary_geometry,
+			b.clat as boundary_clat,
+			b.clon as boundary_clon,
+			b.czoom as boundary_czoom,
+			ct.id as ct_id,
+			ct.name as ct_name,
+			ct.agency as ct_agency,
+			ct.postalcode as ct_postalcode,
+			c.contribid as cs_id,
+			c.updatetime as cs_updatetime,
+			c.status as cs_status,
+			c.statistics as cs_statistics
+		FROM conf.boundary b
+		LEFT OUTER JOIN meta.contrib ct
+		ON b.postalcode = ct.postalcode
+ 		LEFT OUTER JOIN conf.collectionstatus c
+		ON ct.id = c.contribid
+		WHERE ct.totime is null
+ 	</select>
+ 	
+ 	<resultMap type="DataMapState" id="DataMapStateMapper">
+ 		<id property="postalCode" column="boundary_postalcode"></id>
+ 		<result property="dataType" column="boundary_datatype"></result>
+ 		<result property="name" column="boundary_name"></result>
+ 		<result property="latitude" column="boundary_lat"></result>
+ 		<result property="longitude" column="boundary_lon"></result>
+ 		<result property="zoom" column="boundary_zoom"></result>
+		<collection property="contributors" column="ct_postalcode" javaType="ArrayList" resultMap="ContributorSubResultMapper">
+  		</collection>
+ 	</resultMap>
+ 	
+ 	<select id="selectDataMapStates" resultMap="DataMapStateMapper">
+<!-- 		SELECT * FROM conf.boundary_test -->
+		
+		SELECT
+			dms.postalcode as boundary_postalcode,
+			dms.name as boundary_name,
+			dms.datatype as boundary_datatype,
+			dms.clat as boundary_lat,
+			dms.clon as boundary_lon,
+			dms.czoom as boundary_zoom,
+			
+			ctb.id as ct_id,
+			ctb.name as ct_name,
+			ctb.agency as ct_agency,
+			ctb.postalcode as ct_postalcode,
+			
+			cls.contribid as cs_id,
+			cls.updatetime as cs_updatetime,
+			cls.status as cs_status,
+			cls.statistics as cs_statistics
+			
+		FROM conf.boundary dms
+		
+		LEFT OUTER JOIN meta.contrib ctb
+		ON dms.postalcode = ctb.postalcode
+		
+		LEFT OUTER JOIN conf.collectionstatus cls
+		ON ctb.id = cls.contribid
+		
+		WHERE ctb.totime is null
+ 	</select>
+ 	
+</mapper>

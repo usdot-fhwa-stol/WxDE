@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?> 
+<!DOCTYPE log4j:configuration SYSTEM "log4j.dtd">
+<log4j:configuration xmlns:log4j="http://jakarta.apache.org/log4j/" debug="false">
+	<appender name="consoleAppender" class="org.apache.log4j.ConsoleAppender">
+		<param name="Threshold" value="INFO" />
+		<layout class="org.apache.log4j.PatternLayout">
+			<param name="ConversionPattern" value="%d %-5p  [%c{1}] %m %n" />
+		</layout>
+	</appender>
+	<appender name="fileAppender" class="org.apache.log4j.RollingFileAppender">
+    	<param name="MaxFileSize" value="50000KB" />
+    	<param name="MaxBackupIndex" value="100" />
+		<param name="Threshold" value="INFO" />
+		<param name="File" value="VDT.log" />
+		<layout class="org.apache.log4j.PatternLayout">
+			<param name="ConversionPattern" value="%d %-5p  [%c{1}] %m %n" />
+		</layout>
+	</appender>
+	
+	<logger name="wde.dao.DatabaseManager" additivity="false">
+		<level value="INFO" />
+		<appender-ref ref="consoleAppender" />
+		<appender-ref ref="fileAppender" />
+	</logger>	
+	<logger name="wde.dao.ObservationDao" additivity="false">
+		<level value="INFO" />
+		<appender-ref ref="consoleAppender" />
+		<appender-ref ref="fileAppender" />
+	</logger>	
+	<logger name="wde.dao.SensorDao" additivity="false">
+		<level value="INFO" />
+		<appender-ref ref="consoleAppender" />
+		<appender-ref ref="fileAppender" />
+	</logger>	
+	<logger name="wde.cs.imo.MnDot" additivity="false">
+		<level value="INFO" />
+		<appender-ref ref="consoleAppender" />
+		<appender-ref ref="fileAppender" />
+	</logger>	
+	<logger name="wde.vdt.VDTController" additivity="false">
+		<level value="INFO" />
+		<appender-ref ref="consoleAppender" />
+		<appender-ref ref="fileAppender" />
+	</logger>	
+	<logger name="wde.vdt.VDTDataIngester" additivity="false">
+		<level value="INFO" />
+		<appender-ref ref="consoleAppender" />
+		<appender-ref ref="fileAppender" />
+	</logger>	
+	<logger name="wde.vdt.probe.ProbeAssembly" additivity="false">
+		<level value="INFO" />
+		<appender-ref ref="consoleAppender" />
+		<appender-ref ref="fileAppender" />
+	</logger>		
+	<logger name="wde.vdt.probe.ProbeMessage" additivity="false">
+		<level value="INFO" />
+		<appender-ref ref="consoleAppender" />
+		<appender-ref ref="fileAppender" />
+	</logger>
+	<logger name="wde.vdt.probe.InputProbeMessage" additivity="false">
+		<level value="INFO" />
+		<appender-ref ref="consoleAppender" />
+		<appender-ref ref="fileAppender" />
+	</logger>
+	<logger name="wde.vdt.probe.QcProbeMessage" additivity="false">
+		<level value="INFO" />
+		<appender-ref ref="consoleAppender" />
+		<appender-ref ref="fileAppender" />
+	</logger>
+	<logger name="wde.vdt.probe.raw.ActX" additivity="false">
+		<level value="INFO" />
+		<appender-ref ref="consoleAppender" />
+		<appender-ref ref="fileAppender" />
+	</logger>
+	<logger name="wde.vdt.probe.raw.CanX" additivity="false">
+		<level value="INFO" />
+		<appender-ref ref="consoleAppender" />
+		<appender-ref ref="fileAppender" />
+	</logger>		
+	<logger name="wde.vdt.probe.raw.Message" additivity="false">
+		<level value="INFO" />
+		<appender-ref ref="consoleAppender" />
+		<appender-ref ref="fileAppender" />
+	</logger>
+	<logger name="wde.vdt.probe.raw.ObdY" additivity="false">
+		<level value="INFO" />
+		<appender-ref ref="consoleAppender" />
+		<appender-ref ref="fileAppender" />
+	</logger>		
+	<logger name="wde.vdt.probe.raw.VaiX" additivity="false">
+		<level value="INFO" />
+		<appender-ref ref="consoleAppender" />
+		<appender-ref ref="fileAppender" />
+	</logger>
+	<logger name="wde.vdt.NetCdfArrayList" additivity="false">
+		<level value="INFO" />
+		<appender-ref ref="consoleAppender" />
+		<appender-ref ref="fileAppender" />
+	</logger>		
+</log4j:configuration>

@@ -1,0 +1,273 @@
+"id","updatetime","obstype","obs1204units","obsdesc","obsinternalunits","active","obsenglishunits"
+541,2013-03-06 19:51:33.012+00,"essLatitude","10^-6 degrees","Latitude of the ESS station [observation] per WGS-84 datum","deg",f,"deg"
+542,2013-03-06 19:51:33.013+00,"essLongitude","10^-6 degrees","East longitude from the Prime Meridian of the ESS station [observation]","deg",f,"deg"
+544,2013-03-06 19:51:33.014+00,"essVehicleBearing","degrees clockwise from true North","Current bearing of the vehicle","deg",f,"deg"
+545,2013-03-06 19:51:33.015+00,"essVehicleOdometer","meters","Current odometer reading of the vehicle","m",f,"ft"
+551,2013-03-06 19:51:33.015+00,"essReferenceHeight","meters above mean sea level","Reference elevation of the ESS; height to base of station for permanent ESS height to the ground surface upon which the ESS resides for transportable ESS, or height to surface under vehicle for mobile ESS","m",f,"ft"
+554,2013-03-06 19:51:33.016+00,"essAtmosphericPressure","10^-1 millibars, or 10^-1 hectopascals","Force per unit area exerted by the atmosphere","mbar",t,"inHg"
+56104,2013-03-06 19:51:33.016+00,"windSensorAvgSpeed","10^-1 meters per second","Two-minute average of the wind speed","m/s",t,"mph"
+56105,2013-03-06 19:51:33.017+00,"windSensorAvgDirection","degrees clockwise from true North","Two-min. average of wind direction (CW from North)","deg",t,"deg"
+56106,2013-03-06 19:51:33.017+00,"windSensorSpotSpeed","10^-1 meters per second","Instantaneous wind speed","m/s",t,"mph"
+56107,2013-03-06 19:51:33.018+00,"windSensorSpotDirection","degrees clockwise from true North","Instantaneous wind direction (CW from North)","deg",t,"deg"
+56108,2013-03-06 19:51:33.018+00,"windSensorGustSpeed","10^-1 meters per second","Maximum wind gust recorded during preceding 10 min.","m/s",t,"mph"
+56109,2013-03-06 19:51:33.018+00,"windSensorGustDirection","degrees clockwise from true North","Direction of max. wind gust during preceding 10 min.","deg",t,"deg"
+561010,2013-03-06 19:51:33.019+00,"windSensorSituation","integer","Describes the weather and travel situation in terms of wind from staffed stations only. Specific ranges for these values are defined in the Glossary of Meteorology",,t,
+5733,2013-03-06 19:51:33.019+00,"essAirTemperature","10^-1 degrees Celsius","Instantaneous dry-bulb temperature","C",t,"F"
+574,2013-03-06 19:51:33.02+00,"essWetBulbTemp","10^-1 degrees Celsius","Instantaneous wet-bulb temperature","C",t,"F"
+575,2013-03-06 19:51:33.02+00,"essDewpointTemp","10^-1 degrees Celsius","Instantaneous dewpoint temperature","C",t,"F"
+576,2013-03-06 19:51:33.02+00,"essMaxTemp","10^-1 degrees Celsius","Maximum air temperature during preceding 24 hours","C",t,"F"
+577,2013-03-06 19:51:33.02+00,"essMinTemp","10^-1 degrees Celsius","Minimum air temperature during preceding 24 hours","C",t,"F"
+581,2013-03-06 19:51:33.021+00,"essRelativeHumidity","percent","Relative humidity","%",t,"%"
+583,2013-03-06 19:51:33.021+00,"essAdjacentSnowDepth","centimeters","Depth of undrifted & unplowed snow off roadways","cm",t,"ft"
+584,2013-03-06 19:51:33.021+00,"essRoadwaySnowDepth","centimeters","Depth of unpacked snow on roadway surface","cm",t,"ft"
+585,2013-03-06 19:51:33.021+00,"essRoadwaySnowpackDepth","centimeters","Depth of packed snow on roadway surface","cm",t,"ft"
+586,2013-03-06 19:51:33.022+00,"essPrecipYesNo","integer","Indicates whether or not precip is detected: (1) precip; (2) noPrecip; (3) error",,t,
+587,2013-03-06 19:51:33.023+00,"essPrecipRate","10^-1 grams per sq. meter per second","Rate of rainfall or water equivalent of snow","cm/h",t,"in/h"
+588,2013-03-06 19:51:33.023+00,"essSnowfallAccumRate","10^-7 meters per second","Rate of snowfall accumulation","m/s",t,"ft/s"
+589,2013-03-06 19:51:33.024+00,"essPrecipSituation","integer","Description of precipitation type & intensity; see NTCIP 1204 for validation rules and text mapping",,t,
+5810,2013-03-06 19:51:33.024+00,"essIceThickness","millimeters","Thickness of the ice","mm",t,"ft"
+5811,2013-03-06 19:51:33.024+00,"essPrecipitationStartTime","seconds since 00:00:00 Jan 1, 1970 UTC","Time when most recent precipitation event began","s",t,"s"
+5812,2013-03-06 19:51:33.024+00,"essPrecipitationEndTime","seconds since 00:00:00 Jan 1, 1970 UTC","Time when most recent precipitation event ended","s",t,"s"
+5813,2013-03-06 19:51:33.025+00,"essPrecipitationOneHour","10^-1 kg per sq meter","Total water equivalent precipitation over preceding 1 hr","cm",t,"in"
+5814,2013-03-06 19:51:33.026+00,"essPrecipitationThreeHours","10^-1 kg per sq meter","Total water equivalent precipitation over preceding 3 hrs","cm",t,"in"
+5815,2013-03-06 19:51:33.026+00,"essPrecipitationSixHours","10^-1 kg per sq meter","Total water equivalent precipitation over preceding 6 hrs","cm",t,"in"
+5816,2013-03-06 19:51:33.027+00,"essPrecipitationTwelveHours","10^-1 kg per sq meter","Total water equivalent precipitation over preceding 12 hrs","cm",t,"in"
+5817,2013-03-06 19:51:33.027+00,"essPrecipitation24Hours","10^-1 kg per sq meter","Total water equivalent precipitation over preceding 24 hrs","cm",t,"in"
+58212,2013-03-06 19:51:33.028+00,"waterLevelSensorReading","centimeters","Depth of the water from a user-defined point","cm",t,"in"
+592,2013-03-06 19:51:33.028+00,"essTotalSun","minutes","Total amount of sunshine during preceding 24 hrs","min",t,"min"
+593,2013-03-06 19:51:33.029+00,"essCloudSituation","integer","Description of amount of cloud cover; see NTCIP 1204 for validation rules and text mapping",,f,
+596,2013-03-06 19:51:33.029+00,"essTotalRadiation","joules per sq meter","Average total radiation during the radiation period","J/m2",t,"J/m2"
+597,2013-03-06 19:51:33.03+00,"essTotalRadiationPeriod","seconds","Length of time essTotalRadiation is averaged [i.e., accumulated]","s",f,"s"
+5101,2013-03-06 19:51:33.03+00,"essVisibility","10^-1 meters","Surface visibility","m",t,"ft"
+5102,2013-03-06 19:51:33.03+00,"essVisibilitySituation","integer","Describes visibility of travel environment; see NTCIP 1204 for validation rules and text mapping",,t,
+51137,2013-03-06 19:51:33.03+00,"essSurfaceStatus","integer","Describes pavement surface status; see NTCIP 1204 for validation rules and text mapping",,t,
+51138,2013-03-06 19:51:33.031+00,"essSurfaceTemperature","10^-1 degrees Celsius","Current pavement surface temperature","C",t,"F"
+51139,2013-03-06 19:51:33.031+00,"essPavementTemperature","10^-1 degrees Celsius","Current pavement temp. 2-10 cm below surface, specifically at pavementSensorTemperatureDepth","C",t,"F"
+511311,2013-03-06 19:51:33.031+00,"essSurfaceSalinity","parts per one hundred thousand by weight","Pavement [surface] salinity",,t,
+511313,2013-03-06 19:51:33.031+00,"essSurfaceFreezePoint","10^-1 degrees Celsius","Solution freeze point temperature","C",t,"F"
+511314,2013-03-06 19:51:33.031+00,"essSurfaceBlackIceSignal","integer","Indicates whether or not black ice is detected; see NTCIP 1204 for data validation and mapping",,t,
+511315,2013-03-06 19:51:33.032+00,"essPavementSensorError","integer","Type of pavement sensor error; see NTCIP 1204 for data validation and mapping",,t,
+511316,2013-03-06 19:51:33.032+00,"essSurfaceIceOrWaterDepth","10^-1 millimeters","Current ice thickness or water depth on roadway surface","mm",t,"in"
+511317,2013-03-06 19:51:33.032+00,"essSurfaceConductivityV2","10^-1 millimhos/cm","Conductivity of the ice/liquid mixture on the pavement as detected by the sensor","mhos/m",t,"mhos/ft"
+511319,2013-03-06 19:51:33.032+00,"pavementSensorTemperatureDepth","centimeters","Depth at which the pavement temperature is detected","m",f,"ft"
+51165,2013-03-06 19:51:33.032+00,"essSubSurfaceTemperature","10^-1 degrees Celsius","Current sub-surface temperature","C",t,"F"
+51166,2013-03-06 19:51:33.033+00,"essSubSurfaceMoisture","percent","Sub-surface moisture espressed as a percentage (e.g., 0 indicates dry, 100 indicates saturated)","%",t,"%"
+51167,2013-03-06 19:51:33.033+00,"essSubSurfaceSensorError","integer","Type of sensor error; see NTCIP 1204 for data validation and mapping",,f,
+5121,2013-03-06 19:51:33.033+00,"essMobileFriction","percent","Measured coefficient of friction","%",t,"%"
+5122,2013-03-06 19:51:33.033+00,"essMobileObservationGroundState","integer","Prevailing observed ground state of the surrounding environment as determined by the observer; an indicator of past weather conditions; see NTCIP 1204 for data validation and mapping",,f,
+5123,2013-03-06 19:51:33.034+00,"essMobileObservationPavement","integer","Prevailing ovserved conditions on the driving surface as determined by the observer; see NTCIP 1204 for data validation and mapping",,f,
+51332,2013-03-06 19:51:33.034+00,"essPaveTreatProductType","integer","Type of treatment being applied to the road; see NTCIP1204 for data validation and mapping",,f,
+51333,2013-03-06 19:51:33.034+00,"essPaveTreatProductForm","integer","Condtion of the treatment being applied to the road; see NTCIP 1204 for data validation and mapping",,f,
+51334,2013-03-06 19:51:33.034+00,"essPercentProductMix","percent","Percentage of the total application mix by weight that is of the type specified in essPaveTreatProductType",,f,
+5134,2013-03-06 19:51:33.035+00,"essPaveTreatmentAmount","kg per lane km","Quantity of the treatment being applied","kg/km",f,"lb/mi"
+5135,2013-03-06 19:51:33.035+00,"essPaveTreatmentWidth","meters","Width of the spread of treatment","m",f,"ft"
+5141,2013-03-06 19:51:33.035+00,"essCO","ppm","Concentration of carbon monoxide in the air",,f,
+5142,2013-03-06 19:51:33.035+00,"essCO2","ppb","Concentration of carbon dioxide in the air",,f,
+5143,2013-03-06 19:51:33.035+00,"essNO","ppm","Concentration of nitrous oxide in the air",,f,
+5144,2013-03-06 19:51:33.036+00,"essNO2","ppb","Concentration of nitrous dioxide in the air",,f,
+5145,2013-03-06 19:51:33.036+00,"essSO2","ppb","Concentration of sulfur dioxide in the air",,f,
+204,2013-03-06 19:51:33.036+00,"icePercent","percent","Percent of ice cover on roadway","%",t,"%"
+205,2013-03-06 19:51:33.036+00,"precip10min","tenths of kilograms per square meter","Total water equivalent precip. over preceding 10 min","cm",t,"in"
+207,2013-03-06 19:51:33.037+00,"precipType",,"Description of precipitation type",,t,
+595,2013-03-06 19:51:33.037+00,"essInstantaneousSolarRadiation","watts per square meter","The instantaneous ultraviolet, visible, and near-infrared (wavelength of less than 3.0 micrometers) radiation hitting the earth's surface in watts per square meter","W/m2",t,"W/m2"
+511310,2013-03-06 19:51:33.037+00,"essSurfaceWaterDepth","millimeters","The current depth of water on the surface of the roadway measured in millimeters.","mm",t,"in"
+511371,2013-03-06 19:51:33.038+00,"essSurfaceStatus2","integer","Describes pavement surface status; see obsvaluemap.csv in metadata for mapping",,t,
+543,2013-03-06 19:51:33.014+00,"essVehicleSpeed","km/hr","Current speed being reported by the vehicle","km/h",t,"mph"
+60000,2014-05-23 00:00:00+00,"essAmbientLight","lux","luminous flux per unit area","lux",t,"lux"
+5146,2013-03-06 19:51:33.036+00,"essO3","parts per one hundred billion","Concentration of ozone in the air","pphb",t,"pphb"
+206,2013-03-06 19:51:33.037+00,"precipIntensity",,"Description of precipitation intensity",,t,
+2000002,2013-11-07 14:02:16+00,"canAntiLockBrakeStatus",,"anti-lock brake status",,t,
+2000003,2013-11-07 14:02:16+00,"canBrakeBoostApplied",,"brake boost applied status",,t,
+2001010,2013-12-04 15:00:00+00,"radar_cref","decibels relative to Z","composite reflectivity from radar grid","dBZ",t,"dBZ"
+2001011,2013-12-04 15:00:00+00,"radar_precip_flag",,"precip from radar grid",,t,
+2001012,2013-12-04 15:00:00+00,"radar_precip_type",,"precip type from radar grid",,t,
+2001013,2013-12-04 15:00:00+00,"cloud_mask",,"cloud mask from satellite grid",,t,
+2000004,2013-11-07 14:02:16+00,"canBrakeAppliedStatus",,"brake applied status",,t,
+2000005,2013-11-07 14:02:16+00,"canHeading","degrees clockwise from true North","heading","deg",t,"deg"
+2000006,2013-11-07 14:02:16+00,"canLatAcceleration","10^-1 meters per second squared","horizontal lateral acceleration","m/s^2",t,"ft/s^2"
+2000007,2013-11-07 14:02:16+00,"canLongAcceleration","10^-1 meters per second squared","horizontal longitudinal acceleration","m/s^2",t,"ft/s^2"
+2000000,2013-03-06 19:51:33.038+00,"canHeadlights","integer","Indicates whether the headlights are on or not",,t,
+2001019,2013-12-04 15:00:00+00,"segAirTemperatureMedCAN","10^-1 degrees Celsius","median air temperature","C",t,"F"
+2001083,2013-12-04 15:00:00+00,"segBrakeAppliedStatusOffNum",,"number of messages with all brakes off",,t,
+2001166,2013-12-04 15:00:00+00,"segAllHazards",,"all hazards",,t,
+2001167,2013-12-04 15:00:00+00,"segSurfaceStatus",,"derived pavement condition field",,t,
+2001168,2013-12-04 15:00:00+00,"segPrecipType",,"derived precipitation field",,t,
+2001169,2013-12-04 15:00:00+00,"segVisibility",,"derived visibility field",,t,
+2001001,2013-12-04 15:00:00+00,"vdtAirTemperature","10^-1 degrees Celsius","air temperature from the model data","C",t,"F"
+2001002,2013-12-04 15:00:00+00,"vdtAtmosphericPressure","10^-1 millibars, or 10^-1 hectopascals","barometric pressure from the model data","mbar",t,"inHg"
+2001003,2013-12-04 15:00:00+00,"vdtAirTemperatureAvg","10^-1 degrees Celsius","mean air temperature for the nearest surface stations","C",t,"F"
+2001004,2013-12-04 15:00:00+00,"vdtAtmosphericPressureAvg","10^-1 millibars, or 10^-1 hectopascals","mean barometric pressure for the nearest surface stations","mbar",t,"inHg"
+2001005,2013-12-04 15:00:00+00,"vdtDewpointTempAvg","10^-1 degrees Celsius","mean dew temp. for the nearest surface stations","C",t,"F"
+2001006,2013-12-04 15:00:00+00,"vdtPrecipitationOneHourAvg","10^-1 kg per sq meter","mean hourly precip for the nearest surface stations","cm",t,"in"
+2001007,2013-12-04 15:00:00+00,"vdtVisibilityAvg","10^-1 meters","mean prevailing vis. for the nearest surface stations","m",t,"ft"
+2001008,2013-12-04 15:00:00+00,"vdtWindSensorAvgDirection","degrees clockwise from true North","mean wind_dir for the nearest surface stations","deg",t,"deg"
+2001009,2013-12-04 15:00:00+00,"vdtWindSensorAvgSpeed","10^-1 meters per second","mean wind_speed for the nearest surface stations","m/s",t,"mph"
+2000008,2013-11-07 14:02:16+00,"canSpeed","10^-1 meters per second","vehicle speed","m/s",t,"mph"
+2000009,2013-11-07 14:02:16+00,"canStabilityControlStatus",,"stability control status",,t,
+2000010,2013-11-07 14:02:16+00,"canSteeringWheelAngle","degrees clockwise from true North","steering wheel angle","deg",t,"deg"
+2000011,2013-11-07 14:02:16+00,"canSteeringWheelAngleRateOfChange","degrees per second","steering wheel angle rate of change","deg/s",t,"deg/s"
+2000012,2013-11-07 14:02:16+00,"canTractionControlState",,"traction control state",,t,
+2000001,2013-03-06 19:51:33.038+00,"canWiperStatus","integer","Indicates whether the wipers are on or not",,t,
+2000013,2013-11-07 14:02:16+00,"canYawRate","degrees per second","yaw rate","deg/s",t,"deg/s"
+2001015,2013-12-04 15:00:00+00,"segAirTemperatureIQR25CAN","10^-1 degrees Celsius","25th percentile air temperature","C",t,"F"
+2001016,2013-12-04 15:00:00+00,"segAirTemperatureIQR75CAN","10^-1 degrees Celsius","75th percentile air temperature","C",t,"F"
+2001017,2013-12-04 15:00:00+00,"segAirTemperatureMaxCAN","10^-1 degrees Celsius","maximum air temperature","C",t,"F"
+2001018,2013-12-04 15:00:00+00,"segAirTemperatureAvgCAN","10^-1 degrees Celsius","average air temperature","C",t,"F"
+2001020,2013-12-04 15:00:00+00,"segAirTemperatureMinCAN","10^-1 degrees Celsius","minimum air temperature","C",t,"F"
+2001021,2013-12-04 15:00:00+00,"segAirTemperatureStdDevCAN","10^-1 degrees Celsius","air temperature standard deviation","C",t,"F"
+2001022,2013-12-04 15:00:00+00,"segAirTemperatureVarCAN","Celsius^2","air temperature variance","C^2",t,"F^2"
+2001024,2013-12-04 15:00:00+00,"segAirTemperatureIQR25AvgESS","10^-1 degrees Celsius","25th percentile external air temperature","C",t,"F"
+2001025,2013-12-04 15:00:00+00,"segAirTemperatureIQR75AvgESS","10^-1 degrees Celsius","75th percentile external air temperature","C",t,"F"
+2001026,2013-12-04 15:00:00+00,"segAirTemperatureMaxESS","10^-1 degrees Celsius","maximum external air temperature","C",t,"F"
+2001027,2013-12-04 15:00:00+00,"segAirTemperatureAvgESS","10^-1 degrees Celsius","average external air temperature","C",t,"F"
+2001028,2013-12-04 15:00:00+00,"segAirTemperatureMedESS","10^-1 degrees Celsius","median external air temperature","C",t,"F"
+2001029,2013-12-04 15:00:00+00,"segAirTemperatureMinESS","10^-1 degrees Celsius","minimum external air temperature","C",t,"F"
+2001030,2013-12-04 15:00:00+00,"segAirTemperatureStdDevESS","10^-1 degrees Celsius","external air temperature standard deviation","C",t,"F"
+2001031,2013-12-04 15:00:00+00,"segAirTemperatureVarESS","Celsius^2","external air temperature variance","C^2",t,"F^2"
+2001033,2013-12-04 15:00:00+00,"segAtmosphericPressureIQR25CAN","10^-1 millibars, or 10^-1 hectopascals","25th percentile barometric pressure","mbar",t,"inHg"
+2001034,2013-12-04 15:00:00+00,"segAtmosphericPressureIQR75CAN","10^-1 millibars, or 10^-1 hectopascals","75th percentile barometric pressure","mbar",t,"inHg"
+2001035,2013-12-04 15:00:00+00,"segAtmosphericPressureMaxCAN","10^-1 millibars, or 10^-1 hectopascals","maximum barometric pressure","mbar",t,"inHg"
+2001036,2013-12-04 15:00:00+00,"segAtmosphericPressureAvgCAN","10^-1 millibars, or 10^-1 hectopascals","minimum barometric pressure","mbar",t,"inHg"
+2001037,2013-12-04 15:00:00+00,"segAtmosphericPressureMedCAN","10^-1 millibars, or 10^-1 hectopascals","median barometric pressure","mbar",t,"inHg"
+2001038,2013-12-04 15:00:00+00,"segAtmosphericPressureMinCAN","10^-1 millibars, or 10^-1 hectopascals","minimum barometric pressure","mbar",t,"inHg"
+2001039,2013-12-04 15:00:00+00,"segAtmosphericPressureStdDevCAN","10^-1 millibars, or 10^-1 hectopascals","barometric pressure standard deviation","mbar",t,"inHg"
+2001040,2013-12-04 15:00:00+00,"segAtmosphericPressureVarCAN","mbar^2","barometric pressure variance","mbar^2",t,"inHg^2"
+2001042,2013-12-04 15:00:00+00,"segDewpointTempIQR25ESS","10^-1 degrees Celsius","25th percentile dew temperature","C",t,"F"
+2001043,2013-12-04 15:00:00+00,"segDewpointTempIQR75ESS","10^-1 degrees Celsius","75th percentile dew temperature","C",t,"F"
+2001044,2013-12-04 15:00:00+00,"segDewpointTempMaxESS","10^-1 degrees Celsius","maximum dew temperature","C",t,"F"
+2001045,2013-12-04 15:00:00+00,"segDewpointTempAvgESS","10^-1 degrees Celsius","average dew temperature","C",t,"F"
+2001046,2013-12-04 15:00:00+00,"segDewpointTempMedESS","10^-1 degrees Celsius","median dew temperature","C",t,"F"
+2001047,2013-12-04 15:00:00+00,"segDewpointTempMinESS","10^-1 degrees Celsius","minimum dew temperature","C",t,"F"
+2001048,2013-12-04 15:00:00+00,"segDewpointTempStdDevESS","10^-1 degrees Celsius","dew temperature standard deviation","C",t,"F"
+2001049,2013-12-04 15:00:00+00,"segDewpointTempVarESS","Celsius^2","dew temperature variance","C^2",t,"F^2"
+2001051,2013-12-04 15:00:00+00,"segHeadingIQR25","degrees clockwise from true North","25th percentile heading","deg",t,"deg"
+2001052,2013-12-04 15:00:00+00,"segHeadingIQR75","degrees clockwise from true North","75th percentile heading","deg",t,"deg"
+2001053,2013-12-04 15:00:00+00,"segHeadingMax","degrees clockwise from true North","maximum heading","deg",t,"deg"
+2001054,2013-12-04 15:00:00+00,"segHeadingAvg","degrees clockwise from true North","average heading","deg",t,"deg"
+2001055,2013-12-04 15:00:00+00,"segHeadingMed","degrees clockwise from true North","median heading","deg",t,"deg"
+2001056,2013-12-04 15:00:00+00,"segHeadingMin","degrees clockwise from true North","minimum heading","deg",t,"deg"
+2001057,2013-12-04 15:00:00+00,"segHeadingStdDev","degrees clockwise from true North","heading standard deviation","deg",t,"deg"
+2001058,2013-12-04 15:00:00+00,"segHeadingVar","degrees^2","heading variance","deg^2",t,"deg^2"
+2001060,2013-12-04 15:00:00+00,"segLatAccelerationIQR25","10^-1 meters per second squared","25th percentile horizontal lateral acceleration","deg",t,"deg"
+2001061,2013-12-04 15:00:00+00,"segLatAccelerationIQR75","10^-1 meters per second squared","75th percentile horizontal lateral acceleration","deg",t,"deg"
+2001062,2013-12-04 15:00:00+00,"segLatAccelerationMax","10^-1 meters per second squared","maximum horizontal lateral acceleration","deg",t,"deg"
+2001063,2013-12-04 15:00:00+00,"segLatAccelerationAvg","10^-1 meters per second squared","average horizontal lateral acceleration","deg",t,"deg"
+2001064,2013-12-04 15:00:00+00,"segLatAccelerationMed","10^-1 meters per second squared","median horizontal lateral acceleration","deg",t,"deg"
+2001065,2013-12-04 15:00:00+00,"segLatAccelerationMin","10^-1 meters per second squared","minimum horizontal lateral acceleration","deg",t,"deg"
+2001066,2013-12-04 15:00:00+00,"segLatAccelerationStdDev","10^-1 meters per second squared","horizontal lateral acceleration standard deviation","deg",t,"deg"
+2001067,2013-12-04 15:00:00+00,"segLatAccelerationVar",,"horizontal lateral acceleration variance",,t,
+2001069,2013-12-04 15:00:00+00,"segLongAccelerationIQR25","10^-1 meters per second squared","25th percentile horizontal longitudinal acceleration","deg",t,"deg"
+2001070,2013-12-04 15:00:00+00,"segLongAccelerationIQR75","10^-1 meters per second squared","75th percentile horizontal longitudinal acceleration","deg",t,"deg"
+2001071,2013-12-04 15:00:00+00,"segLongAccelerationMax","10^-1 meters per second squared","maximum horizontal longitudinal acceleration","deg",t,"deg"
+2001072,2013-12-04 15:00:00+00,"segLongAccelerationAvg","10^-1 meters per second squared","average horizontal longitudinal acceleration","deg",t,"deg"
+2001073,2013-12-04 15:00:00+00,"segLongAccelerationMed","10^-1 meters per second squared","median horizontal longitudinal acceleration","deg",t,"deg"
+2001074,2013-12-04 15:00:00+00,"segLongAccelerationMin","10^-1 meters per second squared","minimum horizontal longitudinal acceleration","deg",t,"deg"
+2001075,2013-12-04 15:00:00+00,"segLongAccelerationStdDev","10^-1 meters per second squared","horizontal longitudinal acceleration standard deviation","deg",t,"deg"
+2001076,2013-12-04 15:00:00+00,"segLongAccelerationVar","10^-1 meters per second squared squared","horizontal longitudinal acceleration variance","(m/s^2)^2",t,"(ft/s^2)^2"
+2001078,2013-12-04 15:00:00+00,"segAntiLockBrakeStatusEngagedNum",,"number of messages with abs engaged",,t,
+2001079,2013-12-04 15:00:00+00,"segAntiLockBrakeStatusUnavailableNum",,"number of messages with abs not equipped",,t,
+2001080,2013-12-04 15:00:00+00,"segAntiLockBrakeStatusOffNum",,"number of messages with abs off",,t,
+2001081,2013-12-04 15:00:00+00,"segAntiLockBrakeStatusOnNum",,"number of messages with abs on",,t,
+2001084,2013-12-04 15:00:00+00,"segBrakeAppliedStatusOnNum",,"number of messages with all brakes on",,t,
+2001090,2013-12-04 15:00:00+00,"segBrakeBoostAppliedUnavailableNum",,"number of messages with brake boost not equipped",,t,
+2001091,2013-12-04 15:00:00+00,"segBrakeBoostAppliedOffNum",,"number of messages with brake boost off",,t,
+2001092,2013-12-04 15:00:00+00,"segBrakeBoostAppliedOnNum",,"number of messages with brake boost on",,t,
+2001085,2013-12-04 15:00:00+00,"segBrakeAppliedStatusLeftFrontNum",,"number of messages with left front brake active",,t,
+2001086,2013-12-04 15:00:00+00,"segBrakeAppliedStatusLeftRearNum",,"number of messages with left rear brake active",,t,
+2001087,2013-12-04 15:00:00+00,"segBrakeAppliedStatusRightFrontNum",,"number of messages with right front brake active",,t,
+2001088,2013-12-04 15:00:00+00,"segBrakeAppliedStatusRightRearNum",,"number of messages with right rear brake active",,t,
+2001094,2013-12-04 15:00:00+00,"segAutomaticLightControlOnNum",,"number of messages with automatic lights control",,t,
+2001095,2013-12-04 15:00:00+00,"segDaytimeRunningLightsOnNum",,"number of messages with daytime running lights On",,t,
+2001096,2013-12-04 15:00:00+00,"segFogLightOnNum",,"number of messages with fog lights on",,t,
+2001097,2013-12-04 15:00:00+00,"segHazardSignalOnNum",,"number of messages with hazard lights on",,t,
+2001098,2013-12-04 15:00:00+00,"segHighBeamLightsOnNum",,"number of messages with high beam on",,t,
+2001099,2013-12-04 15:00:00+00,"segLeftTurnSignalOnNum",,"number of messages with left turn signal on",,t,
+2001100,2013-12-04 15:00:00+00,"segLowBeamLightsOnNum",,"number of messages with low beam on",,t,
+2001101,2013-12-04 15:00:00+00,"segAllLightsOffNum",,"number of messages with all lights off",,t,
+2001102,2013-12-04 15:00:00+00,"segParkingLightsOnNum",,"number of messages with parking lights on",,t,
+2001103,2013-12-04 15:00:00+00,"segRightTurnSignalOnNum",,"number of messages with right turn signal on",,t,
+2001077,2013-12-04 15:00:00+00,"segValidAntiLockBrakeNum",,"number of messages with valid abs value",,t,
+2001014,2013-12-04 15:00:00+00,"segValidAirTemperatureCANNum",,"number of messages with valid air_temp values",,t,
+2001023,2013-12-04 15:00:00+00,"segValidAirTemperatureESSNum",,"number of messages with valid air_temp values",,t,
+2001032,2013-12-04 15:00:00+00,"segValidAtmosphericPressureCANNum",,"number of messages with valid bar_press values",,t,
+2001082,2013-12-04 15:00:00+00,"segValidBrakeAppliedStatusNum",,"number of messages with valid brakes values",,t,
+2001089,2013-12-04 15:00:00+00,"segValidBrakeBoostAppliedNum",,"number of messages with valid brakes_boost values",,t,
+2001041,2013-12-04 15:00:00+00,"segValidDewpointTempNum",,"number of messages with valid dew_temp values",,t,
+2001050,2013-12-04 15:00:00+00,"segValidHeadingNum",,"number of messages with valid heading values",,t,
+2001163,2013-12-04 15:00:00+00,"segYawMin","degrees per second","minimum yaw","deg/s",t,"deg/s"
+2001059,2013-12-04 15:00:00+00,"segValidLatAccelerationNum",,"number of messages with valid hoz_accel_lat values",,t,
+2001068,2013-12-04 15:00:00+00,"segValidLongAccelerationNum",,"number of messages with valid hoz_accel_lon values",,t,
+2001093,2013-12-04 15:00:00+00,"segValidLightsNum",,"number of messages with valid lights value",,t,
+2001122,2013-12-04 15:00:00+00,"segValidSpeedNum",,"number of messages with valid speed values",,t,
+2001104,2013-12-04 15:00:00+00,"segValidStabilityControlStatusNum",,"number of messages with valid stab values",,t,
+2001132,2013-12-04 15:00:00+00,"segValidSteeringWheelAngleNum",,"number of messages with valid steering_angle values",,t,
+2001141,2013-12-04 15:00:00+00,"segValidSteeringWheelAngleRateOfChangeNum",,"number of messages with valid staeering_rate values",,t,
+2001148,2013-12-04 15:00:00+00,"segValidSurfaceTemperatureNum",,"number of messages with valid surface_temp values",,t,
+2001109,2013-12-04 15:00:00+00,"segValidTractionControlStateNum",,"number of messages with valid trac value",,t,
+2001114,2013-12-04 15:00:00+00,"segValidWiperStatusNum",,"number of messages with valid wipers value",,t,
+2001157,2013-12-04 15:00:00+00,"segValidYawNum",,"number of messages with valid yaw value",,t,
+2001105,2013-12-04 15:00:00+00,"segStabilityControlStatusEngagedNum",,"number of messages with stability control engaged",,t,
+2001106,2013-12-04 15:00:00+00,"segStabilityControlStatusUnavailableNum",,"number of messages with stability control not equipped",,t,
+2001107,2013-12-04 15:00:00+00,"segStabilityControlStatusOffNum",,"number of messages with stability control off",,t,
+2001108,2013-12-04 15:00:00+00,"segStabilityControlStatusOnNum",,"number of messages with stability control on",,t,
+2001110,2013-12-04 15:00:00+00,"segTractionControlStateEngagedNum",,"number of messages with traction control engaged",,t,
+2001111,2013-12-04 15:00:00+00,"segTractionControlStateUnavailableNum",,"number of messages with traction control not equipped",,t,
+2001112,2013-12-04 15:00:00+00,"segTractionControlStateOffNum",,"number of messages with traction control off",,t,
+2001113,2013-12-04 15:00:00+00,"segTractionControlStateOnNum",,"number of messages with traction control on",,t,
+2001115,2013-12-04 15:00:00+00,"segWiperStatusAutomaticPresentNum",,"number of messages with automatic wiper control on",,t,
+2001116,2013-12-04 15:00:00+00,"segWiperStatusHighNum",,"number of messages with wipers high",,t,
+2001117,2013-12-04 15:00:00+00,"segWiperStatusIntermittentNum",,"number of messages with wipers intermittent",,t,
+2001118,2013-12-04 15:00:00+00,"segWiperStatusLowNum",,"number of messages with wipers low",,t,
+2001119,2013-12-04 15:00:00+00,"segWiperStatusUnavailableNum",,"number of messages with wiper sensor not equipped",,t,
+2001120,2013-12-04 15:00:00+00,"segWiperStatusOffNum",,"number of messages with wipers off",,t,
+2001121,2013-12-04 15:00:00+00,"segWiperStatusWasherInUserNum",,"number of messages with wiper washer on",,t,
+2001123,2013-12-04 15:00:00+00,"segSpeedIQR25CAN","10^-1 meters per second","25th percentile speed","m/s",t,"mph"
+2001124,2013-12-04 15:00:00+00,"segSpeedIQR75CAN","10^-1 meters per second","75th percentile speed","m/s",t,"mph"
+2001125,2013-12-04 15:00:00+00,"segSpeedMaxCAN","10^-1 meters per second","maximum speed","m/s",t,"mph"
+2001126,2013-12-04 15:00:00+00,"segSpeedAvgCAN","10^-1 meters per second","average speed","m/s",t,"mph"
+2001127,2013-12-04 15:00:00+00,"segSpeedMedCAN","10^-1 meters per second","median speed","m/s",t,"mph"
+2001128,2013-12-04 15:00:00+00,"segSpeedMinCAN","10^-1 meters per second","minimum speed","m/s",t,"mph"
+2001129,2013-12-04 15:00:00+00,"segSpeedRatioCAN",,"average speed to speed limit ratio",,t,
+2001130,2013-12-04 15:00:00+00,"segSpeedStdDevCAN","10^-1 meters per second","speed standard deviation","m/s",t,"mph"
+2001131,2013-12-04 15:00:00+00,"segSpeedVarCAN","10^-1 meters per second squared","speed variance","m/s^2",t,"ft/s^2"
+2001133,2013-12-04 15:00:00+00,"segSteeringWheelAngleIQR25","degrees clockwise from true North","25th percentile steering wheel angle","deg",t,"deg"
+2001134,2013-12-04 15:00:00+00,"segSteeringWheelAngleIQR75","degrees clockwise from true North","75th percentile steering wheel angle","deg",t,"deg"
+2001135,2013-12-04 15:00:00+00,"segSteeringWheelAngleMax","degrees clockwise from true North","maximum steering wheel angle","deg",t,"deg"
+2001136,2013-12-04 15:00:00+00,"segSteeringWheelAngleAvg","degrees clockwise from true North","average steering wheel angle","deg",t,"deg"
+2001137,2013-12-04 15:00:00+00,"segSteeringWheelAngleMed","degrees clockwise from true North","median steering wheel angle","deg",t,"deg"
+2001138,2013-12-04 15:00:00+00,"segSteeringWheelAngleMin","degrees clockwise from true North","minimum steering wheel angle","deg",t,"deg"
+2001139,2013-12-04 15:00:00+00,"segSteeringWheelAngleStdDev","degrees clockwise from true North","steering wheel angle standard deviation","deg",t,"deg"
+2001140,2013-12-04 15:00:00+00,"segSteeringWheelAngleVar","degrees squared","steering wheel angle variance","deg^2",t,"deg^2"
+2001142,2013-12-04 15:00:00+00,"segSteeringWheelAngleRateOfChangeMax","degrees per second","maximum steering wheel angle rate of change","deg/s",t,"deg/s"
+2001143,2013-12-04 15:00:00+00,"segSteeringWheelAngleRateOfChangeAvg","degrees per second","average steering wheel angle rate of change","deg/s",t,"deg/s"
+2001144,2013-12-04 15:00:00+00,"segSteeringWheelAngleRateOfChangeMed","degrees per second","median steering wheel angle rate of change","deg/s",t,"deg/s"
+2001145,2013-12-04 15:00:00+00,"segSteeringWheelAngleRateOfChangeMin","degrees per second","minimum steering wheel angle rate of change","deg/s",t,"deg/s"
+2001146,2013-12-04 15:00:00+00,"segSteeringWheelAngleRateOfChangeStdDev","degrees per second","steering wheel angle rate of change standard deviation","deg/s",t,"deg/s"
+2001147,2013-12-04 15:00:00+00,"segSteeringWheelAngleRateOfChangeVar","(degrees per second) squared","steering wheel angle rate of change variance","(deg/s)^2",t,"(deg/s)^2"
+2001149,2013-12-04 15:00:00+00,"segSurfaceTemperatureIQR25ESS","10^-1 degrees Celsius","25th percentile surface temperature","C",t,"F"
+2001150,2013-12-04 15:00:00+00,"segSurfaceTemperatureIQR75ESS","10^-1 degrees Celsius","75th percentile surface temperature","C",t,"F"
+2001151,2013-12-04 15:00:00+00,"segSurfaceTemperatureMaxESS","10^-1 degrees Celsius","maximum surface temperature","C",t,"F"
+2001152,2013-12-04 15:00:00+00,"segSurfaceTemperatureAvgESS","10^-1 degrees Celsius","average surface temperature","C",t,"F"
+2001153,2013-12-04 15:00:00+00,"segSurfaceTemperatureMedESS","10^-1 degrees Celsius","median surface temperature","C",t,"F"
+2001154,2013-12-04 15:00:00+00,"segSurfaceTemperatureMinESS","10^-1 degrees Celsius","minimum surface temperature","C",t,"F"
+2001155,2013-12-04 15:00:00+00,"segSurfaceTemperatureStdDevESS","10^-1 degrees Celsius","surface temperature standard deviation","C",t,"F"
+2001156,2013-12-04 15:00:00+00,"segSurfaceTemperatureVarESS","Celsius^2","surface temperature variance","C^2",t,"F^2"
+2001000,2013-12-04 15:00:00+00,"segTotalNum",,"total number of messages processed",,t,
+2001158,2013-12-04 15:00:00+00,"segYawIQR25","degrees per second","25th percentile yaw","deg/s",t,"deg/s"
+2001159,2013-12-04 15:00:00+00,"segYawIQR75","degrees per second","75th percentile yaw","deg/s",t,"deg/s"
+2001160,2013-12-04 15:00:00+00,"segYawMax","degrees per second","maximum yaw","deg/s",t,"deg/s"
+2001161,2013-12-04 15:00:00+00,"segYawAvg","degrees per second","average yaw","deg/s",t,"deg/s"
+2001162,2013-12-04 15:00:00+00,"segYawMed","degrees per second","median yaw","deg/s",t,"deg/s"
+2001164,2013-12-04 15:00:00+00,"segYawStdDev","degrees per second","yaw standard deviation","deg/s",t,"deg/s"
+2001165,2013-12-04 15:00:00+00,"segYawVar","(degrees per second) squared","yaw variance","(deg/s)^2",t,"(deg/s)^2"
+2001170,2014-05-13 22:00:00+00,"segAirTemperatureModel","10^-1 degrees Celsius","air temperature from the model data","C",t,"F"
+2001171,2014-05-13 22:00:00+00,"segAtmosphericPressureModel","10^-1 millibars, or 10^-1 hectopascals","barometric pressure from the model data","mbar",t,"inHg"
+2001172,2014-05-13 22:00:00+00,"segAirTemperatureAvgNearbyESS","10^-1 degrees Celsius","mean air temperature for the nearest surface stations","C",t,"F"
+2001173,2014-05-13 22:00:00+00,"segAtmosphericPressureAvgNearbyESS","10^-1 millibars, or 10^-1 hectopascals","mean barometric pressure for the nearest surface stations","mbar",t,"inHg"
+2001174,2014-05-13 22:00:00+00,"segDewpointTempAvgNearbyESS","10^-1 degrees Celsius","mean dew temp. for the nearest surface stations","C",t,"F"
+2001175,2014-05-13 22:00:00+00,"segPrecipitationOneHourAvgNearbyESS","10^-1 kg per sq meter","mean hourly precip for the nearest surface stations","cm",t,"in"
+2001176,2014-05-13 22:00:00+00,"segVisibilityAvgNearbyESS","10^-1 meters","mean prevailing vis. for the nearest surface stations","m",t,"ft"
+2001177,2014-05-13 22:00:00+00,"segWindSensorAvgDirectionNearbyESS","degrees clockwise from true North","mean wind_dir for the nearest surface stations","deg",t,"deg"
+2001178,2014-05-13 22:00:00+00,"segWindSensorAvgSpeedNearbyESS","10^-1 meters per second","mean wind_speed for the nearest surface stations","m/s",t,"mph"
+2001179,2014-05-13 22:00:00+00,"canAtmosphericPressure","10^-1 millibars, or 10^-1 hectopascals","barometric pressure from the model data","mbar",t,"inHg"
+2001180,2014-05-13 22:00:00+00,"canAirTemperature","10^-1 degrees Celsius","air temperature from the model data","C",t,"F"

@@ -1,0 +1,9 @@
+###################################################################################
+# DO NOT MODIFY ANYTHING BELOW THIS LINE
+###################################################################################
+
+# The datasource where persistent observations can be retrieved on startup and also the archived destination
+datasource=java:comp/env/jdbc/clarus_qedc
+
+# The number of concurrent threads that can access the obs mgr
+queuedepth=1

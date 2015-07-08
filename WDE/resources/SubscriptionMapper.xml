@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="wde.SubscriptionMapper">
+
+	<resultMap id="SubscriptionResultMapper" type="Subscription">
+		<id property="subscriptionId" jdbcType="INTEGER"  column="id" />
+		<result property="isPublic" column="ispublic" />
+		<result property="isEditable" column="iseditable" />
+		<result property="name" column="name" />
+		<result property="description" column="description" />
+		<result property="uuid" column="guid" />
+		<association property="user" column="ownername" javaType="User" resultMap="UserResultMapper">
+		</association>
+  	</resultMap>
+	<resultMap id="UserResultMapper" type="User">
+		<id property="user" jdbcType="VARCHAR"  column="user_name" />
+		<result property="firstName" column="first_name" />
+		<result property="lastName" column="last_name" />
+		<result property="email" column="email" />
+	</resultMap>
+	<resultMap id="SubUserResultMapper" type="SubscriptionUser">
+  		<association property="subscription" column="subid" javaType="Subscription" resultMap="SubscriptionResultMapper">
+		</association>
+  		<association property="user" column="user_name" javaType="User" resultMap="UserResultMapper">
+		</association>
+	</resultMap>
+		
+	<select id="selectPublicSubscriptions" resultMap="SubscriptionResultMapper">
+		SELECT sb.id, sb.contactname, sb.name, sb.description, ut.first_name, ut.last_name, ut.email
+		FROM subs.subscription sb
+		INNER JOIN auth.user_table ut ON sb.owner_name = ut.user_name
+		WHERE sb.ispublic = 1;
+	</select>	
+	
+	<select id="selectSubscriptionsByOwner" parameterType="String" resultMap="SubscriptionResultMapper">
+		SELECT sb.id, sb.name, sb.description, ut.first_name, ut.last_name, ut.email
+		FROM subs.subscription sb
+		INNER JOIN auth.user_table ut ON sb.owner_name = ut.user_name
+		WHERE ut.user_name = #{user};
+	</select>
+
+	<select id="selectMemberSubscriptions" resultMap="SubscriptionResultMapper">
+		SELECT sb.id, sb.contactname, sb.name, sb.description, ut.first_name, ut.last_name, ut.email
+		FROM subs.subuser su
+		INNER JOIN subs.subscription sb ON sb.id = su.subid
+		INNER JOIN auth.user_table ut ON sb.owner_name = ut.user_name
+		WHERE su.user_name = #{user};
+	</select>
+	
+	<select id="selectSubscriptions" resultMap="SubscriptionResultMapper">
+		SELECT sb.id, sb.ispublic, 
+			CAST(
+			     CASE 
+				  WHEN sb.owner_name = #{user}
+				  THEN true
+				  ELSE false 
+			     END AS boolean) as iseditable,
+			sb.name, sb.description, ut.user_name, ut.first_name, ut.last_name, ut.email
+		FROM subs.subscription sb
+		INNER JOIN auth.user_table ut ON sb.owner_name = ut.user_name
+		WHERE sb.ispublic = 1 OR ut.user_name = #{user}
+		UNION
+		SELECT sb.id, '2' as ispublic, 
+			CAST(
+			     CASE 
+				  WHEN sb.owner_name = #{user}
+				  THEN true
+				  ELSE false 
+			     END AS boolean) as iseditable,
+			sb.name, sb.description, ut.user_name, ut.first_name, ut.last_name, ut.email
+		FROM subs.subuser su
+		INNER JOIN subs.subscription sb ON sb.id = su.subid
+		INNER JOIN auth.user_table ut ON sb.owner_name = ut.user_name
+		WHERE su.user_name = #{user};
+	</select>
+	
+	<select id="selectSubscription" resultMap="SubscriptionResultMapper">
+		SELECT sb.id, sb.contactname, sb.name, sb.description, sb.guid, ut.first_name, ut.last_name, ut.email
+		FROM subs.subscription sb
+		INNER JOIN auth.user_table ut ON sb.owner_name = ut.user_name
+		WHERE sb.id=#{subscriptionId};
+	</select>	
+		
+</mapper>

@@ -1,0 +1,15 @@
+###################################################################################
+# DO NOT MODIFY THIS FILE
+###################################################################################
+
+# File path to the location where subscriptions should be written
+subscription=@@webapp.root@@/subscriptions/
+
+# File path to the images used to dynamically build the captcha security
+imageRoot=@@webapp.root@@/image/sd/
+
+# The number of image subdirectories under the imageRoot defined above.
+numSubDirs=4
+
+# Datasource used by this process.
+datasource=java:comp/env/jdbc/clarus_subs

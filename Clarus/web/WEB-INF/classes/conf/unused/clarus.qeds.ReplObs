@@ -1,0 +1,11 @@
+# The number of milliseconds to wait for the destination host to respond.
+timeout = 1000
+
+# List of URLS where observation sets are sent.
+# The first url in the list is the default destination
+# NOTE: Server names may need to be added to the local hosts file
+url=http://localhost:8005/CsHttp
+
+# URL routes by obs type id
+# obs types not listed here automatically route to the default URL
+

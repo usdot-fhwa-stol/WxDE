@@ -1,0 +1,68 @@
+#titleArea
+{
+    background-image: url("../image/WeatherPics/Clouds2.jpg");
+}
+
+#linkHome a
+{
+    color: #000000;
+}
+
+#tblGeoTypes
+{
+    padding-left: 10px;
+    padding-right: 10px;
+}
+
+#tblGeoTypes th
+{
+    font-size: 100%;
+    font-weight: bold;
+    padding-top: 20px;
+    padding-bottom: 10px;
+}
+
+#tblBoundingBox
+{
+    margin-top: 25px;
+    padding-left: 10px;
+    padding-right: 10px;
+    display: none;
+}
+
+#tblBoundingBox td
+{
+    padding-left: 10px;
+    padding-right: 10px;
+}
+
+#tblBoundingBox .tblHdr
+{
+    font-size: 100%;
+    font-weight: bold;
+    padding-top: 10px;
+    text-align: center;
+}
+
+#tblPointRadius
+{
+    margin-top: 25px;
+    padding-left: 10px;
+    padding-right: 10px;
+    display: none;
+}
+
+#tblPointRadius td
+{
+    padding-left: 10px;
+    padding-right: 10px;
+}
+
+#tblPointRadius .tblHdr
+{
+    font-size: 100%;
+    font-weight: bold;
+    padding-top: 10px;
+    text-align: center;
+}
+

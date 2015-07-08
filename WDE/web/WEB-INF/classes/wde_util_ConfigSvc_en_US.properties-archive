@@ -1,0 +1,30 @@
+#################################################################################
+# Location of the configuration files. This should the full path to the 
+# WEB-INF/classes/conf directory within the web application.
+# e.g. c:/tomcat/webapps/wde/WEB-INF/classes/conf
+# NOTE: For Windows-based deployments, use forward slashes instead of back slashes.
+#################################################################################
+root=/opt/apache-tomcat-7.0.41/webapps/ROOT/WEB-INF/classes/conf/
+
+#################################################################################
+# Full path to the WDE web application under the Tomcat installation.
+# e.g. c:/tomcat/webapps/wde
+# NOTE: For Windows-based deployments, use forward slashes instead of back slashes.
+#################################################################################
+conf.webapp.root=/opt/apache-tomcat-7.0.41/webapps/ROOT
+
+#################################################################################
+# Email address of the WDE administrator. This will be used as the sender and 
+# bcc for the contributor monitoring. 
+#################################################################################
+conf.admin.email=bryan.krueger@synesis-partners.com
+
+#################################################################################
+# Hostname or IP address of the SMTP server that will be used to send emails.
+#################################################################################
+conf.smtp.server=smtp.gmail.com
+
+#################################################################################
+# Location of the data folder used by the VDT.
+#################################################################################
+conf.vdt.dataroot=/opt/vdt/data

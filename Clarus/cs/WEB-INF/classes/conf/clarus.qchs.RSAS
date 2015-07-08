@@ -1,0 +1,33 @@
+###################################################################################
+# DO NOT MODIFY THIS FILE
+###################################################################################
+
+# Configuration to retrieve meteorology historic data in the form the GRIB2 data.
+# This data is retrieved from the NOAA FTP site. Your email is used as the FTP password so
+# that they may contact you if changes occur to the data format or accessibility.
+
+# The password used for FTP connection. Use your email address.
+ftpPassword=@@admin.email@@
+
+# The path/location to which the retrieved data is stored for future use.
+LocalTempGribFile=@@webapp.root@@/WEB-INF/classes/RSAS.grib2
+
+# The path/location of the RSAS map coordinates.
+MapCoordFile=@@webapp.root@@/WEB-INF/classes/RSASMapCoords.csv
+
+# The FTP server in which to retrieve the GRIB data.
+ftpServer=ftp://ftp.ncep.noaa.gov
+
+# The remote directory on the FTP server in which the data is stored.
+dataDirectory=pub/data/nccf/com/rucs/prod/
+
+# The username used for FTP connection.
+ftpUsername=anonymous
+
+# Defines the number of seconds between retrievals of GRIB data will occur.
+schedulerPeriod=3600
+
+# Defines the number of seconds from midnight from which the schedule should start.
+schedulerOffset=1500
+
+

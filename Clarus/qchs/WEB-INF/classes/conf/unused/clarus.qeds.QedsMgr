@@ -1,0 +1,15 @@
+# File path to the location where subscriptions should be written
+subscription=C:/Tomcat/webapps/clarus_qchs/subscriptions/
+
+# File path to the images used to dynamically build the captcha security
+imageRoot=C:/Tomcat/webapps/clarus_qchs/image/sd/
+
+###################################################################################
+# DO NOT MODIFY ANYTHING BELOW THIS LINE
+###################################################################################
+
+# The number of image subdirectories under the imageRoot defined above.
+numSubDirs=4
+
+# Datasource used by this process.
+datasource=java:comp/env/jdbc/clarus_subs

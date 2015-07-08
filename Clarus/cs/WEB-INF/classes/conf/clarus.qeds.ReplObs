@@ -1,0 +1,27 @@
+###################################################################################
+# DO NOT MODIFY THIS FILE
+###################################################################################
+
+# List of URLS where observation sets are sent.
+# The first url in the list is the default destination
+# NOTE: Server names may need to be added to the local hosts file
+url=@@web.webapp.url@@/CsHttp
+url=@@qchs.webapp.url@@/CsHttp
+
+# The number of milliseconds to wait for the destination host to respond
+timeout = 1000
+
+# URL routes by observation type id
+# Observation types not listed here automatically route to the default URL
+
+# route=<observation-type>,<route-id>
+route=essAirTemperature,1
+route=essWetBulbTemp,1
+route=essDewpointTemp,1
+route=essMaxTemp,1
+route=essMinTemp,1
+route=essRelativeHumidity,1
+route=essSurfaceTemperature,1
+route=essPavementTemperature,1
+route=essSubSurfaceTemperature,1
+route=essMobileFriction,1

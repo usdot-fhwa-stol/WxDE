@@ -1,0 +1,9 @@
+###################################################################################
+# DO NOT MODIFY THIS FILE
+###################################################################################
+
+# The number of seconds defining when the observation type cache will be refreshed.
+refresh=14400
+
+# Datasource used by this process.
+datasource=java:comp/env/jdbc/wxde

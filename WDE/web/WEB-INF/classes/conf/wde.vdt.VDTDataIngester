@@ -1,0 +1,18 @@
+###################################################################################
+# DO NOT MODIFY THIS FILE
+###################################################################################
+
+# Root folder for output messages
+outputroot=@@vdt.dataroot@@/processed/vdt_output
+
+# Prefix for QC probe messages
+qcprobeprefix=vdt
+
+# Prefix for segment statistics files
+segstatprefix=segment_statistics
+
+# Prefix for segment assessment files
+segassessprefix=segment_assessment
+
+# File extension for output messages
+outputfileextension=nc

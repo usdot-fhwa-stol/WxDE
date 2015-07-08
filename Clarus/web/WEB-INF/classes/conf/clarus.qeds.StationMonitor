@@ -1,0 +1,6 @@
+###################################################################################
+# DO NOT MODIFY THIS FILE
+###################################################################################
+
+# The number of milliseconds to wait for an observation set before a station is flagged.
+timeout=14400000

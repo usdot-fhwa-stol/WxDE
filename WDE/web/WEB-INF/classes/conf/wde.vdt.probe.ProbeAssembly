@@ -1,0 +1,37 @@
+###################################################################################
+# DO NOT MODIFY THIS FILE
+###################################################################################
+
+# Root folder for raw IMO messages
+rawimo=@@vdt.dataroot@@/raw/IMO/
+
+# folder for MN IMO
+rawmn=MN/
+
+# Prefix for raw MN messages
+rawmnprefix=ameritrak
+
+# File extension for raw MN messages
+rawmnfileextension=txt
+
+# root URL for MI IMO
+miurl=http://74.254.188.153/MI/IMO/
+
+# File extension for raw MI messages
+rawmifileextension=csv
+
+# month format
+mimonthformat=yyyyMM
+
+# date format
+#midateformat=ddMMyyyy
+midateformat=yyyyMMddHHmm
+
+# Root folder for processed messages
+processedroot=@@vdt.dataroot@@/processed/probe_message
+
+# Prefix for processed messages
+processedprefix=probe_message
+
+# File extension for processed messages
+processedfileextension=nc

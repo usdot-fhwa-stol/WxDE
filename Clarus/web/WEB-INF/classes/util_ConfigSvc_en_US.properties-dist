@@ -1,0 +1,47 @@
+#################################################################################
+# Location of the configuration files. This should the full path to the 
+# WEB-INF/classes/conf directory within the web application.
+# e.g. c:/tomcat/webapps/clarus/WEB-INF/classes/conf
+# NOTE: For Windows-based deployments, use forward slashes instead of back slashes.
+#################################################################################
+root=<deployment_dir>/WEB-INF/classes/conf
+
+#################################################################################
+# Full path to the Clarus web application under the Tomcat installation.
+# e.g. c:/tomcat/webapps/clarus
+# NOTE: For Windows-based deployments, use forward slashes instead of back slashes.
+#################################################################################
+conf.webapp.root=<deployment_dir>
+
+#################################################################################
+# URL to the Clarus web application e.g. http://<my-domain>/clarus
+#################################################################################
+conf.webapp.url=<webapp_url>
+
+#################################################################################
+# Host name or IP address of the MySQL database.
+# e.g. localhost or localhost:3306
+#################################################################################
+conf.database.host=<db_host>
+
+#################################################################################
+# Database user that has access to Clarus schemas. This user should have SELECT,
+# INSERT, UPDATE and DELETE permissions.
+#################################################################################
+conf.database.user=<db_user>
+
+#################################################################################
+# Password for the database user above.
+#################################################################################
+conf.database.password=<db_password>
+
+#################################################################################
+# Email address of the Clarus administrator. This will be used as the sender and 
+# bcc for the contributor monitoring. 
+#################################################################################
+conf.admin.email=<admin_email>
+
+#################################################################################
+# Hostname or IP address of the SMTP server that will be used to send emails.
+#################################################################################
+conf.smtp.server=<smtp_server>

@@ -1,0 +1,14 @@
+###################################################################################
+# DO NOT MODIFY THIS FILE
+###################################################################################
+
+# The maximum age of observation that can remain cached in milliseconds.
+# 2 days = 86400 * 1000 * 2
+lifetime = 172800000
+
+# The datasource where persistent observations can be retrieved on startup and also the archived destination
+datasource=java:comp/env/jdbc/clarus_qedc
+archive=1
+
+# The number of concurrent threads that can access the obs mgr
+queuedepth=5

@@ -1,0 +1,32 @@
+#titleArea
+{
+    background-image: url("../image/WeatherPics/Lightning2.jpg");
+}
+
+#linkHome a
+{
+    color: #FFFFFF;
+}
+
+#infoArea
+{
+    width: 500px;
+    padding-top: 10px;
+}
+
+
+#tblInfo td
+{
+    padding-left: 20px;
+    padding-right: 20px;
+}
+
+#tblInfo th
+{
+    font-size: 100%;
+    font-weight: bold;
+    padding-top: 20px;
+    padding-bottom: 10px;
+    text-align: center;
+}
+

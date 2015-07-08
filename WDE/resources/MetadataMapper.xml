@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="wde.MetadataMapper">
+	<resultMap id="ContributorResultMapper" type="Contributor">
+		<id property="contributorId" jdbcType="INTEGER"  column="id" />
+		<result property="staticId" column="staticid" />
+		<result property="updateTime" column="updatetime" />
+		<result property="toTime" column="totime" />
+		<result property="orgId" column="orgid" />
+		<result property="name" column="name" />
+		<result property="agency" column="agency" />
+		<result property="monitorHours" column="monitorhours" />
+		<result property="contactId" column="contactid" />
+		<result property="altContactId" column="altcontactid" />
+		<result property="metatdataContactId" column="metadatacontactid" />
+		<result property="display" column="display" />
+		<result property="disclaimer" column="disclaimerlink" />
+		<result property="postalCode" column="postalcode" />
+	</resultMap>
+	
+	<select id="selectDisplayContributers" resultMap="ContributorResultMapper">
+		SELECT id, staticid, updatetime, totime, orgid, name, agency, monitorhours, 
+			contactid, altcontactid, metadatacontactid, display, disclaimerlink, postalcode
+		FROM meta.contrib
+		WHERE display=TRUE;
+	</select>
+	
+	<select id="selectDisplayContributersSubset" resultMap="ContributorResultMapper">
+		SELECT name, agency, disclaimerlink, id
+		FROM meta.contrib
+		WHERE display=TRUE;
+	</select>	
+	
+	<resultMap id="PlatformResultMapper" type="Platform">
+		<id property="id" jdbcType="INTEGER" column="id"/>
+		<result property="staticId" column="staticid" />
+		<result property="updateTime" column="updatetime" />
+		<result property="toTime" column="totime" />
+		<result property="stationCode" column="platformCode" />
+		<result property="category" column="category" />
+		<result property="description" column="description" />
+		<result property="type" column="type" />
+		<result property="contributorId" column="contribid" />
+		<result property="siteId" column="siteid" />
+		<result property="locBaseLat" column="locbaselat" />
+		<result property="locBaseLong" column="locbaselong" />
+		<result property="locBaseElev" column="locbaseelev" />
+		<result property="locBaseDatum" column="locabasedatum" />
+		<result property="powerType" column="powertype" />
+		<result property="doorOpen" column="dooropen" />
+		<result property="batteryStatus" column="batterystatus" />
+		<result property="lineVolts" column="linevolts" />
+		<result property="maintContactId" column="maintcontactid" />
+	</resultMap>
+
+	<select id="selectPlatformsByContributor" parameterType="Integer" resultMap="PlatformResultMapper">
+		SELECT id, staticid, updatetime, totime, platformcode, category, description, 
+			type, contribid, siteid, locbaselat, locbaselong, locbaseelev, 
+			locbasedatum, powertype, dooropen, batterystatus, linevolts, 
+			maintcontactid
+       	FROM meta.platform 
+		WHERE contribid=#{contributorId} AND totime is NULL
+		ORDER BY description;
+	</select>	
+	<select id="selectAllPlatforms" resultMap="PlatformResultMapper">
+		SELECT id, staticid, updatetime, totime, platformcode, category, description, 
+			type, contribid, siteid, locbaselat, locbaselong, locbaseelev, 
+			locbasedatum, powertype, dooropen, batterystatus, linevolts, 
+			maintcontactid
+		FROM meta.platform
+		ORDER BY description;
+	</select>	
+	<select id="selectAllCurrentPlatforms" resultMap="PlatformResultMapper">
+		SELECT id, staticid, updatetime, totime, platformcode, category, description, 
+			type, contribid, siteid, locbaselat, locbaselong, locbaseelev, 
+			locbasedatum, powertype, dooropen, batterystatus, linevolts, 
+			maintcontactid
+		FROM meta.platform
+		WHERE totime is NULL
+		ORDER BY description;
+	</select>	
+</mapper>

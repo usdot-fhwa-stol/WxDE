@@ -1,0 +1,9 @@
+
+.gmap-info-window {
+	position: relative;
+	width: auto;
+	max-height: 433px;
+	min-height: 0;
+	overflow-y: auto;
+	overflow-x: auto;
+}

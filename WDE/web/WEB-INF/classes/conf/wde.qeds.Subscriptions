@@ -1,0 +1,19 @@
+###################################################################################
+# DO NOT MODIFY THIS FILE
+###################################################################################
+
+# File path to the location where subscriptions should be saved
+subsRoot=@@webapp.root@@/../data/subscriptions/
+
+# The number of seconds to retain subscription files, i.e. 1 week = 604800 seconds
+lifetime=604800
+
+# The maximum rows of database records to process for a query
+maxrows=100000
+
+# The maximum time in milliseconds for executing a query
+maxtime=30000
+
+# Subscription and observation set datasource names
+subsDataSource=java:comp/env/jdbc/wxde
+obsDataSource=java:comp/env/jdbc/wxde

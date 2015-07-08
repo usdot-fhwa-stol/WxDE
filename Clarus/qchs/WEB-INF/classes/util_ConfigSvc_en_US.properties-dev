@@ -1,0 +1,47 @@
+#################################################################################
+# Location of the configuration files. This should the full path to the 
+# WEB-INF/classes/conf directory within the web application.
+# e.g. c:/tomcat/webapps/clarus_qchs/WEB-INF/classes/conf
+# NOTE: For Windows-based deployments, use forward slashes instead of back slashes.
+#################################################################################
+root=c:/tomcat/webapps/clarus_qchs/WEB-INF/classes/conf/
+
+#################################################################################
+# Full path to the Clarus Quality Check Services application under the Tomcat installation.
+# e.g. c:/tomcat/webapps/clarus_qchs
+# NOTE: For Windows-based deployments, use forward slashes instead of back slashes.
+#################################################################################
+conf.webapp.root=c:/tomcat/webapps/clarus_qchs
+
+#################################################################################
+# URL to the Clarus Quality Check Services application e.g. http://<my-domain>/clarus_qchs
+#################################################################################
+conf.webapp.url=http://localhost:8080/clarus_cs
+
+#################################################################################
+# Host name or IP address of the MySQL database.
+# e.g. localhost or localhost:3306
+#################################################################################
+conf.database.host=localhost
+
+#################################################################################
+# Database user that has access to Clarus schemas. This user should have SELECT,
+# INSERT, UPDATE and DELETE permissions.
+#################################################################################
+conf.database.user=root
+
+#################################################################################
+# Password for the database user above.
+#################################################################################
+conf.database.password=WxDe4$gbz_^^
+
+#################################################################################
+# Email address of the Clarus administrator. 
+#################################################################################
+conf.admin.email=george.zheng@saic.com
+
+#################################################################################
+# URL to the Clarus web application. This URL must be accessible from the host
+# on which this application is installed.
+#################################################################################
+conf.web.webapp.url=http://localhost:8080/clarus
