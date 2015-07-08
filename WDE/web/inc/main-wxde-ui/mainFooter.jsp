@@ -23,6 +23,10 @@
 		<br>
 		<a href="http://www.fhwa.dot.gov/research/tfhrc/" target="_blank" title="Turner-Fairbank Highway Research Center">Turner-Fairbank Highway Research Center</a> | 6300 Georgetown Pike | McLean, VA 22101
 	</div>
+
+	<div style="text-align: center; vertical-align: middle; line-height: 90px;">
+        <span style="font-size: 11px; color: #777">WxDE @version@</span>
+    </div>
 </div>
 
 <a href="#" id="skip-footer" tabindex="-1"></a>
