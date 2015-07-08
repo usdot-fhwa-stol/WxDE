@@ -11,6 +11,7 @@
 
         // validate the comment form when it is submitted
         $("#feedbackForm").validate({
+            onfocusout: true,
             rules: {
                 txtEmail: {
                     required: true,
@@ -87,7 +88,7 @@
                         message = data.message;
 
                         if (status !== "Success") {
-                            //alert("ERROR: " + message);
+                            console.log('Error encountered: ' + message);
                         }
 
                         $("#dialogFeedback").dialog("close");
@@ -102,12 +103,12 @@
 
         $("#dialogFeedback").dialog({
             autoOpen: false,
-            height: 650,
+            height: 600,
             width: 550,
             modal: true,
-            open: function () {
+            open: function() {
                 $("#txtPageUrl").val($(location).attr('href'));
-                $('#kaptcha').attr('src', '/kaptcha.jpg?' + Math.floor(Math.random()*100) );
+                $('#kaptchaImage').attr('src', '/kaptcha.jpg?' + Math.floor(Math.random()*100) );
 
                 $.ajax({
                     url: "/resources/user",
@@ -290,11 +291,11 @@
      style="display:none">
     <form id="feedbackForm" class="cmxform" method="get" action="">
 
-        <legend>Feedback</legend>
+        <legend style="display: none;">Feedback</legend>
 
         <div id="rdCommentType">
-            <fieldset id="rdCommentTypeFieldSet">
-                <legend>Comment Type</legend>
+            <fieldset id="rdCommentTypeFieldSet" style="border-width: 0px 0px 0px 0px; margin: 0px 0px 0px 0px;">
+                <legend style="display: none;">Comment Type</legend>
 
                 <input type="radio" id="radio1" name="rdCommentType" checked="checked"/><label
                     for="radio1">Feedback</label>
