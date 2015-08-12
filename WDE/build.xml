@@ -36,6 +36,8 @@ Modification History:
 
 	<property name="app-type" value="web"/>
 	<property name="build-type" value="archive"/>
+    
+    <property name="version" value="2.1-dev"/>
 	
 	<target name="init">
 		<tstamp/>
@@ -165,12 +167,12 @@ Modification History:
 		<!--</exec>-->
 		<!--<property prefix="svn" file="${build}/svn.properties"/>-->
     	
-		<zip destfile="${workarea}/wde-${version}.zip" basedir="${dist}" />
-    	<echo message="Distribution zip built: ${workarea}/wde-${version}.zip"/>
+		<zip destfile="${workarea}/wde.zip" basedir="${dist}" />
+    	<echo message="Distribution zip built: ${workarea}/wde.zip"/>
     </target>
 	
 	<target name="deploy-to-war" >
-		<war destfile="${warfile}-${version}.war" webxml="${webapp_deployment_dir}/WEB-INF/web.xml" update="true">
+		<war destfile="${warfile}.war" webxml="${webapp_deployment_dir}/WEB-INF/web.xml" update="true">
 			<fileset dir="${webapp_deployment_dir}">
                 <!--<include name="**/lib/commons-*.jar"/>-->
 				<exclude name="**/lib/*.jar"/>
