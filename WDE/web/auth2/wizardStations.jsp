@@ -1,6 +1,8 @@
 <%@page contentType="text/html; charset=UTF-8" language="java" import="wde.qeds.Subscription" %>
+<%@ page import="org.apache.commons.lang3.StringEscapeUtils"%>
 <jsp:useBean id="oSubscription" scope="session" class="wde.qeds.Subscription"/>
 <jsp:setProperty name="oSubscription" property="*"/>
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <html>
 <head>
@@ -48,7 +50,7 @@
     </script>
 </head>
 
-<body onload='onLoad("<%= oSubscription.getContributors() %>")'>
+<body onload='onLoad("<%= StringEscapeUtils.escapeHtml4(oSubscription.getContributors()) %>")'>
 <jsp:include page="/inc/main-wxde-ui/mainHeader.jsp"></jsp:include>
 <jsp:include page="/inc/main-wxde-ui/mainMenu.jsp"></jsp:include>
 

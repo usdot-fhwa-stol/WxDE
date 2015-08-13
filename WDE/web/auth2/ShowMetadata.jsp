@@ -1,7 +1,8 @@
 <%@page contentType="text/plain; charset=iso-8859-1" language="java" %>
 <%@ page import="java.io.*,wde.util.*" %>
 <%@ page import="org.apache.log4j.Logger"%>
-<%@ page import="org.apache.commons.io.FilenameUtils"%><%@ page import="org.apache.commons.lang3.StringEscapeUtils"%>
+<%@ page import="org.apache.commons.io.FilenameUtils"%>
+<%@ page import="org.apache.commons.lang3.StringEscapeUtils"%>
 
 <%
 	final Logger logger = Logger.getLogger("ShowMetadata.jsp");
