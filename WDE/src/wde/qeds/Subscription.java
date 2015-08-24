@@ -4,6 +4,7 @@
  */
 package wde.qeds;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import wde.WDEMgr;
 import wde.util.MathUtil;
@@ -17,6 +18,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.StringTokenizer;
 
 /**
  * Provides filtering parameters which can be set and used to gather
@@ -241,7 +243,7 @@ public class Subscription {
                 try {
                     oList.add(new Integer(Integer.parseInt(sIds[nIndex])));
                 } catch (Exception ex) {
-                    logger.error(ex);
+                    logger.debug("Unable to convert string to integer.", ex);
                 }
             }
 
@@ -631,7 +633,8 @@ public class Subscription {
         logger.debug("setContributors(" + sContribList + ")");
         m_oContribIds.clear();
         stringsToArray(sContribList, m_oContribIds);
-        m_sContributors = sContribList;
+
+        m_sContributors = StringUtils.join(m_oContribIds, ",");
     }
 
     /**
