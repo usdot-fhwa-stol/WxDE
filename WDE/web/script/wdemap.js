@@ -1305,7 +1305,7 @@ function cbGetStations(oXml, oText)
                 {
                     anchorPoint: new google.maps.Point(1, 1),
                     position: new google.maps.LatLng(item.lt, item.ln),
-                    icon: m_oBrownIcon
+                    icon: m_oBlueIcon
                 };
 
                 vdtMarker = new google.maps.Marker(oOptions);
@@ -1319,7 +1319,8 @@ function cbGetStations(oXml, oText)
                 vdtMarker.m_oStation.lt = item.lt;
                 vdtMarker.m_oStation.ln = item.ln;
                 vdtMarker.setMap(m_oMap);
-                vdtMarker.returnIcon = m_oBrownIcon;
+                //vdtMarker.returnIcon = m_oBrownIcon;
+                vdtMarker.returnIcon  = m_oBlueIcon;
                 vdtMarker.routePath = routePath;
                 
                 // add listeners to the marker
@@ -1331,7 +1332,7 @@ function cbGetStations(oXml, oText)
                 
                 var vdtMouseOutListener = google.maps.event.addListener(vdtMarker, "mouseout", function() {
                     this.routePath.setMap(null);
-                    this.setIcon(m_oBrownIcon);
+                    this.setIcon(m_oBlueIcon);
                     m_oStationCode.firstChild.data = "Station Code: ";
                 });
 
@@ -1866,12 +1867,15 @@ function Jump()
     $('#toggleRS').on('click', function() { //Road Segments
         toggleVisibility($(this), routePaths);
     });
+    /*
     //button/checkbox event handler for VDT Mobile
     $("#toggleVDT").on("click", function() {
         toggleVisibility($(this), vdtMarkersWithRoutes);
     });
+    */
     //button/checkbox event handler for WxDE Mobile
     $("#toggleWxDEMbl").on("click", function() {
+        toggleVisibility($(this), vdtMarkersWithRoutes);
         toggleVisibility($(this), mobileMarkersWithRoutes);
     });
     //button/checkbox event handler for WxDE nonmobile
