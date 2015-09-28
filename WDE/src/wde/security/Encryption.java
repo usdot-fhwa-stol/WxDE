@@ -44,7 +44,7 @@ public class Encryption {
 
     public static String getOriginalMessage(String inMsg) throws Exception {
         String message = decryptToString(inMsg);
-        String dateStr = message.substring(0, 18);
+        String dateStr = message.substring(0, 19);
         Date date = timeFormatter.parse(dateStr);
         long now = System.currentTimeMillis();
         long delta = Math.abs(date.getTime() - now);
