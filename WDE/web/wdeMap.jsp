@@ -197,12 +197,14 @@
             <img alt="vdt-mobile" src="image/mm_segment_line.png"/> Road Segments
         </button>
 
+        <!--
         <button type="button" id="toggleVDT" class="toggle-button" data-title="Click to Hide" data-source="2"
                 data-type="M">
             <img src="/image/icons/light/fa-checked.png" class="checkbox-icon" alt="Checked Box"/>
             <img src="/image/icons/light/fa-unchecked.png" class="checkbox-icon hidden" alt="Unchecked Box"/>
             <img alt="vdt-mobile" src="image/mm_12_brown.png" class="marker-icon"/> VDT Mobile
         </button>
+        -->
 
         <button type="button" id="toggleWxDEMbl" class="toggle-button" data-title="Click to Hide" data-source="1"
                 data-type="M">
