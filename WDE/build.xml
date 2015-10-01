@@ -37,7 +37,7 @@ Modification History:
 	<property name="app-type" value="web"/>
 	<property name="build-type" value="archive"/>
     
-    <property name="version" value="2.1-dev"/>
+    <property name="version" value="2.2-dev"/>
 	
 	<target name="init">
 		<tstamp/>

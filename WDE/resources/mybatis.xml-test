@@ -23,7 +23,7 @@ PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
 			<transactionManager type="JDBC" />
 			<dataSource type="POOLED">
 				<property name="driver" value="org.postgresql.Driver" />
-				<property name="url" value="jdbc:postgresql://wdetest:5432/wxde" />
+				<property name="url" value="jdbc:postgresql://localhost:5432/wxde" />
 				<property name="username" value="wxde" />
 				<property name="password" value="d0t_dev$" />
 			</dataSource>
