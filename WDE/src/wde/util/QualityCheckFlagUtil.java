@@ -58,8 +58,8 @@ public class QualityCheckFlagUtil {
         if (sourceId != 1 && sourceId != 2)
             return qcf;
 
-        int rf = 0;
-        int pf = 0;
+        int rf = 14;
+        int pf = 14;
         for (int i = qcLength[sourceId - 1] - 1; i >= 0; i--) {
             switch (flagStr[i]) {
                 case '/':
