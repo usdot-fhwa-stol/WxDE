@@ -149,7 +149,7 @@ public class OutputCsv extends OutputFormat {
                 oWriter.println(qf);
             }
 
-            //oWriter.println("---BEGIN OF RECORDS---");
+            oWriter.println("---BEGIN OF RECORDS---");
 
             // output the obs details
             for (int nIndex = 0; nIndex < oSubObsList.size(); nIndex++) {
