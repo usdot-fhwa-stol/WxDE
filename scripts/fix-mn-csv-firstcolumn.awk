@@ -21,6 +21,6 @@ NR > 1 {
 	
 	$1 = new_first_column FS new_second_column;
 	
-	print;
-	
 }
+
+1
