@@ -36,6 +36,7 @@ public class Roads extends ArrayList<Roads.GridIndex> implements Runnable
 
 	private Roads()
 	{
+		run();
 	}
 
 
@@ -94,12 +95,12 @@ public class Roads extends ArrayList<Roads.GridIndex> implements Runnable
 	}
 
 
-	public Polyline getLink(double dTol, int nX, int nY)
+	public Polyline getLink(double dTol, int nLon, int nLat)
 	{
 		GridIndex oLinkSet = new GridIndex();
-		nX = Utility.floor(nX, 10000) / 10000;
-		nY = Utility.floor(nY, 10000) / 10000;
-		oLinkSet.m_nHash = nX << 16 + nY;
+		nLon = Utility.floor(nLon, 10000) / 10000;
+		nLat = Utility.floor(nLat, 10000) / 10000;
+		oLinkSet.m_nHash = nLon << 16 + nLat;
 		int nIndex = Collections.binarySearch(this, oLinkSet);
 		if (nIndex < 0) // no set of links nearby
 			return null;
@@ -110,8 +111,8 @@ public class Roads extends ArrayList<Roads.GridIndex> implements Runnable
 		while (nIndex-- > 0)
 		{
 			Polyline oLink = oLinkSet.get(nIndex);
-			if (oLink.isInsideBounds(nX, nY, nTol) && 
-					oLink.contextSearch(dTol, nX, nY))
+			if (oLink.isInsideBounds(nLon, nLat, nTol) && 
+					oLink.contextSearch(dTol, nLon, nLat))
 				return oLink;
 		}
 		return null; // specified point not on any link
