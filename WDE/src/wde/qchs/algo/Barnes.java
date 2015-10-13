@@ -106,13 +106,27 @@ public class Barnes extends LikeInstrument {
         m_oLock.readUnlock();
     }
 
+
+    /**
+     * Placeholder for subclasses that may implement additional pre-quality 
+		 * checking filters that further reduce the observation set
+     *
+     * @param nLat    latitude of the target observation.
+     * @param nLon    longitude of the target observation.
+     * @param oObsSet thread-local observation set to be filtered.
+     */
+		protected void filter(int nLat, int nLon, ArrayList<IObs> oObsSet)
+		{
+		}
+
+
     /**
      * Estimates a value at the given latitude and longitude by finding a
      * weighted average of all observations contained in the
      * provided observation set.
      *
      * @param nLat       latitude of the observation to estimate.
-     * @param nLon       longitue of the observation to estimate.
+     * @param nLon       longitude of the observation to estimate.
      * @param oObsSet    ArrayList containing the observations for calculation.
      * @param oModObsSet locked modified observation set that will contain the
      *                   modified observations after this method returns.
@@ -121,8 +135,9 @@ public class Barnes extends LikeInstrument {
      */
     protected double estimateValue(int nLat, int nLon, IObs iTargetObs,
                                    ArrayList<IObs> oObsSet, ModObsSet oModObsSet) {
-        oModObsSet.clear();
-        oModObsSet.ensureCapacity(oObsSet.size());
+				filter(nLat, nLon, oObsSet); // optional filter for source observations
+				oModObsSet.clear();
+				oModObsSet.ensureCapacity(oObsSet.size());
 
         // obs inside the max radius and outside the min radius are used
         // for this comparison to avoid finding each platform explicitly

@@ -15,7 +15,7 @@ import java.util.Comparator;
 
 /**
  * Class provides a Quality checking method to check whether the value is within
- * a tollerable amount of one standard deviation away from other nearby
+ * a tolerable amount of one standard deviation away from other nearby
  * observation values.
  */
 public class IQR extends Barnes implements Comparator<ModObs> {
@@ -130,11 +130,11 @@ public class IQR extends Barnes implements Comparator<ModObs> {
 
         // obs need to be copied into a modified obs set to interface it with
         // the IQR algorithm that is also used by the dewpoint spatial test
-        ModObsSet oModObsSet = readLock();
+        ModObsSet oModObsSet = m_oLock.readLock();
         estimateValue(nLat, nLon, iObs, oObsSet, oModObsSet);
         runIQR(iSensor.getId(), oModObsSet.modifyValue(iObs), iObs,
                 oResult, m_dSdMin, m_dSdMax, oModObsSet, this);
-        readUnlock();
+        m_oLock.readUnlock();
     }
 
     /**
