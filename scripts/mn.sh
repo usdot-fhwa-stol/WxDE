@@ -5,8 +5,8 @@ if [ $base = '.' ]; then
 	base=$(pwd)
 fi
 
-#data='/opt/collectors/MN/data/RWISexport'
-data="${base}/mn_files"
+data='/opt/collectors/MN/data/RWISexport'
+#data="${base}/mn_files"
 
 wget -o wget.log -r -l1 --no-parent -nd -nc -P ${data} --user=clarus --password=MNcdk755 -A ssi.atmos.*,ssi.Sub.*,ssi.surface.* ftp://rwis.dot.state.mn.us/external_images/
 
