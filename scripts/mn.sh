@@ -9,27 +9,6 @@ wrn_lvl=3
 dbg_lvl=4
 inf_lvl=5
 
-base=$(dirname "$0")
-if [ $base = '.' ]; then
-	base=$(pwd)
-fi
-
-data='/opt/collectors/MN/data/RWISexport'
-#data="${base}/mn_files"
-
-wget -o wget.log -r -l1 --no-parent -nd -nc -P ${data} --user=clarus --password=MNcdk755 -A ssi.atmos.*,ssi.Sub.*,ssi.surface.* ftp://rwis.dot.state.mn.us/external_images/
-
-echo Processing wget log to retrieve list of files downloaded...
-for file in $(egrep  "surface.*txt.*saved" wget.log | cut -d ' ' -f 6 | sed 's/^.\(.*\).$/\1/'); do
-	(
-		echo -n Applying awk script to $file...
-		$base/fix-mn-csv-firstcolumn.awk $file > $file.tmp
-		mv $file.tmp $file
-		echo Done.
-	) | tee --append mn.log 
-done
-echo Complete.
-
 notify() { log $silent_lvl "NOTE: $1"; } # Always prints
 critical() { log $crt_lvl "CRITICAL: $2"; }
 error() { log $err_lvl "ERROR: $1"; }
@@ -43,3 +22,26 @@ log() {
         echo -e "$datestring $2" | fold -w70 -s | sed '2~1s/^/  /' >&3
     fi
 }
+
+base=$(dirname "$0")
+if [ "$base" = "." ]; then
+	base=$(pwd)
+fi
+
+data="${base}/data"
+
+wget -o wget.log -r -l1 --no-parent -nd -nc -P ${data} --user=clarus --password=MNcdk755 -A ssi.atmos.*,ssi.Sub.*,ssi.surface.* ftp://rwis.dot.state.mn.us/external_images/
+[ -f wget.log ] || {
+	die "Could not find the wget.log file." | tee -a mn.log
+}
+
+echo Processing wget log to retrieve list of files downloaded...
+for file in $(egrep  "surface.*txt.*saved" wget.log | cut -d ' ' -f 6 | sed 's/^.\(.*\).$/\1/'); do
+	(
+		echo -n Applying awk script to $file...
+		$base/fix-mn-csv-firstcolumn.awk $file > $file.tmp 2>&1
+		mv $file.tmp $file 2>&1
+		echo Done.
+	) | tee -a mn.log 
+done
+echo Complete.
