@@ -28,7 +28,7 @@ if [ "$base" = "." ]; then
 	base=$(pwd)
 fi
 
-data="${base}/data"
+data="${base}/data/RWISexport/"
 
 wget -o wget.log -r -l1 --no-parent -nd -nc -P ${data} --user=clarus --password=MNcdk755 -A ssi.atmos.*,ssi.Sub.*,ssi.surface.* ftp://rwis.dot.state.mn.us/external_images/
 [ -f wget.log ] || {
