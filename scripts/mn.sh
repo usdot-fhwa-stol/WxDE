@@ -37,11 +37,11 @@ wget -o wget.log -r -l1 --no-parent -nd -nc -P ${data} --user=clarus --password=
 
 echo Processing wget log to retrieve list of files downloaded...
 for file in $(egrep  "surface.*txt.*saved" wget.log | cut -d ' ' -f 6 | sed 's/^.\(.*\).$/\1/'); do
-	(
-		echo -n Applying awk script to $file...
-		$base/fix-mn-csv-firstcolumn.awk $file > $file.tmp 2>&1
-		mv $file.tmp $file 2>&1
-		echo Done.
-	) | tee -a mn.log 
+(
+    echo -n Applying awk script to $file...
+    $base/fix-mn-csv-firstcolumn.awk $file > $file.tmp 2>&1
+    mv $file.tmp $file 2>&1
+    echo Done.
+) | tee -a mn.log 
 done
 echo Complete.
