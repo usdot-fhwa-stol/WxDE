@@ -3,3 +3,6 @@
 *.iws
 .idea/
 target/
+/WDE/*.mf
+/WDE/*.xml
+/WDE/nbproject/
