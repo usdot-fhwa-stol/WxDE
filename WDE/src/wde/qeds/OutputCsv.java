@@ -144,10 +144,11 @@ public class OutputCsv extends OutputFormat {
 
             // output the header information
             oWriter.println(m_sHeader);
-            ArrayList<String> qualityFlags = QualityFlagDao.getInstance().getQualityFlagStringArray();
-            for (String qf : qualityFlags) {
-                oWriter.println(qf);
-            }
+            //ArrayList<String> qualityFlags = QualityFlagDao.getInstance().getQualityFlagStringArray();
+            //for (String qf : qualityFlags) {
+            //    oWriter.println(qf);
+            //}
+            oWriter.println("WxDE (5) [2015-10-05 00:00:00+00, 2016-10-05 00:00:00+00) - QchsSequenceComplete,QchsManualFlag,QchsServiceSensorRange,QchsServiceClimateRange,QchsServiceStep,QchsServiceLike,QchsServicePersist,QchsServiceBarnes,QchsServicePressure,Complete,Manual,Sensor_Range,Climate_Range,Step,Like_Instrument,Persistence,IQR_Spatial,Barnes_Spatial,Dew_Point,Sea_Level_Pressure,Precip_Accum,Model_Analysis,Neighboring_Vehicle,Standard_Deviation");
 
             //oWriter.println("---BEGIN OF RECORDS---");
 
