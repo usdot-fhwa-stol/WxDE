@@ -1,5 +1,5 @@
 // global variables
-var QCH_MAX = 15;
+var QCH_MAX = 12;
 var m_oMap;
 var oMapOptions;
 var m_oInfoWindow;
@@ -401,9 +401,6 @@ function BuildQChTests()
     m_oAllTests.push("QchsServiceBarnes", imgBarnesSpatial.src);
     m_oAllTests.push("QchsServiceDewpoint", imgDewpoint.src);
     m_oAllTests.push("QchsServicePressure", imgSealevelPressure.src);
-    m_oAllTests.push("QchsModelAnalysis", imgModelAnalysis.src);
-    m_oAllTests.push("QchsNeighboringVehicle", imgNeighboringVehicle.src);
-    m_oAllTests.push("QchsStandardDeviation", imgStandardDeviation.src);
 }
 
 
@@ -750,11 +747,7 @@ var cbGetObsForStation = function(oXml, sText, trigger)
             "    <td class=\"td-image\" rowspan=\"2\"><img src=\"" + imgBarnesSpatial.src + "\" alt=\"Barnes Spatial\"/></td>" +
             "    <td class=\"td-image\" rowspan=\"2\"><img src=\"" + imgDewpoint.src + "\" alt=\"Dewpoint\"/></td>" +
             "    <td class=\"td-image\" rowspan=\"2\"><img src=\"" + imgSealevelPressure.src + "\" alt=\"Sea Level Pressure\"/></td>" +
-            "    <td class=\"td-image\" rowspan=\"2\"><img src=\"" + imgPrecipAccum.src + "\" alt=\"Accumulated Precipitation\"/></td>" +
-            "    <td class=\"td-image\" rowspan=\"2\"><img src=\"" + imgModelAnalysis.src + "\" alt=\"Model Analysis\"/></td>" +
-            "    <td class=\"td-image\" rowspan=\"2\"><img src=\"" + imgNeighboringVehicle.src + "\" alt=\"Neighboring Vehicle\"/></td>" +
-            "    <td class=\"td-image\" rowspan=\"2\"><img src=\"" + imgStandardDeviation.src + "\" alt=\"Standard Deviation\"/></td>";
-
+            "    <td class=\"td-image\" rowspan=\"2\"><img src=\"" + imgPrecipAccum.src + "\" alt=\"Accumulated Precipitation\"/></td>";
         } else {
             sObsTableHeader +=
                 "  <tr align=\"center\">" +
