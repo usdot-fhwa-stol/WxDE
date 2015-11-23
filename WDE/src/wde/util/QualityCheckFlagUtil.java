@@ -18,8 +18,8 @@ package wde.util;
 
 public class QualityCheckFlagUtil {
 
-    private static final int[] qcLength = {12, 13};
-    private static String[] padding = {"000000000000", "0000000000000"};
+    private static final int[] qcLength = {15, 16};
+    private static String[] padding = {"000000000000000", "0000000000000000"};
     private static char[] qcChars = {'/', '-', 'N', 'P'};
 
     public static int getQcLength(int sourceId) {
