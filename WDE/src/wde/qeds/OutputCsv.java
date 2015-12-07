@@ -150,7 +150,7 @@ public class OutputCsv extends OutputFormat {
             //}
             oWriter.println("WxDE (5) [2015-10-05 00:00:00+00, 2016-10-05 00:00:00+00) - QchsSequenceComplete,QchsManualFlag,QchsServiceSensorRange,QchsServiceClimateRange,QchsServiceStep,QchsServiceLike,QchsServicePersist,QchsServiceBarnes,QchsServicePressure,Complete,Manual,Sensor_Range,Climate_Range,Step,Like_Instrument,Persistence,IQR_Spatial,Barnes_Spatial,Dew_Point,Sea_Level_Pressure,Precip_Accum,Model_Analysis,Neighboring_Vehicle,Standard_Deviation");
 
-            oWriter.println("---BEGIN OF RECORDS---");
+            //oWriter.println("---BEGIN OF RECORDS---");
 
             // output the obs details
             for (int nIndex = 0; nIndex < oSubObsList.size(); nIndex++) {
