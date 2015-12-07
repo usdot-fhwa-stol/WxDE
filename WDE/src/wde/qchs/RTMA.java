@@ -4,8 +4,9 @@ package wde.qchs;
 import java.net.URI;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collections;
-import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.TimeZone;
 import ucar.ma2.Array;
@@ -17,12 +18,21 @@ import ucar.nc2.dt.GridDatatype;
 import ucar.nc2.dt.grid.GridDataset;
 import ucar.unidata.geoloc.LatLonPointImpl;
 import ucar.unidata.geoloc.ProjectionPointImpl;
-//import wde.util.Scheduler;
+import wde.util.Scheduler;
 import wde.util.MathUtil;
 
 
-public class RTMA implements Runnable
+/**
+ * Real-Time Mesoscale Analysis. This singleton class downloads hourly RTMA 
+ * files from the National Weather Service and provides a lookup method to 
+ * retrieve the model value for the supported observation types that are then 
+ * used to quality check the measured observation.
+ */
+public final class RTMA implements Runnable
 {
+	/**
+	* Static arrays provide name mapping between RTMA model and WxDE obs types.
+	*/
 	private static final int[] OBS_TYPES = {575, 554, 5733, 5101, 56105, 56108, 56104};
 	private static final String[] NC_NAMES = 
 	{
@@ -39,24 +49,45 @@ public class RTMA implements Runnable
 	private ArrayList<Double> m_oX = new ArrayList();
 	private ArrayList<Double> m_oY = new ArrayList();
 	private final SimpleDateFormat m_oSrcFile = new SimpleDateFormat(
-		"'/pub/data/nccf/com/rtma/prod/rtma2p5.'yyyyMMdd'/rtma2p5.t'HH'z.2dvarges_ndfd.grb2'");
+		"'pub/data/nccf/com/rtma/prod/rtma2p5.'yyyyMMdd'/rtma2p5.t'HH'z.2dvarges_ndfd.grb2'");
 	private List<GridDatatype> m_oGrids;
 
 
+	/**
+	 * <b> Default Private Constructor </b>
+	 * <p>
+	 * Creates a new instance of RTMA upon class loading. Client components 
+	 * obtain a singleton reference through the getInstance method.
+	 * </p>
+	 */
 	private RTMA()
 	{
 		m_oSrcFile.setTimeZone(TimeZone.getTimeZone("Etc/UTC"));
-		run();
-//		Scheduler.getInstance().schedule(this, 60 * 55, 3600, true);
+		run(); // manually initialize first run
+		Scheduler.getInstance().schedule(this, 60 * 55, 3600, true); // schedule updates
 	}
 
 
+	/**
+	 * Returns a reference to singleton RTMA model data cache.
+	 *
+	 * @return reference to RTMA instance.
+	 */
 	public static RTMA getInstance()
 	{
 		return g_oRTMA;
 	}
 
 
+	/**
+	 * Convenience method that creates an array of double values from the 
+	 * in-memory NetCDF data by object layer name.
+	 *
+	 * @param oNcFile reference to the loaded NetCDF RTMA data
+	 * @param sName   Name of the observation layer to read.
+	 * 
+	 * @return an array of the copied (@code Double} observation values.
+	 */
 	private static ArrayList<Double> fromArray(NetcdfFile oNcFile, String sName)
 		throws Exception
 	{
@@ -71,18 +102,26 @@ public class RTMA implements Runnable
 	}
 	
 
+	/**
+	 * Regularly called on a schedule to refresh the RTMA model cache with 
+	 * the most recently published model file.
+	 */
 	@Override
 	public void run()
 	{
-		long lTempStart = System.currentTimeMillis();
-		Date oDate = new Date(lTempStart - 55 * 60000); // run 55 minutes late
-		String sSrcFile = m_oSrcFile.format(oDate);
+		GregorianCalendar oNow = new GregorianCalendar();
+		if (oNow.get(Calendar.MINUTE) < 55) // backup to previous hour
+			oNow.setTimeInMillis(oNow.getTimeInMillis() - 3600000);
+		oNow.set(Calendar.MILLISECOND, 0); // adjust clock to scheduled time
+		oNow.set(Calendar.SECOND, 0);
+		oNow.set(Calendar.MINUTE, 55);
+		String sSrcFile = m_oSrcFile.format(oNow.getTime());
 
 		try
 		{
-			URI oUri = new URI("ftp://anonymous:clarus.mixonhill.com@ftp.ncep.noaa.gov" + sSrcFile);
-			NetcdfFile oNcFile = NetcdfFile.openInMemory(oUri);
-//			NetcdfFile oNcFile = NetcdfFile.openInMemory("C:/Users/bryan.krueger/Desktop/wip/Clarus/vdt/rtma2p5.t13z.2dvarges_ndfd.grb2");
+			URI oURI = new URI("ftp://anonymous:clarus.mixonhill.com@" + 
+				"ftp.ncep.noaa.gov/" + sSrcFile);
+			NetcdfFile oNcFile = NetcdfFile.openInMemory(oURI);
 			ArrayList<Double> oX = fromArray(oNcFile, "x"); // sorted low to high
 			ArrayList<Double> oY = fromArray(oNcFile, "y");
 			
@@ -93,7 +132,6 @@ public class RTMA implements Runnable
 				nGridMap[nOuter] = -1; // default to invalid index
 				for (int nInner = 0; nInner < oGrids.size(); nInner++)
 				{
-//					if (oGrids.get(nInner).getName().compareTo(NC_NAMES[nOuter]) == 0)
 					if (NC_NAMES[nOuter].contains(oGrids.get(nInner).getName()))
 						nGridMap[nOuter] = nInner; // save RTMA name mapping				
 				}
@@ -105,8 +143,8 @@ public class RTMA implements Runnable
 				m_oY = oY;
 				m_oGrids = oGrids;
 				m_nGridMap = nGridMap;
-				m_lStartTime = lTempStart;
-				m_lEndTime = lTempStart + 3900000; // data are valid for 65 minutes
+				m_lStartTime = oNow.getTimeInMillis() - 300000; // 5-minute margin
+				m_lEndTime = m_lStartTime + 4200000; // data are valid for 70 minutes
 			}
 		}
 		catch(Exception oException) // failed to download new data
@@ -115,6 +153,17 @@ public class RTMA implements Runnable
 	}
 
 
+	/**
+	 * Finds the RTMA model value for an observation type by time and location.
+	 *
+	 * @param nObsTypeId	the observation type to lookup.
+	 * @param lTimestamp	the timestamp of the observation.
+	 * @param nLat				the latitude of the requested data.
+	 * @param nLon				the longitude of the requested data.
+	 * 
+	 * @return	the RTMA model value for the requested observation type for the 
+	 *					specified time at the specified location.
+	 */
 	public synchronized double getReading(int nObsTypeId, long lTimestamp, int nLat, int nLon)
 	{
 		if (lTimestamp < m_lStartTime || lTimestamp >= m_lEndTime)
@@ -162,21 +211,18 @@ public class RTMA implements Runnable
 			if (oVar.isFillValue(dVal) || oVar.isInvalidData(dVal) || oVar.isMissing(dVal))
 				return Double.NaN; // no valid data for specified location
 
-			return dVal;
+			if (nObsTypeId == 554) // convert pressure Pa to mbar
+				return dVal / 100.0;
+	
+			if (nObsTypeId == 5733) // convert temperature K to C
+				return dVal - 273.15;
+	
+			return dVal; // no conversion necessary for other observation types
 		}
 		catch (Exception oException)
 		{
 		}
 
 		return Double.NaN;
-	}
-
-
-	public static void main(String[] sArgs)
-		throws Exception
-	{
-		RTMA oRTMA = RTMA.getInstance();
-		System.out.println(oRTMA.getReading(5733, System.currentTimeMillis(), 45000000, -94000000));
-		System.out.println(oRTMA.getReading(554, System.currentTimeMillis(), 45000000, -94000000));
 	}
 }

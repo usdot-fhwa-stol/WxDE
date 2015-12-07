@@ -4,6 +4,8 @@
  */
 package wde.qchs.algo;
 
+import wde.dao.PlatformDao;
+import wde.metadata.IPlatform;
 import wde.metadata.ISensor;
 import wde.obs.IObs;
 import wde.qchs.ModObs;
@@ -44,10 +46,21 @@ public class Barnes extends LikeInstrument {
     protected double m_dExp;
 
     /**
+     * List of allowed platform categories.
+     */
+		protected char[] m_cPlatFilter = {'P', 'T'};
+
+    /**
      * Lockable container of {@code ModObsSet} objects.
      */
     protected StripeLock<ModObsSet> m_oLock =
             new StripeLock<ModObsSet>(new ModObsSets(), DEFAULT_LOCKS);
+
+	/**
+	 * Reference to the platform cache.
+	 */
+	protected PlatformDao m_oPlatformDao = PlatformDao.getInstance();
+
 
 
     /**
@@ -196,8 +209,19 @@ public class Barnes extends LikeInstrument {
      * @param oResult    results of the test.
      */
     @Override
-    public void check(int nObsTypeId, ISensor iSensor,
-                      IObs iObs, QChResult oResult) {
+    public void check(int nObsTypeId, ISensor iSensor, 
+			IObs iObs, QChResult oResult)
+		{
+				IPlatform iPlatform = m_oPlatformDao.getPlatform(iSensor.getPlatformId());
+				boolean bAllowed = false;
+				for (int nIndex = 0; nIndex < m_cPlatFilter.length; nIndex++)
+				{
+					if (!bAllowed)
+						bAllowed = (m_cPlatFilter[nIndex] == iPlatform.getCategory());
+				}
+				if (!bAllowed) // only execute when target obs from allowed categories
+					return;
+
         // retrieve the background field
         int nLat = iObs.getLatitude();
         int nLon = iObs.getLongitude();

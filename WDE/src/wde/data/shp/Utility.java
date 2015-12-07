@@ -1,5 +1,6 @@
 package wde.data.shp;
 
+
 /**
  * Common SHP file reading utility functions.
  *
@@ -8,14 +9,14 @@ package wde.data.shp;
  */
 public class Utility
 {
-	
 	/**
 	 * Creates a new instance of Utility
 	 */
 	private Utility()
 	{
 	}
-	
+
+
   /**
 	 * Reverses the two bytes in a short integer.  The first byte of the short becomes the
 	 * second byte and the second byte of the short becomes the first.
@@ -39,8 +40,9 @@ public class Utility
 		int nByte1 = rValue & 0xff;
 		int nByte2 = (rValue >> 8) & 0xff;
 
-		return (short)(nByte1 << 8 | nByte2 << 0);
+		return (short)(nByte1 << 8 | nByte2);
 	}
+
 
   /**
 	 * Reverses the four bytes in an integer.  The first byte becomes the fourth byte, the second
@@ -67,6 +69,7 @@ public class Utility
 		);
 	}
 
+
 	/**
 	 * Reverses the eight bytes in a long integer.  The first byte becomes the eighth byte, the second
 	 * byte becomes the seventh byte, etc...
@@ -82,7 +85,7 @@ public class Utility
 	 */
 	public static long swap(long lValue)
 	{
-		long lByte1 = (lValue >>  0) & 0xff;
+		long lByte1 = lValue & 0xff;
 		long lByte2 = (lValue >>  8) & 0xff;
 		long lByte3 = (lValue >> 16) & 0xff;
 		long lByte4 = (lValue >> 24) & 0xff;
@@ -94,9 +97,10 @@ public class Utility
 		return
 		(
 			lByte1 << 56 | lByte2 << 48 | lByte3 << 40 | lByte4 << 32 |
-			lByte5 << 24 | lByte6 << 16 | lByte7 <<  8 | lByte8 <<  0
+			lByte5 << 24 | lByte6 << 16 | lByte7 <<  8 | lByte8
 		);
 	}
+
 
   /**
 	 * Reverses the four bytes in a floating point number.  The first byte becomes the fourth byte, the second
@@ -111,6 +115,7 @@ public class Utility
 		return Float.intBitsToFloat(swap(Float.floatToIntBits(fValue)));
 	}
 
+
 	/**
 	 * Reverses the eight bytes in a double precision number.  The first byte becomes the eighth byte, the second
 	 * byte becomes the seventh byte, etc...
@@ -123,10 +128,12 @@ public class Utility
 		return Double.longBitsToDouble(swap(Double.doubleToLongBits(dValue)));
 	}
 
+
 	public static double swapD(long lValue)
 	{
 		return Double.longBitsToDouble(swap(lValue));
 	}
+
 
 	/**
 	 * Returns the unsigned integer value of a byte.
@@ -163,46 +170,74 @@ public class Utility
 		return nFlooredValue;
 	}
 
+
 	/**
-	 * Determines if the specified point is within the specified rectangular region.
+	 * Determines if the specified point is within the specified boundary. 
+	 * A specified tolerance adjusts the compared region as needed.
 	 * 
 	 * @param nX x coordinate of point
 	 * @param nY y coordinate of point
-	 * @param nTop y value of the top of the region
-	 * @param nRight x value of the right side of the region
-	 * @param nBottom y value of the bottom of the region
-	 * @param nLeft x value of the left side of the region
-	 * @param nTolerance coordinate thickness of the rectangular region
-	 * @return true if the points are within or on the rectangular region, false otherwise
+	 * @param nT y value of the top of the region
+	 * @param nR x value of the right side of the region
+	 * @param nB y value of the bottom of the region
+	 * @param nL x value of the left side of the region
+	 * @param nTol the allowed margin for a point to be considered inside
+	 * @return true if the point is inside or on the rectangular region
 	 */
-	public static boolean isPointInsideRegion(int nX, int nY, int nTop, int nRight, int nBottom, int nLeft, int nTolerance)
+	public static boolean isInside(int nX, int nY, 
+		int nT, int nR, int nB, int nL, int nTol)
 	{
-		// swap the bounds as needed
-		int nTemp = 0;
-
-		if (nRight < nLeft)
+		if (nR < nL) // swap the left and right bounds as needed
 		{
-			nTemp = nRight;
-			nRight = nLeft;
-			nLeft = nTemp;
+			nR ^= nL;
+			nL ^= nR;
+			nR ^= nL;
 		}
 
-		if (nTop < nBottom)
+		if (nT < nB) // swap the top and bottom bounds as needed
 		{
-			nTemp = nTop;
-			nTop = nBottom;
-			nBottom = nTemp;
+			nT ^= nB;
+			nB ^= nT;
+			nT ^= nB;
 		}
+	
+		 // expand the bounds by the tolerance
+    return (nX >= nL - nTol && nX <= nR + nTol && 
+			nY >= nB - nTol && nY <= nT + nTol);
+	}
+
+
+	/**
+	 * Determines the squared perpendicular distance between a point and a line. 
+	 * All values are scaled to six decimal places. The distance is returned or 
+	 * a negative integer when the point does not intersect the line.
+	 * 
+	 * @param nX	longitude
+	 * @param nY	latitude
+	 * @param nX1	longitude for the first end point of the line
+	 * @param nY1	latitude for the first end point of the line
+	 * @param nX2	longitude for the second end point of the line
+	 * @param nY2	latitude for the second end point of the line
+	 * @return scaled degree distance between the point and line
+	 */
+	public static int getPerpDist(int nX, int nY, 
+		int nX1, int nY1, int nX2, int nY2)
+	{
+		int nDeltaX = nX2 - nX1;
+		int nDeltaY = nY2 - nY1;
 		
-		// adjust the bounds to include the tolerance
-		if (nTolerance != 0)
-		{
-			nTop += nTolerance;
-			nRight += nTolerance;
-			nBottom -= nTolerance;
-			nLeft -= nTolerance;
-		}
+		long lU = ((nX - nX1) * nDeltaX) + ((nY - nY1) * nDeltaY);
+		long lV = (nDeltaX * nDeltaX + nDeltaY * nDeltaY);
+	
+		if (lU < 0 || lU > lV) // nearest point is not on the line
+			return Integer.MIN_VALUE;
 
-    return (nY <= nTop && nX <= nRight && nY >= nBottom && nX >= nLeft);
+		// find the perpendicular intersection of the point on the line
+		int nXp = nX1 + (int)(lU * nDeltaX / lV);
+		int nYp = nY1 + (int)(lU * nDeltaY / lV);
+
+		nDeltaX = nX - nXp; // calculate the squared distance
+		nDeltaY = nY - nYp; // between the point and the intersection
+		return (nDeltaX * nDeltaX) + (nDeltaY * nDeltaY);
 	}
 }

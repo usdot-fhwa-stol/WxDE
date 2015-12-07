@@ -1,129 +1,153 @@
 package wde.data.shp;
 
 import java.io.DataInputStream;
+import java.util.Iterator;
 
 import wde.util.MathUtil;
 
 
 /**
- * Holds information associated with a geo-coordinate polyline.  A polyline can be used to
- * represent roads, rivers, rail lines, or other linear map features.
+ * Holds information associated with a geo-coordinate polyline. A polyline 
+ * can represent roads, rivers, rail lines, or other linear map features.
  * 
  * @author  bryan.krueger
  * @version 1.0 (October 2, 2015)
  */
-public class Polyline extends Polyshape
+public class Polyline implements Iterator<PolylinePart>
 {
+	private int m_nPartIndex;
+	private int[] m_oParts;
+	private int[] m_oPolyline;
+	private final PolylinePart m_oPart = new PolylinePart();
+
+
   /**
    * Creates a new "blank" instance of Polyline 
    */
-  protected Polyline()
+  public Polyline()
   {
   }
 
-	/**
-	 * Creates a new instance of Polyline with name, identifier, data input, and math transform
-   * specified.
-   * 
-	 * @param oDataInputStream data stream containing information used to build the polyline object
-	 * @throws java.lang.Exception
-	 */
-	public Polyline(DataInputStream oDataInputStream)
-		throws Exception
+
+	public void set(int[] oPolyline)
 	{
-		super(oDataInputStream);
+		m_oPolyline = oPolyline; // update polyline data reference
+		m_oParts = new int[oPolyline[4] + 1]; // create array to hold point offsets
+		System.arraycopy(oPolyline, 4, m_oParts, 0, m_oParts.length);
+		m_oParts[0] = m_oParts.length + 4; // set first point offset
+		m_nPartIndex = 0; // reset part index
+	}
+
+
+	@Override
+	public boolean hasNext()
+	{
+		return (m_oPolyline != null && m_nPartIndex < m_oParts.length);
+	}
+
+
+	@Override
+	public PolylinePart next()
+	{
+		int nStart = m_oParts[m_nPartIndex];
+		int nEnd = m_oPolyline.length; // default to end of polyline date
+		if (++m_nPartIndex < m_oParts.length)
+			nEnd = m_oParts[m_nPartIndex];
+
+		m_oPart.set(m_oPolyline, nStart, nEnd - 2); // lines span two points
+		return m_oPart;
 	}
 
 
   /**
-	 * Determines if the specified coordinate is within the specified distance of the polyline.
+   * Creates an integer array that represents polyline data.
    * 
-	 * @param dMaxDistance maximum distance for point to be considered "in" the polyline
-	 * @param nX longitudinal coordinate
-	 * @param nY latitudinal coordinate
-	 * @return true if the point is "in" the polyline, false otherwise
+	 * @param oDataInputStream data stream used to build the polyline
+	 * @return an integer array that represents polyline parts and segments
+	 * @throws Exception
    */
-	@Override
-	public boolean contextSearch(double dMaxDistance, int nX, int nY)
+	public static int[] read(DataInputStream oDataInputStream)
+		throws Exception
 	{
-		int nMaxDistance = MathUtil.toMicro(dMaxDistance);
-		boolean bFound = false;
+		oDataInputStream.readInt(); // ignore record number
+		int nLen = oDataInputStream.readInt(); // read content length
+		Utility.swap(oDataInputStream.readInt()); // ignore shape type
+		nLen -= 2; // length is based on two-byte short
 
-		for (int nPartIndex = 0; nPartIndex < m_nParts.length;)
+		int nXmin = MathUtil.toMicro(Utility.swapD(oDataInputStream.readLong()));
+		int nYmin = MathUtil.toMicro(Utility.swapD(oDataInputStream.readLong()));
+		int nXmax = MathUtil.toMicro(Utility.swapD(oDataInputStream.readLong()));
+		int nYmax = MathUtil.toMicro(Utility.swapD(oDataInputStream.readLong()));
+		nLen -= 16; // minimum bounding rectangle should not need reordering
+
+		int nParts = Utility.swap(oDataInputStream.readInt());
+		int nPoints = Utility.swap(oDataInputStream.readInt());
+		nLen -= 4;
+
+		int nIndex = 0;
+		int[] nData = new int[4 + nParts + nPoints * 2];
+		nData[nIndex++] = nXmin; // MBR, num parts, parts, points
+		nData[nIndex++] = nYmin;
+		nData[nIndex++] = nXmax;
+		nData[nIndex++] = nYmax;
+
+		for (int nPart = 0; nPart < nParts; nPart++)
 		{
-			int nStartIndex = m_nParts[nPartIndex];
-			int	nEndIndex = m_nParts[nPartIndex];
-			if (++nPartIndex == m_nParts.length)
-				nEndIndex = m_nPoints.length;
-
-			// the array uses even-odd values to represent x, y, x, y, ... x, y points
-			// verify there are enough array values to make a complete line segment
-			if (nEndIndex >= 4)
-			{
-				// initialize the line segment starting point
-				int nX1 = m_nPoints[nStartIndex++];
-				int nY1 = m_nPoints[nStartIndex++];
-
-				while (nStartIndex < nEndIndex)
-				{
-					// get the next point on the line segment
-					int nX2 = m_nPoints[nStartIndex++];
-					int nY2 = m_nPoints[nStartIndex++];
-					
-					// check to see if the point is within the individual line segment bounding box
-					if (Utility.isPointInsideRegion(nX, nY, nY2, nX2, nY1, nX1, nMaxDistance))
-					{
-						double dDistance = getPerpendicularDistance(nX, nY, nX1, nY1, nX2, nY2);
-						// break out of the loop when the first intersection is found
-						bFound = (dDistance != Double.NaN && dDistance <= dMaxDistance);
-						if (bFound)
-							nStartIndex = nEndIndex;
-					}
-
-					// set the next line starting point
-					nX1 = nX2;
-					nY1 = nY2;
-				}
-			}
+			nData[nIndex++] = Utility.swap(oDataInputStream.readInt()) * 2 + 4 + nParts;
+			nLen -= 2;
 		}
-		
-		return bFound;
+		nData[4] = nParts - 1; // overwrite first part index with part count
+
+		while (nPoints-- > 0)
+		{
+			nData[nIndex++] = MathUtil.toMicro(Utility.swapD(oDataInputStream.readLong()));
+			nData[nIndex++] = MathUtil.toMicro(Utility.swapD(oDataInputStream.readLong()));
+			nLen -= 8;
+		}
+
+		while (nLen-- > 0) // ignore any remaining non-point data
+			oDataInputStream.readShort();
+
+		return nData;
   }
 
 
-	/**
-	 * Determines the perpendicular distance between the specified point and the polyline
-	 * defined by the specified coordinates.  The squared distance is returned in scaled
-	 * degrees.
-	 * 
-	 * @param nX intger longitudinal coordinate of the point scaled to six decimal places
-	 * @param nY integer latitudinal coordinate of the point scaled to six decimal places
-	 * @param nX1 integer longitudinal coordinate of the polyline's first end point scaled to six decimal places
-	 * @param nY1 integer latitudinal coordinate of the polyline's first end point scaled to six decimal places
-	 * @param nX2 integer longitudinal coordinate of the polyline's second end point scaled to six decimal places
-	 * @param nY2 integer latitudinal coordinate of the polyline's second end point scaled to six decimal places
-	 * @return scaled double precision degree distance between the point and the polyline
-	 */
-	private double getPerpendicularDistance(int nX, int nY, int nX1, int nY1, int nX2, int nY2)
+  /**
+	 * Determines if a point is within the snap distance of the polyline. This 
+	 * method presumes that the polyline point data are set.
+   * 
+	 * @param nTol maximum distance for the point associate with the polyline
+	 * @param nX longitudinal coordinate
+	 * @param nY latitudinal coordinate
+	 * @return squared distance from the point to the line
+   */
+	public int snap(int nTol, int nX, int nY)
 	{
-		int nDeltaX = nX2 - nX1;
-		int nDeltaY = nY2 - nY1;
-		
-		long lU = ((nX - nX1) * nDeltaX) + ((nY - nY1) * nDeltaY);
-		long lV = (nDeltaX * nDeltaX + nDeltaY * nDeltaY);
-	
-		// closest point does not fall within the line segment
-		if (lU < 0 || lU > lV)
-			return Double.NaN;
+		if (!Utility.isInside(nX, nY, m_oPolyline[3], m_oPolyline[2], 
+			m_oPolyline[1], m_oPolyline[0], nTol))
+			return Integer.MIN_VALUE; // point not inside minimum bounding rectangle
 
-		// find the point on the line segment 
-		// where the perpendicular intersection occurs
-		int nXp = nX1 + (int)(lU * nDeltaX / lV);
-		int nYp = nY1 + (int)(lU * nDeltaY / lV);
+		int nDist = Integer.MAX_VALUE; // narrow to the minimum dist
+		int nSqTol = nTol * nTol; // squared tolerance for comparison
 
-		// get the distance between the specified point and the intersection point 
-		double dDeltaX = MathUtil.fromMicro(nX - nXp);
-		double dDeltaY = MathUtil.fromMicro(nY - nYp);
-		return Math.sqrt((dDeltaX * dDeltaX) + (dDeltaY * dDeltaY));
-	}
+		set(m_oPolyline); // reset iterator
+		while (hasNext())
+		{
+			PolylinePart oPart = next();
+			while (oPart.hasNext())
+			{
+				int[] oL = oPart.next(); // is point inside line bounding box
+				if (Utility.isInside(nX, nY, oL[3], oL[2], oL[1], oL[0], nTol))
+				{
+					int nSqDist = Utility.getPerpDist(nX, nY, oL[0], oL[1], oL[2], oL[3]);
+					if (nSqDist >= 0 && nSqDist <= nSqTol && nSqDist < nDist)
+						nDist = nSqDist; // reduce to next smallest distance
+				}
+			}
+		}
+
+		if (nDist == Integer.MAX_VALUE) // point did not intersect with line
+			nDist = Integer.MIN_VALUE;
+		return nDist;
+  }
 }

@@ -113,7 +113,9 @@ public class IQR extends Barnes implements Comparator<ModObs> {
      * @see IQR#calcQuantile(double, java.util.ArrayList)
      */
     @Override
-    public void check(int nObsTypeId, ISensor iSensor, IObs iObs, QChResult oResult) {
+    public void check(int nObsTypeId, ISensor iSensor, 
+			IObs iObs, QChResult oResult)
+		{
         // retrieve the background field
         int nLat = iObs.getLatitude();
         int nLon = iObs.getLongitude();

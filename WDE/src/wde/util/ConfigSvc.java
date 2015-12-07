@@ -23,7 +23,7 @@ package wde.util;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
 import wde.dao.SensorDao;
-import wde.vdt.VDTController;
+//import wde.vdt.VDTController;
 
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -121,9 +121,9 @@ public class ConfigSvc {
                                 String classPath = value + separator + "WEB-INF/classes" + separator;
                                 PropertyConfigurator.configure(classPath + "wde_log4j.properties");
                                 SensorDao.csvPath = classPath + "metadata_recovery_config.properties";
-                            } else if (key.endsWith("vdt.dataroot")) {
-                                VDTController.dataRoot = value;
-                            }
+                            }// else if (key.endsWith("vdt.dataroot")) {
+                             //   VDTController.dataRoot = value;
+                            //}
 
                             g_tokens.put(key.substring(5), value);
                         }

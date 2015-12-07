@@ -14,6 +14,7 @@ public class VehStdDev extends Barnes
 {
 	public VehStdDev()
 	{
+		m_cPlatFilter = new char[]{'M'};
 	}
 
 
@@ -27,7 +28,7 @@ public class VehStdDev extends Barnes
 	@Override
 	protected void filter(int nLat, int nLon, ArrayList<IObs> oObsSet)
 	{
-		Polyline oLink = Roads.getInstance().getLink(0.0001, nLon, nLat);
+		Polyline oLink = Roads.getInstance().getLink(100, nLon, nLat);
 		if (oLink == null) // no link found for target
 			oObsSet.clear();
 		else
@@ -36,7 +37,7 @@ public class VehStdDev extends Barnes
 			while (nIndex-- > 0) // reduce unnecessary copy operations upon removal
 			{
 				IObs iObs = oObsSet.get(nIndex);
-				if (!oLink.contextSearch(0.0001, iObs.getLongitude(), iObs.getLatitude()))
+				if (oLink.snap(100, iObs.getLongitude(), iObs.getLatitude()) < 0)
 					oObsSet.remove(nIndex); // remove observtions from set not on link
 			}
 		}

@@ -51,7 +51,7 @@ public class RTMA extends LikeInstrument
 		double dModel = m_oRTMA.getReading(nObsTypeId, iObs.getObsTimeLong(), 
 			iObs.getLatitude(), iObs.getLongitude());
 
-		if (dModel == Double.NaN) // no model data available
+		if (Double.isNaN(dModel)) // no model data available
 			return;
 
 		double dValue = iObs.getValue();
