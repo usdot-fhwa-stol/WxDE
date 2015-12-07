@@ -67,7 +67,7 @@ public class OutputCsv extends OutputFormat {
             "Category,ContribID,Contributor,StationCode,Timestamp," +
             "Latitude,Longitude,Elevation,Observation,Units," +
             "EnglishValue,EnglishUnits,ConfValue," +
-            "<Flags - see list below>";
+            "Complete,Manual,Sensor_Range,Climate_Range,Step,Like_Instrument,Persistence,IQR_Spatial,Barnes_Spatial,Dew_Point,Sea_Level_Pressure,Precip_Accum,Model_Analysis,Neighboring_Vehicle,Vehicle_Std_Dev";
     /**
      * Quality checking algorithm run flag buffer.
      */
@@ -148,7 +148,7 @@ public class OutputCsv extends OutputFormat {
             //for (String qf : qualityFlags) {
             //    oWriter.println(qf);
             //}
-            oWriter.println("WxDE (5) [2015-10-05 00:00:00+00, 2016-10-05 00:00:00+00) - QchsSequenceComplete,QchsManualFlag,QchsServiceSensorRange,QchsServiceClimateRange,QchsServiceStep,QchsServiceLike,QchsServicePersist,QchsServiceBarnes,QchsServicePressure,Complete,Manual,Sensor_Range,Climate_Range,Step,Like_Instrument,Persistence,IQR_Spatial,Barnes_Spatial,Dew_Point,Sea_Level_Pressure,Precip_Accum,Model_Analysis,Neighboring_Vehicle,Standard_Deviation");
+            //oWriter.println("WxDE (5) [2015-10-05 00:00:00+00, 2016-10-05 00:00:00+00) - QchsSequenceComplete,QchsManualFlag,QchsServiceSensorRange,QchsServiceClimateRange,QchsServiceStep,QchsServiceLike,QchsServicePersist,QchsServiceBarnes,QchsServicePressure,Complete,Manual,Sensor_Range,Climate_Range,Step,Like_Instrument,Persistence,IQR_Spatial,Barnes_Spatial,Dew_Point,Sea_Level_Pressure,Precip_Accum,Model_Analysis,Neighboring_Vehicle,Standard_Deviation");
 
             //oWriter.println("---BEGIN OF RECORDS---");
 
@@ -204,7 +204,7 @@ public class OutputCsv extends OutputFormat {
             }
 
             // output the end of file
-            //oWriter.print("---END OF RECORDS---");
+            oWriter.print("---END OF RECORDS---");
 
             if (sFilename != null) {
                 oWriter.println();
