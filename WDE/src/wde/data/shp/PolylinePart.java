@@ -1,5 +1,7 @@
 package wde.data.shp;
 
+import wde.data.AbstractIterator;
+
 import java.util.Iterator;
 
 /**
@@ -8,8 +10,7 @@ import java.util.Iterator;
  * @author  bryan.krueger
  * @version 1.0 (October 2, 2015)
  */
-public class PolylinePart implements Iterator<int[]>
-{
+public class PolylinePart extends AbstractIterator<int[]> {
 	private int m_nStart;
 	private int m_nEnd;
 	private int[] m_oPolyline;
