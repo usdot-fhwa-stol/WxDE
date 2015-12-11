@@ -95,6 +95,10 @@
             imgStandardDeviation.src = "image/qch/StandardDeviation.png";
             imgStandardDeviation.alt = "Standard Deviation";
 
+            imgVehicleStdDev = new Image(16, 106);
+            imgVehicleStdDev.src = "image/qch/VehicleStdDev.png";
+            imgVehicleStdDev.alt = "Vehicle Standard Deviation";
+
             imgSpatialBarnes = new Image(16, 106);
             imgSpatialBarnes.src = "image/qch/SpatialBarnes.png";
             imgSpatialBarnes.alt = "Spatial Barnes";

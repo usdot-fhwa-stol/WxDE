@@ -207,7 +207,7 @@ public class OutputCsv extends OutputFormat {
             oWriter.print("---END OF RECORDS---");
 
             if (sFilename != null) {
-                oWriter.println();
+                //oWriter.println();
                 oWriter.print(" -- ");
                 oWriter.print(nId);
                 oWriter.print(":");

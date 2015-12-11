@@ -403,7 +403,7 @@ function BuildQChTests()
     m_oAllTests.push("QchsServicePressure", imgSealevelPressure.src);
     m_oAllTests.push("QchsModelAnalysis", imgModelAnalysis.src);
     m_oAllTests.push("QchsNeighboringVehicle", imgNeighboringVehicle.src);
-    m_oAllTests.push("QchsStandardDeviation", imgStandardDeviation.src);
+    m_oAllTests.push("QchsVehicleStdDev", imgVehicleStdDev.src);
 }
 
 
@@ -753,7 +753,7 @@ var cbGetObsForStation = function(oXml, sText, trigger)
             "    <td class=\"td-image\" rowspan=\"2\"><img src=\"" + imgPrecipAccum.src + "\" alt=\"Accumulated Precipitation\"/></td>" +
             "    <td class=\"td-image\" rowspan=\"2\"><img src=\"" + imgModelAnalysis.src + "\" alt=\"Model Analysis\"/></td>" +
             "    <td class=\"td-image\" rowspan=\"2\"><img src=\"" + imgNeighboringVehicle.src + "\" alt=\"Neighboring Vehicle\"/></td>" +
-            "    <td class=\"td-image\" rowspan=\"2\"><img src=\"" + imgStandardDeviation.src + "\" alt=\"Standard Deviation\"/></td>";
+            "    <td class=\"td-image\" rowspan=\"2\"><img src=\"" + imgVehicleStdDev.src + "\" alt=\"Vehicle Standard Deviation\"/></td>";
 
         } else {
             sObsTableHeader +=
