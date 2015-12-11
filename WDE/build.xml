@@ -68,6 +68,7 @@ Modification History:
 		<delete dir="${build}"/>
 		<delete dir="${assembly}"/>
         <delete dir="${deploy}"/>
+        <delete file="${warfile}.war"/>
 	</target>
 
 	<target name="assemble" depends="clean,compile">

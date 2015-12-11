@@ -208,7 +208,7 @@ public class OutputCsv extends OutputFormat {
 
             if (sFilename != null) {
                 //oWriter.println();
-                oWriter.print(" -- ");
+                //oWriter.print(" --");
                 oWriter.print(nId);
                 oWriter.print(":");
                 oWriter.println(sFilename);
