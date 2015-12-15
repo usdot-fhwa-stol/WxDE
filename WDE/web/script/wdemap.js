@@ -1882,7 +1882,6 @@ function Jump()
     */
     //button/checkbox event handler for WxDE Mobile
     $("#toggleWxDEMbl").on("click", function() {
-        toggleVisibility($(this), vdtMarkersWithRoutes);
         toggleVisibility($(this), mobileMarkersWithRoutes);
     });
     //button/checkbox event handler for WxDE nonmobile
