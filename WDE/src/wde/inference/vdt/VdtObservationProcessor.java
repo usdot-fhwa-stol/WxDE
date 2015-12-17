@@ -62,7 +62,7 @@ public class VdtObservationProcessor extends ObservationProcessor {
                                         @Override
                                         public void process(PrecipitationIntensityInferenceResult result) {
                                             Observation obs = createObsCopy(getCurrentObs());
-                                            obs.setObsTypeId(VdtObservationTypes.wde_precip_type.getWdeObsTypeId());
+                                            obs.setObsTypeId(VdtObservationTypes.wde_precip_intensity.getWdeObsTypeId());
                                             obs.setValue(result.getPrecipitationIntensity().getCode());
                                             obs.setConfValue(result.getConfidence());
                                             obs.setElevation(0);
@@ -77,7 +77,7 @@ public class VdtObservationProcessor extends ObservationProcessor {
                                         @Override
                                         public void process(PavementConditionInferenceResult result) {
                                             Observation obs = createObsCopy(getCurrentObs());
-                                            obs.setObsTypeId(VdtObservationTypes.wde_precip_type.getWdeObsTypeId());
+                                            obs.setObsTypeId(VdtObservationTypes.wde_pavement_condition.getWdeObsTypeId());
                                             obs.setValue(result.getPavementCondition().getCode());
                                             obs.setConfValue(result.getConfidence());
                                             obs.setElevation(0);
@@ -92,7 +92,7 @@ public class VdtObservationProcessor extends ObservationProcessor {
                                         @Override
                                         public void process(PavementSlicknessInferenceResult result) {
                                             Observation obs = createObsCopy(getCurrentObs());
-                                            obs.setObsTypeId(VdtObservationTypes.wde_precip_type.getWdeObsTypeId());
+                                            obs.setObsTypeId(VdtObservationTypes.wde_pavement_slickness.getWdeObsTypeId());
                                             obs.setValue(result.getPavementSlickness().getCode());
                                             obs.setConfValue(result.getConfidence());
                                             obs.setElevation(0);
@@ -108,7 +108,7 @@ public class VdtObservationProcessor extends ObservationProcessor {
                                         @Override
                                         public void process(VisibilityInferenceResult result) {
                                             Observation obs = createObsCopy(getCurrentObs());
-                                            obs.setObsTypeId(VdtObservationTypes.wde_precip_type.getWdeObsTypeId());
+                                            obs.setObsTypeId(VdtObservationTypes.wde_visibility.getWdeObsTypeId());
                                             obs.setValue(result.getVisibility().getCode());
                                             obs.setConfValue(result.getConfidence());
                                             obs.setElevation(0);
