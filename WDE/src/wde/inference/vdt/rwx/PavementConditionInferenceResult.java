@@ -16,15 +16,6 @@ public class PavementConditionInferenceResult extends InferenceResult<PavementCo
         return this.confidence;
     }
 
-    public void setPrecipType(float precipType) {
-        this.precipType = precipType;
-    }
-
-    public float getPrecipType() {
-        return precipType;
-    }
-
-
     public void setPavementCondition(PavementCondition pavementCondition) {
         this.pavementCondition = pavementCondition;
     }

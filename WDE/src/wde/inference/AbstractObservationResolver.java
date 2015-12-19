@@ -30,20 +30,20 @@ public abstract class AbstractObservationResolver implements ObservationResolver
 
         IObs obs = doResolve(obsTypeName);
 
-        return (obs == null || obs.getValue() == -9999.0f) ? Float.NaN : (float) obs.getValue();
+        return (obs == null || obs.getValue() == Double.NaN) ? -9999.0f : (float) obs.getValue();
     }
 
     public Double resolveDoubleValue(String obsTypeName) {
 
         IObs obs = doResolve(obsTypeName);
 
-        return (obs == null || obs.getValue() == -9999.0) ? Double.NaN : obs.getValue();
+        return (obs == null || obs.getValue() == Double.NaN) ? -9999.0 : obs.getValue();
     }
 
     public Integer resolveIntegerValue(String obsTypeName) {
         IObs obs = doResolve(obsTypeName);
 
-        return (obs == null || obs.getValue() == -9999) ? -9999 : ((Double) obs.getValue()).intValue();
+        return (obs == null || obs.getValue() == Double.NaN) ? -9999 : ((Double) obs.getValue()).intValue();
     }
 
     public abstract IObs doResolve(String obsTypeName);

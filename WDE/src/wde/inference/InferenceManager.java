@@ -20,6 +20,14 @@ public class InferenceManager extends AsyncQ<IObsSet> {
         init();
     }
 
+    public InferenceManager(boolean register) {
+        super();
+
+        if (register) {
+            getWdeMgr().register(this.getClass().getName(), this);
+        }
+    }
+
     private void init() {
         getWdeMgr().register(this.getClass().getName(), this);
     }

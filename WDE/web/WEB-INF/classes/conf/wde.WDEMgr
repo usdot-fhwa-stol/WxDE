@@ -32,3 +32,5 @@ start=wde.qchs.QChSMgr
 start=wde.obs.ObsArchiveMgr
 start=wde.cs.CsMgr
 start=wde.vdt.VDTController
+start=wde.qchs.Radar
+start=wde.inference.InferenceManager

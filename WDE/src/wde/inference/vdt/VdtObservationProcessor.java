@@ -2,6 +2,8 @@ package wde.inference.vdt;
 
 import wde.dao.ObsTypeDao;
 import wde.dao.ObservationDao;
+import wde.dao.PlatformDao;
+import wde.dao.SensorDao;
 import wde.data.shp.Polyline;
 import wde.inference.InferenceResult;
 import wde.inference.InferenceResultProcessor;
@@ -21,7 +23,7 @@ import wde.obs.ObsSet;
 import wde.obs.Observation;
 import wde.qchs.Roads;
 import wde.qeds.PlatformMonitor;
-import wde.radar.Radar;
+import wde.qchs.Radar;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -165,6 +167,25 @@ public class VdtObservationProcessor extends ObservationProcessor {
     @Override
     protected void process(IObs obs) {
 
+        if (obs == null) {
+            getLogger().debug("The parameter 'obs' must not be null.");
+            return;
+        }
+
+        try {
+            int sensorId = obs.getSensorId();
+            int platformId = SensorDao.getInstance().getSensor(sensorId).getPlatformId();
+            char platformCategory = PlatformDao.getInstance().getPlatform(platformId).getCategory();
+
+            if (platformCategory == 'T' || platformCategory == 'P') {
+                getLogger().debug("Non-mobile observations are not processed by VdtObservationProcessor.");
+                return;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return;
+        }
+
         setCurrentObs(obs);
 
         final VdtObservationProcessor processor = this;
@@ -174,10 +195,13 @@ public class VdtObservationProcessor extends ObservationProcessor {
                 IObs currentObs = getCurrentObs();
                 int lat = currentObs.getLatitude();
                 int lon = currentObs.getLongitude();
+                long timestamp = currentObs.getObsTimeLong();
 
-                float radarValue = Radar.getInstance().getReflectivity(lon, lat);
+                Double radarValue = Radar.getInstance().getReading(0, timestamp, lat, lon);
+                if (radarValue == null || radarValue == -999)
+                    radarValue = -9999.0;
 
-                return radarValue;
+                return radarValue.floatValue();
             }
 
             @Override

@@ -37,10 +37,6 @@ public abstract class VdtObservationResolver extends AbstractObservationResolver
         return resolveFloatValue("fcst_precip_rate");
     }
 
-//    public float getRadarRef() {
-//        return resolveFloatValue("radar_ref");
-//    }
-
     public abstract float getRadarRef();
 
     public float getSpeed_ratio() {

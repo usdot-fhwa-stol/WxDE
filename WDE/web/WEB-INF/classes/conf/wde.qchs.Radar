@@ -1,0 +1,9 @@
+###################################################################################
+# DO NOT MODIFY THIS FILE
+###################################################################################
+
+# The number of concurrent threads that can access the Radar.
+queuedepth=5
+
+# Datasource used by this process.
+datasource=java:comp/env/jdbc/wxde
