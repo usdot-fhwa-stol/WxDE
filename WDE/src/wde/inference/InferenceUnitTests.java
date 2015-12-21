@@ -156,9 +156,6 @@ public class InferenceUnitTests {
         InferenceUnitTests unitTests = new InferenceUnitTests();
 
         unitTests.testInferenceManager();
-
-        System.out.println("Hello");
-
     }
 
 }

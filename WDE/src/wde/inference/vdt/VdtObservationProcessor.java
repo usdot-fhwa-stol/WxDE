@@ -1,9 +1,6 @@
 package wde.inference.vdt;
 
 import wde.dao.ObsTypeDao;
-import wde.dao.ObservationDao;
-import wde.dao.PlatformDao;
-import wde.dao.SensorDao;
 import wde.data.shp.Polyline;
 import wde.inference.InferenceResult;
 import wde.inference.InferenceResultProcessor;
@@ -21,9 +18,8 @@ import wde.obs.IObsSet;
 import wde.obs.ObsMgr;
 import wde.obs.ObsSet;
 import wde.obs.Observation;
-import wde.qchs.Roads;
-import wde.qeds.PlatformMonitor;
 import wde.qchs.Radar;
+import wde.qchs.Roads;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -34,6 +30,7 @@ public class VdtObservationProcessor extends ObservationProcessor {
 
     private IObs currentObs;
     private final List<Observation> pseudoObservations = new ArrayList<>();
+    private ObsTypeDao obsTypeDao;
 
     public VdtObservationProcessor() {
         super();
@@ -148,7 +145,7 @@ public class VdtObservationProcessor extends ObservationProcessor {
         synchronized (this.pseudoObservations) {
             this.pseudoObservations.add(obs);
 
-            PlatformMonitor.getInstance().updatePlatform(obs);
+            //PlatformMonitor.getInstance().updatePlatform(obs);
         }
     }
 
@@ -174,13 +171,13 @@ public class VdtObservationProcessor extends ObservationProcessor {
 
         try {
             int sensorId = obs.getSensorId();
-            int platformId = SensorDao.getInstance().getSensor(sensorId).getPlatformId();
-            char platformCategory = PlatformDao.getInstance().getPlatform(platformId).getCategory();
+            //int platformId = SensorDao.getInstance().getSensor(sensorId).getPlatformId();
+            //char platformCategory = PlatformDao.getInstance().getPlatform(platformId).getCategory();
 
-            if (platformCategory == 'T' || platformCategory == 'P') {
-                getLogger().debug("Non-mobile observations are not processed by VdtObservationProcessor.");
-                return;
-            }
+            //if (platformCategory == 'T' || platformCategory == 'P') {
+            //    getLogger().debug("Non-mobile observations are not processed by VdtObservationProcessor.");
+            //    return;
+            //}
         } catch (Exception e) {
             e.printStackTrace();
             return;
@@ -207,7 +204,8 @@ public class VdtObservationProcessor extends ObservationProcessor {
             @Override
             public IObs doResolve(String obsTypeName) {
 
-                final int obsTypeId = ObsTypeDao.getInstance().getObsTypeId(obsTypeName);
+                //final int obsTypeId = ObsTypeDao.getInstance().getObsTypeId(obsTypeName);
+                final int obsTypeId = getObservationProcessor().getCurrentObs().getObsTypeId();
 
                 IObs selectedObs = null;
                 final IObs currentObs = getCurrentObs();
@@ -255,7 +253,7 @@ public class VdtObservationProcessor extends ObservationProcessor {
                 // so it might have been processed previously. This will require fetching a set of observations that are
                 // approximate to the current observation in both time and location.
                 //
-                if (selectedObs == null) {
+                if (selectedObs == null && false) {
                     ObsSet resultObsSet = ObsMgr.getInstance().getObsSet(obsTypeId);
 
                     //
@@ -298,7 +296,7 @@ public class VdtObservationProcessor extends ObservationProcessor {
         }
 
         synchronized (pseudoObservations) {
-            ObservationDao.getInstance().insertObservations(pseudoObservations);
+            //ObservationDao.getInstance().insertObservations(pseudoObservations);
             pseudoObservations.clear();
         }
     }
@@ -400,5 +398,13 @@ public class VdtObservationProcessor extends ObservationProcessor {
                 }
             }
         }
+    }
+
+    public ObsTypeDao getObsTypeDao() {
+        return this.obsTypeDao;
+    }
+
+    public void setObsTypeDao(ObsTypeDao dao) {
+        this.obsTypeDao = dao;
     }
 }
