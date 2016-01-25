@@ -58,6 +58,8 @@ Modification History:
 				<pathelement path="${classpath}"/>
 				<fileset dir="lib">
 					<include name="**/*.jar"/>
+					<exclude name="netcdfAll-4.0.jar" />
+					<exclude name="netcdfAll-4.5.jar" />
 				</fileset>
 			</classpath>
 		</javac>

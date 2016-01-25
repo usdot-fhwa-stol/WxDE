@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<netcdf xmlns="http://www.unidata.ucar.edu/namespaces/netcdf/ncml-2.2">
+    <aggregation dimName="time" type="joinExisting">
+        <!--<scan dateFormatMark="MRMS_MergedBaseReflectivityQC_00.00_#yyyyDDD-HHmmss"-->
+              <!--location="/Users/jschultz/Source/wxde/WDE/data/radar/MergedBaseReflectivityQC/datasets"-->
+              <!--suffix=".nc"-->
+              <!--subdirs="true"-->
+                <!--/>-->
+        <scan dateFormatMark="MRMS_MergedBaseReflectivityQC_00.00_#yyyyDDD-HHmmss"
+              location="/Users/jschultz/Source/wxde/WDE/data/radar/MergedBaseReflectivityQC/datasets"
+              suffix=".nc"
+              subdirs="true"
+                />
+    </aggregation>
+</netcdf>

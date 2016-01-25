@@ -1,279 +1,307 @@
 package wde.qchs;
 
+import wde.util.MathUtil;
+
+import ucar.nc2.FileWriter2;
+import ucar.nc2.NetcdfFile;
+import ucar.nc2.NetcdfFileWriter.Version;
+import ucar.nc2.constants.DataFormatType;
+import ucar.nc2.dt.GridCoordSystem;
+import ucar.nc2.dt.GridDatatype;
+import ucar.nc2.dt.grid.GridDataset;
+import ucar.nc2.time.CalendarDate;
+import ucar.nc2.write.Nc4ChunkingDefault;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
-import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.ArrayList;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.List;
-import ucar.ma2.Array;
-import ucar.ma2.Index;
-import ucar.nc2.NetcdfFile;
-import ucar.nc2.dataset.NetcdfDataset;
-import ucar.nc2.dataset.VariableDS;
-import ucar.nc2.dt.GridDatatype;
-import ucar.nc2.dt.grid.GridDataset;
-import ucar.unidata.geoloc.LatLonPointImpl;
-import ucar.unidata.geoloc.ProjectionPointImpl;
-import wde.util.MathUtil;
 
 
 /**
- * This abstract base class implements common NetCDF patterns for identifying, 
+ * This abstract base class implements common NetCDF patterns for identifying,
  * downloading, reading, and retrieving observation values for remote data sets.
  */
-abstract class RemoteGrid implements Runnable
-{
-	/**
-	* Lookup arrays map names between model and observation types.
-	*/
-	protected int[] m_nObsTypes;
-	protected int[] m_nGridMap;
-	protected long m_lStartTime;
-	protected long m_lEndTime;
-	protected String m_sHrz;
-	protected String m_sVrt;
-	protected String m_sBaseDir = "/dev/shm/";
-	protected String m_sBaseURL;
-	protected String[] m_sObsTypes;
-	protected ArrayList<Double> m_oHrz = new ArrayList();
-	protected ArrayList<Double> m_oVrt = new ArrayList();
-	protected List<GridDatatype> m_oGrids;
-	protected NetcdfFile m_oPrevNcf;
+abstract class RemoteGrid implements Runnable {
+    /**
+     * Lookup arrays map names between model and observation types.
+     */
+    protected int[] m_nObsTypes;
+    protected int[] m_nGridMap;
+    protected long m_lStartTime;
+    protected long m_lEndTime;
+    protected String m_sIncomingDir = "/tmp/remotegrid/incoming";
+    protected String m_sBaseURL;
+    protected String[] m_sObsTypes;
+    protected List<GridDatatype> m_oGrids;
+    protected GridDataSource m_oGridDataSource;
 
+    /**
+     * Default package private constructor.
+     */
+    RemoteGrid() {
+        try {
+            init();
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+    }
 
-	/**
-	 * Default package private constructor.
-	 */
-	RemoteGrid()
-	{
-	}
+    public Path getIncomingStoragePath() {
+        return getStoragePath().resolve("incoming").toAbsolutePath();
+    }
 
+    public Path getDatasetsStoragePath() {
+        return getStoragePath().resolve("datasets").toAbsolutePath();
+    }
 
-	/**
-	 * A static utility method that returns the nearest match in an array of 
-	 * doubles to the target double value. The method assumes that the data 
-	 * have a constant delta and approximates the index using value ratios.
-	 *
-	 * @param oValues		the array of double values to search.
-	 * @param oValue		the double value to find.
-	 * 
-	 * @return	the nearest index of the stored value to the target value
-	 */
-	protected static int getIndex(ArrayList<Double> oValues, Double oValue)
-	{
-		double dBasis;
-		double dDist;
-		double dLeft = oValues.get(0); // test for value in range
-		double dRight = oValues.get(oValues.size() - 1);
-		if (dRight < dLeft) // handle reversed endpoints
-		{
-			if (oValue < dRight || oValue > dLeft)
-				return -1; // outside of range
-			dBasis = dLeft - dRight;
-			dDist = dLeft - oValue; // tricksy
-		}
-		else
-		{
-			if (oValue < dLeft || oValue > dRight)
-				return -1; // outside of range
-			dBasis = dRight - dLeft;
-			dDist = oValue - dLeft;
-		}
+    public abstract Path getStoragePath();
 
-		return (int)(dDist / dBasis * (double)oValues.size());
-	}
+    public abstract URL getDatasetBaseUrl() throws MalformedURLException;
 
+    protected synchronized void init() {
+        config();
 
-	/**
-	 * A utility method that creates an array of double values from the 
-	 * in-memory NetCDF data by object layer name.
-	 *
-	 * @param oNcFile reference to the loaded NetCDF data
-	 * @param sName   Name of the observation layer to read.
-	 * 
-	 * @return an array of the copied (@code Double} observation values.
-	 */
-	private static ArrayList<Double> fromArray(NetcdfFile oNcFile, String sName)
-		throws Exception
-	{
-		Array oArray = oNcFile.getRootGroup().findVariable(sName).read();
-		int nSize = (int)oArray.getSize();
+        try {
+            //initGridDataSource();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 
-		ArrayList<Double> oArrayList = new ArrayList(nSize); // reserve capacity
-		for (int nIndex = 0; nIndex < nSize; nIndex++)
-			oArrayList.add(oArray.getDouble(nIndex)); // copy values
-		
-		return oArrayList;
-	}
+    protected synchronized void initGridDataSource() throws Exception {
+        Path datasetPath = getGridDatasetPath();
+        if (Files.notExists(datasetPath)) {
+            //throw new IllegalArgumentException("The configured grid dataset path does not exist: " + );
+            throw new FileNotFoundException(datasetPath.toString());
+        }
 
+        m_oGridDataSource = GridDataSource.fromLocation(datasetPath);
+    }
 
-	/**
-	 * Abstract method overridden by subclasses to determine the remote and local 
-	 * file name for their specific remote data set.
-	 *
-	 * @param oNow	timestamp Date object used for time-based dynamic URLs
-	 * 
-	 * @return the URL where remote data can be retrieved.
-	 */
-	protected abstract String getFilename(Date oNow);
+    protected synchronized void config() {
+        /* pull values from configsvc here */
+    }
 
+    /**
+     * Abstract method overridden by subclasses to determine the remote and local
+     * file name for their specific remote data set.
+     *
+     * @param oNow timestamp Date object used for time-based dynamic URLs
+     * @return the URL where remote data can be retrieved.
+     */
+    protected abstract String getFilename(Date oNow);
 
-	/**
-	 * Regularly called on a schedule to refresh the cached model data with 
-	 * the most recently published model file.
-	 */
-	@Override
-	public void run()
-	{
-		GregorianCalendar oNow = new GregorianCalendar();
-		if (oNow.get(Calendar.MINUTE) < 55) // backup to previous hour
-			oNow.setTimeInMillis(oNow.getTimeInMillis() - 3600000);
-		oNow.set(Calendar.MILLISECOND, 0); // adjust clock to scheduled time
-		oNow.set(Calendar.SECOND, 0);
-		oNow.set(Calendar.MINUTE, 55);
+    protected abstract String getFilenameUrl(Date oNow);
 
-		String sFilename = getFilename(oNow.getTime());
-		if (sFilename == null || (m_oPrevNcf != null && 
-			m_oPrevNcf.getLocation().contains(sFilename)))
-			return; // file name could be resolved or matches previous download
+    protected GregorianCalendar getNow() {
+        GregorianCalendar oNow = new GregorianCalendar();
+        if (oNow.get(Calendar.MINUTE) < 55) // backup to previous hour
+            oNow.setTimeInMillis(oNow.getTimeInMillis() - 3600000);
+        oNow.set(Calendar.MILLISECOND, 0); // adjust clock to scheduled time
+        oNow.set(Calendar.SECOND, 0);
+        oNow.set(Calendar.MINUTE, 55);
 
-		String sDestFile = m_sBaseDir; // ignore intervening directories in path
-		int nSepIndex = sFilename.lastIndexOf("/");
-		if (nSepIndex >= 0)
-			sDestFile += sFilename.substring(nSepIndex); // extract the file name
-		else
-			sDestFile += sFilename; // local file name
+        return oNow;
+    }
 
-		try
-		{
-			URL oUrl = new URL(m_sBaseURL + sFilename); // retrieve remote data file
-			BufferedInputStream oIn = new BufferedInputStream(oUrl.openStream());
-			BufferedOutputStream oOut = new BufferedOutputStream(
-				new FileOutputStream(sDestFile));
-			int nByte; // copy remote data to local file
-			while ((nByte = oIn.read()) >= 0)
-				oOut.write(nByte);
-			oIn.close(); // tidy up input and output streams
-			oOut.close();
-			
-			NetcdfFile oNcFile = NetcdfFile.open(sDestFile); // stored on RAM disk
-			ArrayList<Double> oHrz = fromArray(oNcFile, m_sHrz); // sort order varies
-			ArrayList<Double> oVrt = fromArray(oNcFile, m_sVrt);
-			
-			int[] nGridMap = new int[m_nObsTypes.length]; // create obstype grid index map
-			List<GridDatatype> oGrids = new GridDataset(new NetcdfDataset(oNcFile)).getGrids();
-			for (int nOuter = 0; nOuter < nGridMap.length; nOuter++)
-			{
-				nGridMap[nOuter] = -1; // default to invalid index
-				for (int nInner = 0; nInner < oGrids.size(); nInner++)
-				{
-					if (m_sObsTypes[nOuter].contains(oGrids.get(nInner).getName()))
-						nGridMap[nOuter] = nInner; // save name mapping				
-				}
-			}
+    /**
+     * Regularly called on a schedule to refresh the cached model data with
+     * the most recently published model file.
+     */
+    //@Override
+    public void run() {
+        GregorianCalendar oNow = getNow();
 
-			synchronized(this) // update state variables when everything succeeds
-			{
-				m_oHrz = oHrz;
-				m_oVrt = oVrt;
-				m_oGrids = oGrids;
-				m_nGridMap = nGridMap;
-				m_lStartTime = oNow.getTimeInMillis() - 300000; // 5-minute margin
-				m_lEndTime = m_lStartTime + 4200000; // data are valid for 70 minutes
-			}
+        Path datasetFilePath = null;
+        try {
+            final Path incomingFolder = getIncomingStoragePath();
+            if (!Files.exists(incomingFolder)) {
+                Files.createDirectories(incomingFolder);
+            }
 
-			synchronized(this) // synchronize slow cleanup operations separately
-			{
-				if (m_oPrevNcf != null)
-				{
-					File oPrevNcf = new File(m_oPrevNcf.getLocation());
-					m_oPrevNcf.close(); // release previously cached grids
-					if (oPrevNcf.exists() && !oPrevNcf.isDirectory())
-						oPrevNcf.delete(); // free previous file resources
-				}
-				m_oPrevNcf = oNcFile; // persist NetCDF data connection
-			}			
-		}
-		catch(Exception oException) // failed to download new data
-		{
-		}
-	}
+            final Path datasetsFolder = getDatasetsStoragePath();
+            if (!Files.exists(datasetsFolder)) {
+                Files.createDirectories(datasetsFolder.toAbsolutePath());
+            }
 
+            final String sFilenameUrl = getFilenameUrl(oNow.getTime());
+            final String sFilename = getFilename(oNow.getTime());
+            Path incomingFilePath = incomingFolder.resolve(sFilename).toAbsolutePath();
 
-	/**
-	 * Retrieves the grid data associated with supported observation types.
-	 *
-	 * @param nObsTypeId	the observation type identifier used to find grid data.
-	 * 
-	 * @return the grid data for the variable specified by observation type.
-	 */
-	protected GridDatatype getGridByObs(int nObsTypeId)
-	{
-		boolean bFound = false;
-		int nIndex = m_nObsTypes.length;
-		while (!bFound && nIndex-- > 0)
-			bFound = (m_nObsTypes[nIndex] == nObsTypeId);
+            if (Files.notExists(incomingFilePath)) {
+                //final URL oUrl = new URL(m_sBaseURL + sFilename); // retrieve remote data file
+                final URL oUrl = new URL(getDatasetBaseUrl(), sFilenameUrl);
+                final BufferedInputStream oIn = new BufferedInputStream(oUrl.openStream());
+                final BufferedOutputStream oOut = new BufferedOutputStream(
+                        new FileOutputStream(incomingFilePath.toString()));
+                int nByte; // copy remote data to local file
+                while ((nByte = oIn.read()) >= 0)
+                    oOut.write(nByte);
+                oIn.close(); // tidy up input and output streams
+                oOut.close();
+            }
 
-		if (!bFound || m_nGridMap[nIndex] < 0) // requested obstype not available
-			return null;
+            if (Files.exists(incomingFilePath)) {
+                final String outputFileName = incomingFilePath.getFileName().toString()
+                        .replaceAll(".gz$", "")
+                        .replaceAll(".grib2$", ".nc")
+                        .replaceAll(".grb2$", ".nc");
+                final Path outputFilePath = Paths.get(datasetsFolder.toString(), outputFileName);
 
-		return m_oGrids.get(m_nGridMap[nIndex]); // grid by obstypeid
-	}
+                if (NetcdfFile.canOpen(incomingFilePath.toString())) {
+                    final NetcdfFile netcdfFile = NetcdfFile.open(incomingFilePath.toString());
+                    if (netcdfFile.getFileTypeId().equals(DataFormatType.GRIB2.getDescription())) {
+                        convertToNetcdf4(netcdfFile, outputFilePath.toString());
+                        if (Files.notExists(outputFilePath)) {
+                            throw new Exception("An issue was encountered after converting the radar file: Output file not found");
+                        }
 
+                        datasetFilePath = outputFilePath;
 
-	/**
-	 * Finds the model value for an observation type by time and location.
-	 *
-	 * @param nObsTypeId	the observation type to lookup.
-	 * @param lTimestamp	the timestamp of the observation.
-	 * @param nLat				the latitude of the requested data.
-	 * @param nLon				the longitude of the requested data.
-	 * 
-	 * @return	the model value for the requested observation type for the 
-	 *					specified time at the specified location.
-	 */
-	public synchronized double getReading(int nObsTypeId, long lTimestamp, int nLat, int nLon)
-	{
-		if (lTimestamp < m_lStartTime || lTimestamp >= m_lEndTime)
-			return Double.NaN; // requested time outside of buffered time range
+                        final String incomingFileBaseName = incomingFilePath.getFileName().toString()
+                                .replaceAll(".gz$", "");
+                        final Path filesToRemove = Paths.get(incomingFolder.toString(), incomingFileBaseName + "*");
+                        Files.deleteIfExists(filesToRemove);
+                    }
+                    netcdfFile.close();
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
-		LatLonPointImpl oLatLon = new LatLonPointImpl(MathUtil.fromMicro(nLat), 
-			MathUtil.fromMicro(nLon));
-		ProjectionPointImpl oProjPoint = new ProjectionPointImpl();
-		GridDatatype oGrid = getGridByObs(nObsTypeId);
-		if (oGrid == null)
-			return Double.NaN; // requested observation type not supported
-			
-		oGrid.getProjection().latLonToProj(oLatLon, oProjPoint);
-		int nHrz = getIndex(m_oHrz, oProjPoint.getX());
-		int nVrt = getIndex(m_oVrt, oProjPoint.getY());
-		if (nHrz < 0 || nVrt < 0)
-			return Double.NaN; // projected coordinates are outside data ranage
+        try {
+            final GridDataSource gridDataSource = getGridDataSource();
+            if (gridDataSource == null) {
+                throw new Exception("Grid data source could not be resolved.");
+            }
 
-		try
-		{
-			VariableDS oVar = oGrid.getVariable();
-			Array oArray = oVar.read();
-			Index oIndex = oArray.getIndex();
-			oIndex.setDim(oVar.findDimensionIndex(m_sHrz), nHrz);
-			oIndex.setDim(oVar.findDimensionIndex(m_sVrt), nVrt);
-	
-			double dVal = oArray.getDouble(oIndex);
-			if (oVar.isFillValue(dVal) || oVar.isInvalidData(dVal) || oVar.isMissing(dVal))
-				return Double.NaN; // no valid data for specified location
+            gridDataSource.purge();
 
-			return dVal;
-		}
-		catch (Exception oException)
-		{
-		}
+            if (datasetFilePath != null && Files.exists(datasetFilePath))
+                gridDataSource.sync();
 
-		return Double.NaN;
-	}
+            final GridDataset oGridDataset = gridDataSource.getGridDataset();
+            if (oGridDataset == null)
+                throw new Exception("Could not resolve grid datatype.");
+
+            final int[] nGridMap = new int[m_nObsTypes.length]; // create obstype grid index map
+            final List<GridDatatype> oGrids = oGridDataset.getGrids();
+            for (int nOuter = 0; nOuter < nGridMap.length; nOuter++) {
+                nGridMap[nOuter] = -1; // default to invalid index
+                for (int nInner = 0; nInner < oGrids.size(); nInner++) {
+                    if (m_sObsTypes[nOuter].contains(oGrids.get(nInner).getName()))
+                        nGridMap[nOuter] = nInner; // save name mapping
+                }
+            }
+
+            synchronized (this) // update state variables when everything succeeds
+            {
+                m_oGrids = oGrids;
+                m_nGridMap = nGridMap;
+                m_lStartTime = oNow.getTimeInMillis() - 300000; // 5-minute margin
+                m_lEndTime = m_lStartTime + 4200000; // data are valid for 70 minutes
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Retrieves the grid data associated with supported observation types.
+     *
+     * @param nObsTypeId the observation type identifier used to find grid data.
+     * @return the grid data for the variable specified by observation type.
+     */
+
+    protected GridDatatype getGridByObs(int nObsTypeId) throws Exception {
+        boolean bFound = false;
+        int nIndex = m_nObsTypes.length;
+        while (!bFound && nIndex-- > 0)
+            bFound = (m_nObsTypes[nIndex] == nObsTypeId);
+
+        if (!bFound || m_nGridMap[nIndex] < 0) // requested obstype not available
+            return null;
+
+        return m_oGrids.get(m_nGridMap[nIndex]); // grid by obstypeid
+    }
+
+    public synchronized double getReading(int nObsTypeId, long lTimestamp, int nLat, int nLon) {
+        return getReading(nObsTypeId, lTimestamp, MathUtil.fromMicro(nLat), MathUtil.fromMicro(nLon));
+    }
+
+    /**
+     * Finds the model value for an observation type by time and location.
+     *
+     * @param nObsTypeId the observation type to lookup.
+     * @param lTimestamp the timestamp of the observation.
+     * @param nLat       the latitude of the requested data.
+     * @param nLon       the longitude of the requested data.
+     * @return the model value for the requested observation type for the
+     * specified time at the specified location.
+     */
+    public synchronized double getReading(int nObsTypeId, long lTimestamp, double nLat, double nLon) {
+        try {
+            final GridDatatype oGrid = getGridByObs(nObsTypeId);
+            if (oGrid == null) {
+                throw new NullPointerException("The requested observation type is not supported.");
+            }
+
+            final GridCoordSystem gcs = oGrid.getCoordinateSystem();
+            if (gcs == null) {
+                throw new NullPointerException("The coordinate system for the grid wasn't able to be resolved.");
+            }
+
+            final CalendarDate timestamp = CalendarDate.of(lTimestamp);
+            final int[] index = getGridDataSource().buildIndex(oGrid, timestamp, nLat, nLon);
+
+            return getGridDataSource().readValue(oGrid, index);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return Double.NaN;
+    }
+
+    protected synchronized GridDataSource getGridDataSource() {
+        if (m_oGridDataSource == null) {
+            try {
+                initGridDataSource();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+
+        return m_oGridDataSource;
+    }
+
+    protected abstract Path getGridDatasetPath();
+
+    protected void convertToNetcdf4(NetcdfFile netcdfFile, String outputLocation) throws Exception {
+        try {
+            FileWriter2 writer = new FileWriter2(netcdfFile, outputLocation, Version.netcdf4, new Nc4ChunkingDefault());
+            writer.write();
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new Exception("An exception occurred while converting the file: " + netcdfFile.getLocation(), e);
+        }
+    }
+
+    public void testDatasetBaseUrlConcatentation() {
+        try {
+            System.out.println(new URL(getDatasetBaseUrl(), "filename.grib2"));
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        }
+    }
 }
