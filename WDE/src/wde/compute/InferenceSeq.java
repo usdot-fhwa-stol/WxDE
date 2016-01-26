@@ -2,184 +2,156 @@ package wde.compute;
 
 import wde.metadata.ISensor;
 import wde.obs.IObs;
-import wde.util.QualityCheckFlagUtil;
+import wde.obs.ObsSet;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Collections;
+import java.util.Collection;
+import java.util.Set;
+import java.util.TreeSet;
 
-public class InferenceSeq implements Comparable<InferenceSeq> {
-    /**
-     * Database query format string.
-     */
-    private static String InferenceSeq_QUERY = "SELECT seq, bitPosition, " +
-            "runAlways, weight, qchconfigId, className " +
-            "FROM conf.InferenceSeq WHERE InferenceSeqmgrId = ?";
+/**
+ * Provides a means of sequencing inference algorithms, and distinguishing
+ * these sequences by climate region.
+ * <p>
+ * Implements {@code Comparable<QChSeq>} to enforce an ordering based on
+ * climate id.
+ * </p>
+ */
+public class InferenceSeq extends Inference<InferenceSeq> {
 
-    /**
-     * Separate quality check sequences by climate. Helps enforce an ordering.
-     */
-    private int m_nClimateId;
-    /**
-     * Container of quality check algorithms, sorted by sequence id.
-     */
-    private ArrayList<Inference> m_oQChS;
+    private int m_obsTypeId;
+    private char[] m_platformFilter;
 
     /**
-     * <b> Default Constructor </b>
-     * <p>
-     * Creates new instances of {@code InferenceSeq}
-     * </p>
+     * Container of inference algorithms, sorted by sequence id.
      */
+    private final TreeSet<Inference> m_oInferences = new TreeSet<Inference>();
+
     InferenceSeq() {
+        super(null, 0);
     }
 
+    InferenceSeq(int obsTypeId, char[] platformFilter) {
+        super(null, 0);
 
-    /**
-     * <b> Constructor </b>
-     * <p>
-     * Sets the attributes for new instances of {@code InferenceSeq}. Performs the
-     * query and populates the sorted qch array.
-     * </p>
-     *
-     * @param nSeqMgrId   sequence manager id - for database query.
-     * @param nClimateId  climate id of this sequence.
-     * @param iConnection connected to the datasource, and ready for quality
-     *                    check sequence query.
-     */
-    InferenceSeq(int nSeqMgrId, int nClimateId, Connection iConnection) {
-        setClimateId(nClimateId);
-        m_oQChS = new ArrayList<Inference>();
+        this.m_obsTypeId = obsTypeId;
+        this.m_platformFilter = platformFilter;
+    }
 
-        PreparedStatement ps = null;
-        ResultSet rs = null;
+    public InferenceSeq(int obsTypeId, char[] platformFilter, Class<Inference>[] inferences) {
+        this(obsTypeId, platformFilter);
 
-        try {
-            // get the list of quality checks for the supplied climate id
-            ps = iConnection.prepareStatement(InferenceSeq_QUERY);
-            ps.setInt(1, nSeqMgrId);
-
-            // instantiate the configured quality check
-            rs = ps.executeQuery();
-            while (rs.next()) {
-                Inference oQCh =
-                        (Inference) Class.forName(rs.getString(6)).newInstance();
-
-                // initialize the quality check
-                oQCh.init
-                        (
-                                rs.getInt(1),
-                                rs.getInt(2),
-                                rs.getInt(3),
-                                rs.getDouble(4),
-                                rs.getInt(5),
-                                iConnection
-                        );
-
-                // save the quality check to the process list
-                m_oQChS.add(oQCh);
-            }
-
-            Collections.sort(m_oQChS);
-        } catch (Exception oException) {
-            oException.printStackTrace();
-        } finally {
+        for(int i = 0; i < inferences.length; ++i) {
             try {
-                rs.close();
-                rs = null;
-                ps.close();
-                ps = null;
-            } catch (SQLException se) {
-                // ignore
+                Class<Inference> clazz = inferences[i];
+                Inference inference = clazz.newInstance();
+                inference.init(this, i);
+            } catch (Exception e) {
+                e.printStackTrace();
             }
         }
     }
 
+    public void addInference(Inference inference) {
+        m_oInferences.add(inference);
+    }
 
-    /**
-     * <b> Mutator </b>
-     *
-     * @param nClimateId new climate id for <i> this </i> {@code InferenceSeq}.
-     */
-    void setClimateId(int nClimateId) {
-        m_nClimateId = nClimateId;
+    public void addInferences(Collection<Inference> inferences) {
+        m_oInferences.addAll(inferences);
+    }
+
+    public char[] getPlatformFilter() {
+        return m_platformFilter;
+    }
+
+    @Override
+    public int getObsTypeId() {
+        return this.m_obsTypeId;
+    }
+
+    //    protected void init() {
+//        Inference[] inferences = new Inference[]{
+//                new PrecipitationType(),
+//                new PrecipitationIntensity(),
+//                new PavementCondition(),
+//                new Visibility(),
+//                new PavementSlickness()
+//        };
+//        m_oInferences.addAll(Arrays.asList(inferences));
+//    }
+
+    protected void init(int obsTypeId, char[] platformFilter) {
+        m_obsTypeId = obsTypeId;
+        m_platformFilter = platformFilter;
     }
 
 
     /**
-     * Runs the quality check algorithms for the provided observation. Sets the
+     * Runs the inference algorithms for the provided observation. Sets the
      * observations run and pass bit-fields, and the confidence level for the
      * observation for each qch algorithm.
-     *  @param nObsTypeId observation type.
-     * @param iSensor    sensor corresponding to the observation.
-     * @param iObs       observation to quality check.
-     * @param oResult    locked result object to allow mutually exclusive access
+     * @param result
+     * @param obsTypeId
+     * @param sensor
+     * @param obs
      */
-    void check(int nObsTypeId, ISensor iSensor, IObs iObs, InferenceResult oResult) {
-        // initialize the quality check result accumulators
-        boolean bContinue = true;
-        int nRun = 0;
-        int nFlags = 0;
-        double dConfidence = 0.0;
-        double dWeight = 0.0;
-        double dTotalWeight = 0.0;
+    public Set<InferenceResult> doInference(int obsTypeId, ISensor sensor, IObs obs) {
+        boolean bCanceled = false;
 
-        // run quality checking algorithms for each obs
-        for (int nSeqIndex = 0; nSeqIndex < m_oQChS.size(); nSeqIndex++) {
-            Inference oQCh = m_oQChS.get(nSeqIndex);
-            // always set the flag bit to indicate an attempted check
-            int nBits = 1 << oQCh.m_nBitPosition;
-            nFlags |= nBits;
+        Set<InferenceResult> aggregateResults = newInferenceResultSet();
 
-            if (oQCh.m_bRunAlways || bContinue) {
-                // clear the result object and set the not-run weight
-                oResult.clear();
-                dWeight = 0.0;
-                oQCh.check(nObsTypeId, iSensor, iObs, oResult);
+        if (m_oInferences != null && m_oInferences.size() > 0) {
 
-                // evaluate results when the test successfully runs
-                if (oResult.getRun()) {
-                    // set the run bit position
-                    nRun |= 1 << oQCh.m_nBitPosition;
-                    // update the weight to reflect that the check was run
-                    dWeight = oQCh.m_dWeight;
+            ObsSet inferredObsSet = getObsMgr().getObsSet(obsTypeId);
+            for (Inference inference : m_oInferences) {
+                Set<InferenceResult> results = inference.doInference(obsTypeId, sensor, obs);
 
-                    // notch the flag bit when the test does not pass
-                    if (!oResult.getPass()) {
-                        nFlags &= ~nBits;
-                        // let subsequent checks know that a test has failed
-                        bContinue = !oQCh.m_bSignalStop;
+                for (InferenceResult result : results) {
+                    if (result.isCanceled()) {
+                        bCanceled = true;
+                        break;
                     }
                 }
 
-                // accumulate the weighted results for the overall confidence
-                dConfidence += dWeight * oResult.getConfidence() *
-                        oResult.getConfidence();
-                dTotalWeight += dWeight;
+                aggregateResults.addAll(results);
             }
+
         }
 
-        // set the run, pass, and confidence for the obs
-        if (dTotalWeight != 0.0)
-            dConfidence = Math.sqrt(dConfidence / dTotalWeight);
-        else
-            dConfidence = 0.0;
+        return aggregateResults;
 
-        iObs.setConfValue((float) dConfidence);
-        iObs.setQchCharFlag(QualityCheckFlagUtil.getQcCharFlags(1, nRun, nFlags));
+//        //
+//        // Evaluate each inference algorithm against the observation.
+//        //
+//        for (int seqIndex = 0; seqIndex < m_oInferences.size(); seqIndex++) {
+//            Inference inference = m_oInferences.get(seqIndex);
+//            // always set the flag bit to indicate an attempted doInference
+//
+//            if (bContinue) {
+//                // clear the result object and set the not-run weight
+//                result.clear();
+//
+//                inference.check(obsTypeId, sensor, obs, result);
+//
+//                // evaluate results when the test successfully runs
+//                if (result.getRun()) {
+//
+//                }
+//            }
+//        }
     }
 
     /**
      * Compares <i> this </i> {@code InferenceSeq} with the provided {@code InferenceSeq}
      * by climate id.
      *
-     * @param oInferenceSeq object to compare with <i> this </i>
+     * @param other object to compare with <i> this </i>
      * @return 0 if the values match. > 0 if <i> this </i> is the lesser value.
      */
-    public int compareTo(InferenceSeq oInferenceSeq) {
-        return (m_nClimateId - oInferenceSeq.m_nClimateId);
+    @Override
+    public int compareTo(InferenceSeq other) {
+        if (other == this)
+            return 0;
+
+        return m_obsTypeId - other.m_obsTypeId;
     }
 }

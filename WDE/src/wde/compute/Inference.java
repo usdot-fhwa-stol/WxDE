@@ -1,47 +1,36 @@
 package wde.compute;
 
+import wde.compute.algo.ObservationTypes.Mapping;
+import wde.dao.ObsTypeDao;
 import wde.dao.SensorDao;
+import wde.data.shp.Polyline;
 import wde.metadata.ISensor;
 import wde.obs.IObs;
 import wde.obs.ObsMgr;
+import wde.qchs.Roads;
 
 import java.sql.Connection;
+import java.util.ArrayList;
+import java.util.Set;
+import java.util.TreeSet;
 
-/**
- * Created by jschultz on 1/25/16.
- */
-public abstract class Inference implements Comparable<Inference> {
+public abstract class Inference<T extends Inference> implements Comparable<T> {
+
+    protected InferenceSeq m_seq;
+    protected int m_seqOrder;
     /**
      * Pointer to the sensors cache.
      */
     protected SensorDao sensorDao = SensorDao.getInstance();
+    protected Connection m_oConnection;
+
     /**
      * Pointer to the observation manager instance.
      */
     protected ObsMgr m_oObsMgr = ObsMgr.getInstance();
-    /**
-     * Interpreted as a 2-bit integer with the least-significant-bit determining
-     * if a failed test can signal a stop and the most-significant-bit
-     * determining if a test can override a stop signal and run anyway.
-     */
-    boolean m_bRunAlways;
-    /**
-     * Bit signaling a stop.
-     */
-    boolean m_bSignalStop;
-    /**
-     * Tracks the bit position corresponding to the qch algorithm being run.
-     */
-    int m_nBitPosition;
-    /**
-     * Used for confidence calculations, determines how much influence the
-     * qch algorithm has on the results.
-     */
-    double m_dWeight;
-    /**
-     * Quality check sequence.
-     */
-    private int m_nSeq;
+
+    public Inference() {
+    }
 
     /**
      * <b> Default Constructor </b>
@@ -49,35 +38,90 @@ public abstract class Inference implements Comparable<Inference> {
      * Creates new instances of {@code Qch}
      * </p>
      */
-    protected Inference() {
+    public Inference(InferenceSeq seq, int seqOrder) {
+        this.m_seq = seq;
+        this.m_seqOrder = seqOrder;
     }
 
-
-    /**
-     * Initializes the member attributes with the supplied values.
-     *
-     * @param nSeq         sequence id.
-     * @param nBitPosition bit position for the qch algorithm.
-     * @param nRunAlways   a value of two or three will set the run-always flag
-     *                     to signal a stop on a failed test.
-     * @param dWeight      quality check influence.
-     * @param nConfigId    default initialization does not load any configuration.
-     * @param iConnection  default init doesn't load any configuration.
-     */
-    public void init(int nSeq, int nBitPosition, int nRunAlways,
-                     double dWeight, int nConfigId, Connection iConnection) {
-        m_nSeq = nSeq;
-        m_nBitPosition = nBitPosition;
-        // run always is interpreted as a 2-bit integer with the low-bit
-        // determining if a failed test can signal a stop and the high-bit
-        // determining if a test can override a stop signal and run anyway
-        m_bRunAlways = ((nRunAlways & 2) > 0);
-        m_bSignalStop = ((nRunAlways & 1) > 0);
-        m_dWeight = dWeight;
-
-        // default initialization does not load any configuration
+    public ObsMgr getObsMgr() {
+        return m_oObsMgr;
     }
 
+    public int getObsTypeId() {
+        if (m_seq != null) {
+            return m_seq.getObsTypeId();
+        }
+
+        return -1;
+    }
+
+    public Double getRelatedObsValue(Mapping observation, IObs obs) {
+        Double value = Double.NaN;
+        try {
+            ObsTypeDao obsTypeDao = ObsTypeDao.getInstance();
+
+            int obsTypeId = obsTypeDao.getObsTypeId(observation.getVdtObsTypeName());
+            IObs relatedObs = getRelatedObs(obsTypeId, obs);
+
+            value = relatedObs.getValue();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return value;
+    }
+
+    public IObs getRelatedObs(int obsTypeId, IObs obs) {
+        IObs useObs = null;
+        try {
+            Roads roads = Roads.getInstance();
+
+            if (roads == null)
+                throw new Exception("Could not get instance of Roads.");
+
+            Polyline polyline = roads.getLink(100, obs.getLongitude(), obs.getLatitude());
+            if (polyline == null)
+                throw new Exception("Could not get the midpoint of the road.");
+            int[] midpoint = new int[2];
+            polyline.getMidPoint(midpoint);
+
+            ArrayList<IObs> obsArrayList = new ArrayList<>();
+            getObsMgr().getBackground(
+                    obsTypeId,
+                    midpoint[0] - 100,
+                    midpoint[1] - 100,
+                    midpoint[0] + 100,
+                    midpoint[1] + 100,
+                    obs.getObsTimeLong() - 30 * 60000, /* 30 minutes */
+                    obs.getObsTimeLong() + 30 * 60000,
+                    obsArrayList);
+
+            IObs selectedObs = null;
+            int minDist = Integer.MAX_VALUE;
+            for (IObs currObs : obsArrayList) {
+                int dist = polyline.snap(100, currObs.getLatitude(), currObs.getLongitude());
+                if (dist < minDist) {
+                    minDist = dist;
+                    selectedObs = currObs;
+                }
+            }
+
+            if (selectedObs == null)
+                throw new Exception("Not obs found within minimum distance of link.");
+
+            useObs = selectedObs;
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return useObs;
+    }
+
+    void init(InferenceSeq seq, int m_seqOrder) {
+        this.m_seq = seq;
+        this.m_seqOrder = m_seqOrder;
+    }
 
     /**
      * Abstract method should be defined for extensions.
@@ -85,25 +129,19 @@ public abstract class Inference implements Comparable<Inference> {
      * Performs the extensions quality checking algorithm.
      * </p>
      *
-     * @param nObsTypeId observation type id.
-     * @param iSensor    sensor that recorded the observation.
-     * @param iObs       observation.
-     * @param oResult    the result of the test.
+     * @param obsTypeId observation type id.
+     * @param obs       observation.
+     * @param sensor    sensor that recorded the observation.
+     * @param obs
      */
-    public abstract void check(int nObsTypeId, ISensor iSensor,
-                               IObs iObs, InferenceResult oResult);
+    public abstract Set<InferenceResult> doInference(int obsTypeId, ISensor sensor, IObs obs);
 
+    protected Set<InferenceResult> newInferenceResultSet() {
+        return new TreeSet<InferenceResult>();
+    }
 
-    /**
-     * Enforces an ordering on {@code Qch} objects by their sequence id.
-     * <p>
-     * Required for the implementation of {@code Comparable}.
-     * </p>
-     *
-     * @param oQCh object to compare to <i> this </i>.
-     * @return 0 if the records match.
-     */
-    public int compareTo(Inference oQCh) {
-        return (m_nSeq - oQCh.m_nSeq);
+    @Override
+    public int compareTo(T o) {
+        return m_seqOrder - o.m_seqOrder;
     }
 }

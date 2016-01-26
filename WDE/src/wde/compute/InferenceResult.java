@@ -1,22 +1,27 @@
 package wde.compute;
 
+import wde.obs.IObs;
+
+import java.util.HashSet;
+import java.util.Set;
+
 public class InferenceResult {
 
     /**
-     * Indicates whether the quality check algorithm ran successfully or not.
+     * Indicates whether the quality doInference algorithm ran successfully or not.
      * Default false.
      */
-    private boolean m_bRun;
+    private boolean m_bCompleted;
+
     /**
-     * Indicates whether the quality check algorithm passed the observation
-     * or not. Default false.
-     */
-    private boolean m_bPass;
-    /**
-     * Confidence value returned by the quality check. Default 0.0.
+     * Confidence value returned by the quality doInference. Default 0.0.
      */
     private double m_dConfidence;
-
+    private boolean m_bCancel;
+    private boolean m_bRan;
+    private String m_sName;
+    private int m_iObsTypeId;
+    private Set<IObs> m_observationSet = new HashSet<IObs>();
 
     /**
      * <b> Default Constructor </b>
@@ -27,66 +32,47 @@ public class InferenceResult {
     public InferenceResult() {
     }
 
-
-    /**
-     * Sets attributes to their default values.
-     */
-    public void clear() {
-        m_bRun = false;
-        m_bPass = false;
-        m_dConfidence = 0.0;
+    public synchronized boolean ran() {
+        return m_bRan;
     }
 
-    /**
-     * <b> Accessor </b>
-     *
-     * @return run attribute value.
-     */
-    public boolean getRun() {
-        return m_bRun;
+    public synchronized void setRan() {
+        m_bRan = true;
     }
 
-    /**
-     * <b> Accessor </b>
-     *
-     * @return pass attribute value.
-     */
-    public boolean getPass() {
-        return m_bPass;
-    }
-
-    /**
-     * <b> Mutator </b>
-     *
-     * @param bPass sets the pass attribute to the provided value.
-     */
-    void setPass(boolean bPass) {
-        m_bPass = bPass;
-    }
-
-    /**
-     * <b> Accessor </b>
-     *
-     * @return confidence attribute value.
-     */
-    public double getConfidence() {
+    public synchronized double getConfidence() {
         return m_dConfidence;
     }
 
-    /**
-     * <b> Mutator </b>
-     *
-     * @param dConfidence sets the confidence attribute to the provided value.
-     */
-    void setConfidence(double dConfidence) {
+    public synchronized void setConfidence(double dConfidence) {
         m_dConfidence = dConfidence;
     }
 
-    /**
-     * <b> Mutator </b>
-     * Sets run to true.
-     */
-    void setRun() {
-        m_bRun = true;
+    public synchronized void cancel() { m_bCancel = true; }
+
+    public synchronized boolean isCanceled() { return m_bCancel; }
+
+    public void setName(String name) {
+        m_sName = name;
+    }
+
+    public String getName() {
+        return m_sName;
+    }
+
+    public void setObsTypeId(int obsTypeId) {
+        m_iObsTypeId = obsTypeId;
+    }
+
+    public int getObsTypeId() {
+        return m_iObsTypeId;
+    }
+
+    public Set<IObs> getObservations() {
+        return this.m_observationSet;
+    }
+
+    public void addObservation(IObs observation) {
+        m_observationSet.add(observation);
     }
 }

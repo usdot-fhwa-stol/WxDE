@@ -37,9 +37,6 @@ abstract class RemoteGrid implements Runnable {
      */
     protected int[] m_nObsTypes;
     protected int[] m_nGridMap;
-    protected long m_lStartTime;
-    protected long m_lEndTime;
-    protected String m_sIncomingDir = "/tmp/remotegrid/incoming";
     protected String m_sBaseURL;
     protected String[] m_sObsTypes;
     protected List<GridDatatype> m_oGrids;
@@ -61,7 +58,7 @@ abstract class RemoteGrid implements Runnable {
     }
 
     public Path getDatasetsStoragePath() {
-        return getStoragePath().resolve("datasets").toAbsolutePath();
+        return getStoragePath().resolve("data").toAbsolutePath();
     }
 
     public abstract Path getStoragePath();
@@ -124,6 +121,9 @@ abstract class RemoteGrid implements Runnable {
 
         Path datasetFilePath = null;
         try {
+            final String sFilenameUrl = getFilenameUrl(oNow.getTime());
+            final String sFilename = getFilename(oNow.getTime());
+
             final Path incomingFolder = getIncomingStoragePath();
             if (!Files.exists(incomingFolder)) {
                 Files.createDirectories(incomingFolder);
@@ -134,9 +134,8 @@ abstract class RemoteGrid implements Runnable {
                 Files.createDirectories(datasetsFolder.toAbsolutePath());
             }
 
-            final String sFilenameUrl = getFilenameUrl(oNow.getTime());
-            final String sFilename = getFilename(oNow.getTime());
-            Path incomingFilePath = incomingFolder.resolve(sFilename).toAbsolutePath();
+            final Path incomingFilePath = incomingFolder.resolve(sFilename).toAbsolutePath();
+            Files.createDirectories(incomingFilePath.getParent());
 
             if (Files.notExists(incomingFilePath)) {
                 //final URL oUrl = new URL(m_sBaseURL + sFilename); // retrieve remote data file
@@ -152,11 +151,20 @@ abstract class RemoteGrid implements Runnable {
             }
 
             if (Files.exists(incomingFilePath)) {
-                final String outputFileName = incomingFilePath.getFileName().toString()
+                final Path relativeFilePath = incomingFolder.relativize(incomingFilePath);
+                if (relativeFilePath.getParent() != null) {
+                    Files.createDirectories(Paths.get(datasetsFolder.toString(), relativeFilePath.getParent().toString()));
+                }
+
+                final String filename = relativeFilePath.getFileName().toString()
                         .replaceAll(".gz$", "")
                         .replaceAll(".grib2$", ".nc")
                         .replaceAll(".grb2$", ".nc");
-                final Path outputFilePath = Paths.get(datasetsFolder.toString(), outputFileName);
+
+                final Path outputFilePath = datasetsFolder.resolve(relativeFilePath)
+                        .getParent()
+                        .resolve(filename)
+                        .toAbsolutePath();
 
                 if (NetcdfFile.canOpen(incomingFilePath.toString())) {
                     final NetcdfFile netcdfFile = NetcdfFile.open(incomingFilePath.toString());
@@ -209,8 +217,6 @@ abstract class RemoteGrid implements Runnable {
             {
                 m_oGrids = oGrids;
                 m_nGridMap = nGridMap;
-                m_lStartTime = oNow.getTimeInMillis() - 300000; // 5-minute margin
-                m_lEndTime = m_lStartTime + 4200000; // data are valid for 70 minutes
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -223,7 +229,6 @@ abstract class RemoteGrid implements Runnable {
      * @param nObsTypeId the observation type identifier used to find grid data.
      * @return the grid data for the variable specified by observation type.
      */
-
     protected GridDatatype getGridByObs(int nObsTypeId) throws Exception {
         boolean bFound = false;
         int nIndex = m_nObsTypes.length;

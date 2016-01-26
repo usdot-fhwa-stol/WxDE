@@ -2,8 +2,12 @@ package wde.compute;
 
 import org.apache.log4j.Logger;
 import wde.WDEMgr;
+import wde.compute.algo.PavementCondition;
+import wde.compute.algo.PavementSlickness;
+import wde.compute.algo.PrecipitationIntensity;
+import wde.compute.algo.PrecipitationType;
+import wde.compute.algo.Visibility;
 import wde.dao.ObsTypeDao;
-import wde.metadata.ObsType;
 import wde.obs.IObsSet;
 import wde.util.Config;
 import wde.util.ConfigSvc;
@@ -13,11 +17,32 @@ import wde.util.threads.StripeLock;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
-import java.util.ArrayList;
-import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 public class InferenceMgr extends AsyncQ<IObsSet> implements ILockFactory<InferenceSeqMgr> {
+
     private static final Logger logger = Logger.getLogger(InferenceMgr.class);
+
+    /*
+     * TODO:
+     *
+     * This is in place until another means of location extensions is in place. This would normally
+     * be something I would leave to a container to resolve and build, but one isn't being used.
+     */
+    private InferenceSeq[] inferenceSeqs = new InferenceSeq[]{
+            new InferenceSeq(
+                    2001018,
+                    new char[]{'M', 'P'},
+                    new Class[]{
+                            PrecipitationType.class,
+                            PrecipitationIntensity.class,
+                            PavementSlickness.class,
+                            PavementCondition.class,
+                            Visibility.class
+                    }
+            )
+    };
 
     /**
      * Sets the max number of threads for processing <i> this </i> as well as
@@ -32,9 +57,9 @@ public class InferenceMgr extends AsyncQ<IObsSet> implements ILockFactory<Infere
     /**
      * List of sequence managers ordered by the observation-type they manage.
      */
-    private ArrayList<InferenceSeqMgr> m_oSeqMgrs = new ArrayList<>();
+    private Map<Integer, InferenceSeqMgr> m_seqMgrMap = new HashMap<>();
     /**
-     * Lock container for quality check sequence managers.
+     * Lock container for quality doInference sequence managers.
      */
     private StripeLock<InferenceSeqMgr> m_oLock;
 
@@ -62,12 +87,10 @@ public class InferenceMgr extends AsyncQ<IObsSet> implements ILockFactory<Infere
         setMaxThreads(MAX_THREADS);
         m_oLock = new StripeLock<InferenceSeqMgr>(this, MAX_THREADS);
 
-        // set up the database connection
         Connection iConnection = null;
         WDEMgr wdeMgr = WDEMgr.getInstance();
         try {
-            DataSource iDataSource =
-                    wdeMgr.getDataSource(oConfig.getString("datasource", null));
+            DataSource iDataSource = wdeMgr.getDataSource(oConfig.getString("datasource", null));
 
             if (iDataSource == null)
                 return;
@@ -76,23 +99,27 @@ public class InferenceMgr extends AsyncQ<IObsSet> implements ILockFactory<Infere
             if (iConnection == null)
                 return;
 
-            // load the default obs types
-            oConfig = oConfigSvc.getConfig("_default");
-            String[] sObsTypes = oConfig.getStringArray("obstype");
-            if (sObsTypes != null && sObsTypes.length > 0) {
-                ObsTypeDao obsTypeDao = ObsTypeDao.getInstance();
+            ObsTypeDao obsTypeDao = ObsTypeDao.getInstance();
+            for(InferenceSeq seq : inferenceSeqs) {
+                InferenceSeqMgr seqMgr = null;
+                if (m_seqMgrMap.containsKey(seq.getObsTypeId())) {
+                    seqMgr = m_seqMgrMap.get(seq.getObsTypeId());
+                } else {
+                    int obTypeId = seq.getObsTypeId();
+                    if (obsTypeDao.getObsType(obTypeId) != null) {
+                        seqMgr = new InferenceSeqMgr(
+                                seq.getObsTypeId(),
+                                MAX_THREADS,
+                                iConnection
+                        );
 
-                // initialize the qch seq mgrs
-                int nIndex = sObsTypes.length;
-                while (nIndex-- > 0) {
-                    // resolve the obs type name to an obs type id
-                    ObsType obsType = obsTypeDao.getObsType(sObsTypes[nIndex]);
-
-                    if (obsType != null)
-                        m_oSeqMgrs.add(new InferenceSeqMgr(Integer.valueOf(obsType.getId()),
-                                MAX_THREADS, iConnection));
+                        m_oLock.writeLock();
+                        m_seqMgrMap.put(seq.getObsTypeId(), seqMgr);
+                        m_oLock.writeUnlock();
+                    }
                 }
-                Collections.sort(m_oSeqMgrs);
+                seqMgr.addInferenceSeq(seq);
+                m_oLock.readUnlock();
             }
 
             iConnection.close();
@@ -114,24 +141,30 @@ public class InferenceMgr extends AsyncQ<IObsSet> implements ILockFactory<Infere
     }
 
     /**
-     * Finds a quality check sequence manager to handle the provided observation
-     * set. The {@link InferenceSeqMgr#run(IObsSet)} method is then envoked on the
+     * Finds a quality doInference sequence manager to handle the provided observation
+     * set. The {@link InferenceSeqMgr#run(IObsSet)} method is then invoked on the
      * retrieved sequence manager, and provided observation set. This performs
      * quality checking algorithms on the supplied set by climate-region.
      *
-     * @param iObsSet observation set to quality check.
+     * @param iObsSet observation set to quality doInference.
      */
     @Override
     public void run(IObsSet iObsSet) {
         // find a seq mgr to handle the obs set
-        InferenceSeqMgr oSeqMgr = m_oLock.readLock();
-        oSeqMgr.setObsTypeId(iObsSet.getObsType());
-        int nIndex = Collections.binarySearch(m_oSeqMgrs, oSeqMgr);
+        InferenceSeqMgr oSeqMgr = null;
+        m_oLock.readLock();
+        if (m_seqMgrMap.containsKey(iObsSet.getObsType())) {
+            oSeqMgr = m_seqMgrMap.get(iObsSet.getObsType());
+        }
         m_oLock.readUnlock();
 
         // the seq mgr list is read-only and can be unlocked before indexing
-        if (nIndex >= 0) {
-            oSeqMgr = m_oSeqMgrs.get(nIndex);
+        if (oSeqMgr != null) {
+
+            //
+            // Call the run(...) function on the matched sequence manager and pass-in the
+            // obsset.
+            //
             oSeqMgr.run(iObsSet);
         }
 

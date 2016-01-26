@@ -92,6 +92,12 @@ public class StripeLock<T> {
         return oLock.getType();
     }
 
+    public int acquireReadLock() {
+        int index = getIndex();
+        TypeLock<T> oLock = m_oLocks.get(index);
+        oLock.lock();
+        return index;
+    }
 
     /**
      * Releases the lock assigned to the current thread.

@@ -7,7 +7,7 @@
               <!--subdirs="true"-->
                 <!--/>-->
         <scan dateFormatMark="MRMS_MergedBaseReflectivityQC_00.00_#yyyyDDD-HHmmss"
-              location="/Users/jschultz/Source/wxde/WDE/data/radar/MergedBaseReflectivityQC/datasets"
+              location="./radar/MergedBaseReflectivityQC/datasets"
               suffix=".nc"
               subdirs="true"
                 />

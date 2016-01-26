@@ -37,17 +37,17 @@ public class Radar extends RemoteGrid {
         m_sBaseURL = "http://mrms.ncep.noaa.gov/data/2D/MergedBaseReflectivityQC/";
 
         run(); // manually initialize first run, then set schedule
-//		Scheduler.getInstance().schedule(this, 60 * 55, 3600, true);
+		//Scheduler.getInstance().schedule(this, 60 * 55, 3600, true);
     }
 
     @Override
     public Path getStoragePath() {
-        return Paths.get("/Users/jschultz/Source/wxde/WDE/data/radar/MergedBaseReflectivityQC").toAbsolutePath();
+        return Paths.get("/opt/collectors/radar").toAbsolutePath();
     }
 
     @Override
     public URL getDatasetBaseUrl() throws MalformedURLException {
-        return new URL("http://mrms.ncep.noaa.gov/data/2D/MergedBaseReflectivityQC/");
+        return new URL(m_sBaseURL);
     }
 
     public static Radar getInstance() {

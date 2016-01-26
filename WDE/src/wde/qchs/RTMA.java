@@ -22,7 +22,7 @@ public final class RTMA extends RemoteGrid {
             "'rtma2p5.'yyyyMMdd'/rtma2p5.t'HH'z.2dvarges_ndfd.grb2'");
 
     private final SimpleDateFormat m_oOutputFilename = new SimpleDateFormat(
-            "'rtma2p5.'yyyyMMdd'_rtma2p5.t'HH'z.2dvarges_ndfd.grib2'");
+            "yyyyMMdd'/rtma2p5.t'HH'z.2dvarges_ndfd.grib2'");
 
     /**
      * <b> Default Private Constructor </b>
@@ -125,7 +125,8 @@ public final class RTMA extends RemoteGrid {
 
     @Override
     public Path getStoragePath() {
-        return Paths.get("/Users/jschultz/Source/wxde/WDE/data/rtma");
+
+        return Paths.get("/opt/collectors/rtma");
 
     }
 
