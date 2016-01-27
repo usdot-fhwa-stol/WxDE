@@ -39,6 +39,8 @@ Modification History:
 
 	<property name="app-type" value="web"/>
 	<property name="build-type" value="archive"/>
+
+	<property name="test-src" location="test"/>
     
     <property name="version" value="3.0"/>
 	
@@ -52,8 +54,20 @@ Modification History:
 	</target>
 
 	<target name="compile" depends="init">
-		
+
 		<javac srcdir="${src}" destdir="${build}/classes" includeantruntime="false" debug="on">
+			<classpath>
+				<pathelement path="${classpath}"/>
+				<fileset dir="lib">
+					<include name="**/*.jar"/>
+				</fileset>
+			</classpath>
+		</javac>
+	</target>
+
+	<target name="test-compile" depends="compile">
+
+		<javac srcdir="${test-src}" destdir="${build}/classes" includeantruntime="false" debug="on">
 			<classpath>
 				<pathelement path="${classpath}"/>
 				<fileset dir="lib">
@@ -350,6 +364,19 @@ Modification History:
 		</copy>
 		
 		<antcall target="deploy-to-zip"/>
+
+	</target>
+
+	<target name="test-demo" depends="build-web-demo" description="Builds a demo version of the WDE Web application">
+
+		<java classname="wde.inference.InferenceUnitTests">
+			<classpath>
+				<pathelement location="lib"/>
+				<pathelement location="build/classes"/>
+				<pathelement location="${assembly}"/>
+				<pathelement path="${java.class.path}"/>
+			</classpath>
+		</java>
 
 	</target>
 	

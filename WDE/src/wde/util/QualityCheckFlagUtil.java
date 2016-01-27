@@ -22,6 +22,26 @@ public class QualityCheckFlagUtil {
     private static String[] padding = {"000000000000000", "0000000000000000"};
     private static char[] qcChars = {'/', '-', 'N', 'P'};
 
+    public static char[] getDefaultQcFlags() {
+        int sourceId = 0;
+        char[] flags = new char[qcLength[sourceId]];
+        for(int i = 0; i < flags.length; ++i) {
+            flags[i] = '/';
+        }
+
+        return flags;
+    }
+
+    public static char[] getPassingQcFlags() {
+        int sourceId = 0;
+        char[] flags = new char[qcLength[sourceId]];
+        for(int i = 0; i < flags.length; ++i) {
+            flags[i] = 'P';
+        }
+
+        return flags;
+    }
+
     public static int getQcLength(int sourceId) {
         int len = 0;
         if (sourceId == 1 || sourceId == 2)

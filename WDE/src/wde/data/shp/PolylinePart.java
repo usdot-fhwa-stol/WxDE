@@ -1,7 +1,5 @@
 package wde.data.shp;
 
-import wde.data.AbstractIterator;
-
 import java.util.Iterator;
 
 /**
@@ -10,7 +8,8 @@ import java.util.Iterator;
  * @author  bryan.krueger
  * @version 1.0 (October 2, 2015)
  */
-public class PolylinePart extends AbstractIterator<int[]> {
+public class PolylinePart implements Iterator<int[]>
+{
 	private int m_nStart;
 	private int m_nEnd;
 	private int[] m_oPolyline;
@@ -46,5 +45,12 @@ public class PolylinePart extends AbstractIterator<int[]> {
 		System.arraycopy(m_oPolyline, m_nStart, m_oLine, 0, m_oLine.length);
 		m_nStart += 2; // shift line to next point
 		return m_oLine;
+	}
+
+
+	@Override
+	public void remove()
+	{
+		throw new UnsupportedOperationException("remove");
 	}
 }

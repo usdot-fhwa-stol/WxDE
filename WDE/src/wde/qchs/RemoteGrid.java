@@ -1,16 +1,6 @@
 package wde.qchs;
 
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.GregorianCalendar;
-import java.util.List;
 import ucar.ma2.Array;
 import ucar.ma2.Index;
 import ucar.nc2.NetcdfFile;
@@ -21,6 +11,17 @@ import ucar.nc2.dt.grid.GridDataset;
 import ucar.unidata.geoloc.LatLonPointImpl;
 import ucar.unidata.geoloc.ProjectionPointImpl;
 import wde.util.MathUtil;
+
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.GregorianCalendar;
+import java.util.List;
 
 
 /**
