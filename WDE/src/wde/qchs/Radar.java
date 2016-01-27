@@ -1,12 +1,12 @@
 package wde.qchs;
 
+import ucar.nc2.dt.GridDatatype;
+
 import java.io.BufferedInputStream;
 import java.net.URL;
 import java.util.Date;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import ucar.nc2.dt.GridDatatype;
 
 
 public class Radar extends RemoteGrid

@@ -30,7 +30,7 @@ import java.util.Calendar;
 import java.util.Collections;
 import java.util.HashMap;
 
-public class ObsTypeDao {
+public class ObsTypeDao implements IObsTypeDao {
 
     private static final Logger logger = Logger.getLogger(ObsTypeDao.class);
 
@@ -77,6 +77,7 @@ public class ObsTypeDao {
     /**
      * @return the obsTypeMap
      */
+    @Override
     public HashMap<String, TimeInvariantMetadata> getObsTypeMap() {
         return obsTypeMap;
     }
@@ -84,6 +85,7 @@ public class ObsTypeDao {
     /**
      * @return a list of ObsTypes that are active
      */
+    @Override
     public ArrayList<ObsType> getObsTypeList() {
         ArrayList<ObsType> obsTypes = new ArrayList<>();
         for (TimeInvariantMetadata ot : obsTypeMap.values()) {
@@ -99,6 +101,7 @@ public class ObsTypeDao {
      * @param id
      * @return the record that has the same id
      */
+    @Override
     public ObsType getObsType(int id) {
         return (ObsType) obsTypeMap.get(String.valueOf(id));
     }
@@ -107,6 +110,7 @@ public class ObsTypeDao {
      * @param obsTypeName
      * @return
      */
+    @Override
     public int getObsTypeId(String obsTypeName) {
         return obsTypeReverseLookupMap.get(obsTypeName).intValue();
     }
@@ -115,6 +119,7 @@ public class ObsTypeDao {
      * @param id
      * @return the record that has the same obsTypeName
      */
+    @Override
     public ObsType getObsType(String obsTypeName) {
         ObsType obsType = null;
 
@@ -155,6 +160,7 @@ public class ObsTypeDao {
     /**
      * Updates the obsType map based on what's currently in the database
      */
+    @Override
     public void updateObsTypeMap() {
         String sql = "SELECT id FROM meta.obsType";
         ResultSet rs = db.query(connId, sql);
@@ -188,6 +194,7 @@ public class ObsTypeDao {
      * @param atomic - false if this is part of a batch processing
      * @return true if a record is inserted; false if database already has the record is found
      */
+    @Override
     public boolean insertObsType(ObsType obsType, boolean atomic) {
         String key = obsType.getId();
 
@@ -231,7 +238,8 @@ public class ObsTypeDao {
      * @param id
      * @return the record that has the same id
      */
-    private ObsType getObsTypeFromDB(String id) {
+    @Override
+    public ObsType getObsTypeFromDB(String id) {
         ObsType obsType = null;
 
         String sql = "SELECT * FROM meta.obsType WHERE id = ?";
