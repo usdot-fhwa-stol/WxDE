@@ -256,7 +256,7 @@ public class ObsArchiveMgr extends AsyncQ<IObsSet> implements
             Observation obs = null;
             // determine if the obs needs to be inserted
             while (nIndex-- > 0) {
-                obs = obsSet.get(nIndex);
+                obs = (Observation) obsSet.get(nIndex);
 
                 // first, check if the obs exists
                 int nSearchIndex = Collections.binarySearch(m_oObs, obs, m_oUniqueObs);

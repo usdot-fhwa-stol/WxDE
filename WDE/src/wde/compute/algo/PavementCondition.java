@@ -6,7 +6,6 @@ import wde.metadata.ISensor;
 import wde.obs.IObs;
 import wde.obs.Observation;
 
-import java.util.Date;
 import java.util.Set;
 
 public class PavementCondition extends Inference {
@@ -31,7 +30,6 @@ public class PavementCondition extends Inference {
         InferenceResult result = new InferenceResult();
         resultSet.add(result);
 
-        result.setRan();
         result.setName("PavementCondition");
         result.setObsTypeId(obsTypeId);
 
@@ -158,9 +156,9 @@ public class PavementCondition extends Inference {
 
         IObs pseudoObs = new Observation(
                 1000002,
-                obs.getSourceId(),
-                obs.getSensorId(),
-                new Date().getTime(),
+                0,
+                0,
+                obs.getObsTimeLong(),
                 obs.getRecvTimeLong(),
                 obs.getLatitude(),
                 obs.getLongitude(),

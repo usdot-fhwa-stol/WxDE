@@ -2,7 +2,6 @@ package wde.compute;
 
 import wde.compute.algo.ObservationTypes.Mapping;
 import wde.dao.ObsTypeDao;
-import wde.dao.SensorDao;
 import wde.data.shp.Polyline;
 import wde.metadata.ISensor;
 import wde.obs.IObs;
@@ -21,13 +20,13 @@ public abstract class Inference<T extends Inference> implements Comparable<T> {
     /**
      * Pointer to the sensors cache.
      */
-    protected SensorDao sensorDao = SensorDao.getInstance();
+    //protected SensorDao sensorDao = null;
     protected Connection m_oConnection;
 
     /**
      * Pointer to the observation manager instance.
      */
-    protected ObsMgr m_oObsMgr = ObsMgr.getInstance();
+    protected ObsMgr m_oObsMgr;// = ObsMgr.getInstance();
 
     public Inference() {
     }
@@ -44,6 +43,9 @@ public abstract class Inference<T extends Inference> implements Comparable<T> {
     }
 
     public ObsMgr getObsMgr() {
+        if (m_oObsMgr == null) {
+            m_oObsMgr = ObsMgr.getInstance();
+        }
         return m_oObsMgr;
     }
 

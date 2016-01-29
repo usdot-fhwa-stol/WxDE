@@ -21,7 +21,7 @@ import java.util.ArrayList;
  * with the container.
  * </p>
  */
-public class ObsSet extends ArrayList<Observation> implements IObsSet {
+public class ObsSet extends ArrayList<IObs> implements IObsSet {
     /**
      * Flag to keep {@code ObsSet} from being modified.
      */
@@ -45,6 +45,8 @@ public class ObsSet extends ArrayList<Observation> implements IObsSet {
      */
     int m_nState;
 
+    public static int SERIAL = 0;
+
     /**
      * Initializes the corresponding attributes to the supplied values, when
      * a new instance of {@code ObsSet} is created with these parameters.
@@ -52,9 +54,11 @@ public class ObsSet extends ArrayList<Observation> implements IObsSet {
      * @param nObsType Observation type to be contained in this set.
      * @param nSerial  observation set serial identifier.
      */
-    ObsSet(int nObsType, int nSerial) {
+    public ObsSet(int nObsType, int nSerial) {
         m_nObsType = nObsType;
         m_nSerial = nSerial;
+
+        ++SERIAL;
     }
 
 

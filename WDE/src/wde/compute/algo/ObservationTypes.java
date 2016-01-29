@@ -41,11 +41,11 @@ public class ObservationTypes {
 
     public static final Mapping ess_relative_Humidity = new Mapping("", "essRelativeHumidity", 581);
 
-    public static final Mapping wde_precip_type = new Mapping("", "wdePrecipitationType", 1000000);
-    public static final Mapping wde_precip_intensity = new Mapping("", "wdePrecipitationIntesity", 1000001);
-    public static final Mapping wde_pavement_condition = new Mapping("", "wdePavementCondition", 1000002);
-    public static final Mapping wde_pavement_slickness = new Mapping("", "wdePavementSlickness", 1000003);
-    public static final Mapping wde_visibility = new Mapping("", "wdeVisibility", 1000004);
+    public static final Mapping vdt_precip_type = new Mapping("", "vdtPrecipitationType", 1000000);
+    public static final Mapping vdt_precip_intensity = new Mapping("", "vdtPrecipitationIntesity", 1000001);
+    public static final Mapping vdt_pavement_condition = new Mapping("", "vdtPavementCondition", 1000002);
+    public static final Mapping vdt_pavement_slickness = new Mapping("", "vdtPavementSlickness", 1000003);
+    public static final Mapping vdt_visibility = new Mapping("", "vdtVisibility", 1000004);
 
     public static final Mapping air_temp_iqr25 = new Mapping("air_temp_iqr25", "segAirTemperatureIQR25CAN");
     public static final Mapping air_temp_iqr75 = new Mapping("air_temp_iqr75", "segAirTemperatureIQR75CAN");

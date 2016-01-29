@@ -6,7 +6,6 @@ import wde.metadata.ISensor;
 import wde.obs.IObs;
 import wde.obs.Observation;
 
-import java.util.Date;
 import java.util.Set;
 
 import static wde.compute.algo.PavementCondition.DRY_FROZEN_PAVEMENT;
@@ -29,7 +28,6 @@ public class PavementSlickness extends Inference {
         InferenceResult result = new InferenceResult();
         resultSet.add(result);
 
-        result.setRan();
         result.setName("PavementSlickness");
         result.setObsTypeId(obsTypeId);
 
@@ -192,9 +190,9 @@ public class PavementSlickness extends Inference {
 
         IObs pseudoObs = new Observation(
                 1000002,
-                obs.getSourceId(),
-                obs.getSensorId(),
-                new Date().getTime(),
+                0,
+                0,
+                obs.getObsTimeLong(),
                 obs.getRecvTimeLong(),
                 obs.getLatitude(),
                 obs.getLongitude(),

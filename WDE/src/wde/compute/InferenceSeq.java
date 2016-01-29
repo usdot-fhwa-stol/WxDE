@@ -1,10 +1,17 @@
 package wde.compute;
 
+import wde.WDEMgr;
 import wde.metadata.ISensor;
 import wde.obs.IObs;
+import wde.obs.IObsSet;
 import wde.obs.ObsSet;
+import wde.obs.Observation;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -68,32 +75,11 @@ public class InferenceSeq extends Inference<InferenceSeq> {
         return this.m_obsTypeId;
     }
 
-    //    protected void init() {
-//        Inference[] inferences = new Inference[]{
-//                new PrecipitationType(),
-//                new PrecipitationIntensity(),
-//                new PavementCondition(),
-//                new Visibility(),
-//                new PavementSlickness()
-//        };
-//        m_oInferences.addAll(Arrays.asList(inferences));
-//    }
-
     protected void init(int obsTypeId, char[] platformFilter) {
         m_obsTypeId = obsTypeId;
         m_platformFilter = platformFilter;
     }
 
-
-    /**
-     * Runs the inference algorithms for the provided observation. Sets the
-     * observations run and pass bit-fields, and the confidence level for the
-     * observation for each qch algorithm.
-     * @param result
-     * @param obsTypeId
-     * @param sensor
-     * @param obs
-     */
     public Set<InferenceResult> doInference(int obsTypeId, ISensor sensor, IObs obs) {
         boolean bCanceled = false;
 
@@ -111,33 +97,64 @@ public class InferenceSeq extends Inference<InferenceSeq> {
                         break;
                     }
                 }
-
-                aggregateResults.addAll(results);
             }
 
         }
 
         return aggregateResults;
+    }
 
-//        //
-//        // Evaluate each inference algorithm against the observation.
-//        //
-//        for (int seqIndex = 0; seqIndex < m_oInferences.size(); seqIndex++) {
-//            Inference inference = m_oInferences.get(seqIndex);
-//            // always set the flag bit to indicate an attempted doInference
-//
-//            if (bContinue) {
-//                // clear the result object and set the not-run weight
-//                result.clear();
-//
-//                inference.check(obsTypeId, sensor, obs, result);
-//
-//                // evaluate results when the test successfully runs
-//                if (result.getRun()) {
-//
-//                }
-//            }
-//        }
+    protected void processResults(Set<InferenceResult> results) {
+
+        for(InferenceResult result : results) {
+            Set<IObs> observations = result.getObservations();
+            if (observations != null || observations.size() == 0) {
+                Collection<IObsSet> obsSets = buildObsSets(observations);
+                for(IObsSet obsSet : obsSets) {
+                    if (obsSet == null) {
+                        continue;
+                    }
+
+                    WDEMgr.getInstance().queue(obsSet);
+                }
+            }
+        }
+    }
+
+    protected Collection<IObsSet> buildObsSets(Set<IObs> observationList) {
+        if (observationList == null) {
+            return new ArrayList<>();
+        }
+
+        Map<Integer, IObsSet> obsSetMap = new HashMap<>();
+        for (IObs obs : observationList) {
+            final int obsTypeId = obs.getObsTypeId();
+
+            //
+            // Retrieve an existing IObsSet or create an existing if one doesn't already exist
+            // for the specific obsTypeId.
+            //
+            IObsSet obsSet;
+            if (!obsSetMap.containsKey(obs.getObsTypeId())) {
+                //obsSet = obsSetMap.put(obsTypeId, ObsMgr.getInstance().getObsSet(obsTypeId));
+                obsSet = new ObsSet(obsTypeId, ObsSet.SERIAL);
+                obsSetMap.put(obsTypeId, obsSet);
+            } else {
+                obsSet = obsSetMap.get(obs.getObsTypeId());
+            }
+
+            obsSet.add(obs);
+        }
+
+        Collection<IObsSet> obsSets = obsSetMap.values();
+        //
+        // Ensure an empty list is returned at a minimum.
+        //
+        if (obsSets == null) {
+            obsSets = new ArrayList<>();
+        }
+
+        return obsSets;
     }
 
     /**
@@ -153,5 +170,20 @@ public class InferenceSeq extends Inference<InferenceSeq> {
             return 0;
 
         return m_obsTypeId - other.m_obsTypeId;
+    }
+
+    public void testBuildObsSet() {
+        Set<IObs> obsSet = new HashSet<>();
+        for(int i = 0; i < 10; ++i) {
+            obsSet.add(new Observation(i, 0, 0, 0, 0, 0, 0, 0, 0.0));
+        }
+
+        Collection<IObsSet> obsSets = buildObsSets(obsSet);
+        assert(obsSets.size() == 10);
+    }
+
+    public static void main(String[] args) {
+        InferenceSeq seq = new InferenceSeq();
+        seq.testBuildObsSet();
     }
 }

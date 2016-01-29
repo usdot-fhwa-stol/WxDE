@@ -42,7 +42,6 @@ public class Visibility extends Inference {
         InferenceResult result = new InferenceResult();
         resultSet.add(result);
 
-        result.setRan();
         result.setName("PavementSlickness");
         result.setObsTypeId(obsTypeId);
 
@@ -167,8 +166,8 @@ public class Visibility extends Inference {
         result.setConfidence(confidence);
         IObs pseudoObs = new Observation(
                 1000004,
-                obs.getSourceId(),
-                obs.getSensorId(),
+                0,
+                0,
                 obs.getObsTimeLong(),
                 obs.getRecvTimeLong(),
                 obs.getLatitude(),

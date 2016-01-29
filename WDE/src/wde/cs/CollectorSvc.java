@@ -168,8 +168,13 @@ public abstract class CollectorSvc implements Runnable {
             ps = iConnection.prepareStatement(m_sQuery);
             ps.setInt(1, nId);
             rs = ps.executeQuery();
-            while (rs.next())
-                m_oCollectors.add(createCollector(nContribIds, oCsMgr, iConnection, rs));
+            while (rs.next()) {
+                try {
+                    m_oCollectors.add(createCollector(nContribIds, oCsMgr, iConnection, rs));
+                } catch (Exception e) {
+                    logger.error("An exception was thrown attempting to create collector: " + nId, e);
+                }
+            }
         } catch (Exception oException) {
             oException.printStackTrace();
         } finally {

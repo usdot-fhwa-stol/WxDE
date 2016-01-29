@@ -8,17 +8,12 @@ import wde.metadata.IPlatform;
 import wde.metadata.ISensor;
 import wde.obs.IObs;
 import wde.obs.IObsSet;
-import wde.obs.ObsMgr;
 import wde.util.threads.AsyncQ;
 import wde.util.threads.ILockFactory;
 import wde.util.threads.StripeLock;
 
 import java.sql.Connection;
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
 
 public class InferenceSeqMgr extends AsyncQ<IObsSet>
         implements Comparable<InferenceSeqMgr>, ILockFactory<InferenceSeq> {
@@ -45,13 +40,11 @@ public class InferenceSeqMgr extends AsyncQ<IObsSet>
     /**
      * Pointer to the sensors cache singleton instance.
      */
-    private SensorDao sensorDao;
+    private final SensorDao sensorDao;
     /**
      * Pointer to the platforms cache singleton instance.
      */
-    private PlatformDao platformDao;
-    private Connection connection;
-
+    private final PlatformDao platformDao;
 
     /**
      * <b> Default Constructor </b>
@@ -60,6 +53,8 @@ public class InferenceSeqMgr extends AsyncQ<IObsSet>
      * </p>
      */
     InferenceSeqMgr() {
+        sensorDao = SensorDao.getInstance();
+        platformDao = PlatformDao.getInstance();
     }
 
 
@@ -72,7 +67,7 @@ public class InferenceSeqMgr extends AsyncQ<IObsSet>
      *                    database query.
      * @param nMaxThreads max threads to allocate to processing the quality
      *                    doInference sequence and result {@link StripeLock} containers.
-     * @param connection connection to the datasource, ready for queries prior
+     * @param connection  connection to the datasource, ready for queries prior
      *                    to this method call.
      */
     InferenceSeqMgr(int nObsTypeId, int nMaxThreads, Connection connection) {
@@ -102,92 +97,90 @@ public class InferenceSeqMgr extends AsyncQ<IObsSet>
         m_oSeqLock.writeUnlock();
     }
 
-    /**
-     * Quality checks the observations in the set that haven't been checked, and
-     * that have sensors with distribution group 2.
-     * <p>
-     * Uses the default-region quality doInference sequence if the sequence isn't
-     * available for the given observations climate-region.
-     * </p>
-     * <p>
-     * Overrides {@code AsyncQ} default run method.
-     * </p>
-     *
-     * @param iObsSet set of observations to quality doInference.
-     */
     @Override
-    public void run(IObsSet iObsSet) {
-        // an appropriate sequence must be found for each obs in the set
-        for (int nObsIndex = 0; nObsIndex < iObsSet.size(); nObsIndex++) {
-            IObs iObs = iObsSet.get(nObsIndex);
+    public void run(final IObsSet obsSet) {
+        try {
+            if (obsSet == null) {
+                throw new NullPointerException("obsSet");
+            }
+        } catch (Exception e) {
+            logger.error(e);
+            return;
+        }
 
-            // only sensors with distgroup 0 or 2 are checked
-            ISensor iSensor = sensorDao.getSensor(iObs.getSensorId());
-            if (iSensor == null || iSensor.getDistGroup() == 1)
+        m_oSeqLock.readLock();
+        for (int i = 0; i < m_oSeq.size(); ++i) {
+
+            final InferenceSeq sequence = m_oSeq.get(i);
+            if (sequence == null) {
+                logger.debug("A null was encountered in the sequence list.");
                 continue;
+            }
 
-            InferenceSeq oSeq = null;
-            // always search for the default climate id sequence
-            m_oSeqLock.readLock();
-            for(int i = 0; i < m_oSeq.size(); ++i) {
-                oSeq = m_oSeq.get(i);
+            final char[] platformFilter = sequence.getPlatformFilter();
 
-                // quality doInference the obs with the selected sequence, if any
-                if (oSeq != null) {
-                    if (oSeq.getObsTypeId() != iObs.getObsTypeId())
-                        continue;
+            //
+            // Ensure the sequence is only run if it can handle the current observation type.
+            //
+            if (sequence.getObsTypeId() != obsSet.getObsType()) {
+                logger.trace("Moving to the next sequence. The current obstypeid doesn't match.");
+                continue;
+            }
 
-                    final IPlatform platform = platformDao.getPlatform(iSensor.getPlatformId());
+            logger.debug("ObsSet obstypeid=" + obsSet.getObsType() + " size=" + obsSet.size());
+            for (final IObs obs : obsSet) {
+                if (obs == null) {
+                    logger.debug("A null observation was encountered in provided set.");
+                    continue;
+                }
 
-                    boolean allowed = false;
-                    for(char c : oSeq.getPlatformFilter()) {
-                        if (c == platform.getCategory()) {
-                            allowed = true;
-                        }
+                logger.debug("Observation: {" + obs.toString() + "}");
+                final ISensor sensor = sensorDao.getSensor(obs.getSensorId());
+                if (sensor == null || sensor.getDistGroup() == 1) {
+                    logger.debug("Skipped observation because sensor was either null or had a distgroup of '1'. obstypeid=" + obs.getObsTypeId());
+                    continue;
+                }
+
+                final IPlatform platform = platformDao.getPlatform(sensor.getPlatformId());
+                if (platform == null) {
+                    logger.debug("Skipped observation because platform was not found.");
+                    continue;
+                }
+
+                boolean isFiltered = false;
+                for(char platformFilterCode : platformFilter) {
+                    if (platformFilterCode == platform.getCategory()) {
+                        isFiltered = true;
+                        break;
                     }
+                }
 
-                    if (!allowed)
-                        continue;
+                if (isFiltered) {
+                    logger.trace("Skipped observation because sequence does not support platform.");
+                    continue;
+                }
 
-                    m_oResultLock.readLock();
-                    InferenceResult inferData = (InferenceResult) oSeq.doInference(m_nObsTypeId, iSensor, iObs);
-                    if (inferData == null){
-                        continue;
+                final InferenceResult result = (InferenceResult) sequence.doInference(m_nObsTypeId, sensor, obs);
+                if (result == null) {
+                    logger.debug("Skipping inference result because null was received from sequence.");
+                    continue;
+                }
+
+                if (!result.isCanceled()) {
+                    final int size = result.getObservations().size();
+
+                    if (result.getObservations().size() > 0) {
+                        logger.debug("The inference algorithm created " + size + " observations.");
+
+//                        for (final IObsSet resultObsSet : buildObsSet(result.getObservations())) {
+//                            WDEMgr.getInstance().queue(resultObsSet);
+//                        }
                     }
-
-                    if (inferData.ran() && !inferData.isCanceled()) {
-                        int size = inferData.getObservations().size();
-
-                        if (inferData.getObservations().size() > 0) {
-                            logger.debug("The inference algorthms created " + size + " observations.");
-
-                            for(IObsSet obsSet : buildObsSet(inferData.getObservations())) {
-                                WDEMgr.getInstance().queue(obsSet);
-                            }
-                        }
-                    }
-
-                    m_oResultLock.readUnlock();
                 }
             }
-            m_oSeqLock.readUnlock();
-        }
-    }
-
-    protected Collection<IObsSet> buildObsSet(Set<IObs> observationList) {
-        Map<Integer, IObsSet> obsSetMap = new HashMap<>();
-        for(IObs obs : observationList) {
-            int obsTypeId = obs.getObsTypeId();
-
-            IObsSet obsSet = null;
-            if (!obsSetMap.containsKey(obs.getObsTypeId())) {
-                obsSet = obsSetMap.put(obsTypeId, ObsMgr.getInstance().getObsSet(obsTypeId));
-            } else {
-                obsSet = obsSetMap.get(obs.getObsTypeId());
-            }
         }
 
-        return obsSetMap.values();
+        WDEMgr.getInstance().queue(obsSet);
     }
 
     /**
@@ -222,14 +215,6 @@ public class InferenceSeqMgr extends AsyncQ<IObsSet>
      */
     public int compareTo(InferenceSeqMgr oInferenceSeqMgr) {
         return (m_nObsTypeId - oInferenceSeqMgr.m_nObsTypeId);
-    }
-
-    public void setConnection(Connection connection) {
-        this.connection = connection;
-    }
-
-    public Connection getConnection() {
-        return connection;
     }
 
     /**

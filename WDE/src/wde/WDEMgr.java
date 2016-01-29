@@ -29,6 +29,7 @@
 package wde;
 
 import org.apache.log4j.Logger;
+import wde.compute.InferenceMgr;
 import wde.dao.DatabaseManager;
 import wde.obs.IObs;
 import wde.obs.IObsSet;
@@ -36,7 +37,6 @@ import wde.util.CollectionReport;
 import wde.util.Config;
 import wde.util.ConfigSvc;
 import wde.util.threads.AsyncQ;
-//import wde.vdt.VDTController;
 
 import javax.naming.InitialContext;
 import javax.naming.NoInitialContextException;
@@ -45,6 +45,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Timer;
 import java.util.TimerTask;
+
+//import wde.vdt.VDTController;
 
 /**
  * {@code WDEMgr} is the main entry point to the WDE System.
@@ -146,8 +148,9 @@ public class WDEMgr extends TimerTask {
             m_sSeqClassnames = m_oConfig.getStringArray("order");
             m_oSequence.ensureCapacity(m_sSeqClassnames.length);
             int nIndex = m_sSeqClassnames.length;
-            while (nIndex-- > 0)
+            while (nIndex-- > 0) {
                 m_oSequence.add(null);
+            }
 
             DatabaseManager.wdeMgrInstantiated = true;
 //            VDTController.wdeMgrInstantiated = true;
@@ -172,6 +175,8 @@ public class WDEMgr extends TimerTask {
 
         // schedule the task to run every mid-night
         timer.scheduleAtFixedRate(this, delay, NUM_OF_MILLI_SECONDS_IN_A_DAY);
+
+        //InferenceMgr.getInstance();
     }
 
     /**

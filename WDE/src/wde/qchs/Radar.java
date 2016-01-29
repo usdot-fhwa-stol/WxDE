@@ -8,6 +8,7 @@ import ucar.nc2.dt.GridDatatype;
 import ucar.nc2.time.CalendarDate;
 import ucar.nc2.time.CalendarPeriod;
 import ucar.nc2.time.CalendarPeriod.Field;
+import wde.util.Scheduler;
 
 import java.io.BufferedInputStream;
 import java.io.PrintWriter;
@@ -37,7 +38,7 @@ public class Radar extends RemoteGrid {
         m_sBaseURL = "http://mrms.ncep.noaa.gov/data/2D/MergedBaseReflectivityQC/";
 
         run(); // manually initialize first run, then set schedule
-		//Scheduler.getInstance().schedule(this, 60 * 55, 3600, true);
+		Scheduler.getInstance().schedule(this, 60 * 55, 3600, true);
     }
 
     @Override
@@ -145,7 +146,7 @@ public class Radar extends RemoteGrid {
     }
 
     @Override
-    protected Path getGridDatasetPath() {
-        return Paths.get("./data/radar.ncml").toAbsolutePath();
+    protected Path getGridDatasetPath() throws Exception {
+        return Paths.get(getClass().getResource("/radar.ncml").toURI()).toAbsolutePath();
     }
 }

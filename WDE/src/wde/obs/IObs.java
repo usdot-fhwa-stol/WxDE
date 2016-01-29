@@ -20,7 +20,7 @@ public interface IObs {
      *
      * @return observation type identifier.
      */
-    public int getObsTypeId();
+    int getObsTypeId();
 
     /**
      * <b> Accessor </b>
@@ -30,7 +30,7 @@ public interface IObs {
      *
      * @return identifier of the source (WxDE, VDT) the observation originates from.
      */
-    public int getSourceId();
+    int getSourceId();
 
     /**
      * <b> Accessor </b>
@@ -40,7 +40,7 @@ public interface IObs {
      *
      * @return identifier of the sensor making the observation.
      */
-    public int getSensorId();
+    int getSensorId();
 
     /**
      * <b> Accessor </b>
@@ -50,7 +50,7 @@ public interface IObs {
      *
      * @return timestamp when the observation was recorded.
      */
-    public long getObsTimeLong();
+    long getObsTimeLong();
 
     /**
      * <b> Accessor </b>
@@ -60,7 +60,7 @@ public interface IObs {
      *
      * @return observation latitude, based on the sensor location.
      */
-    public int getLatitude();
+    int getLatitude();
 
     /**
      * <b> Accessor </b>
@@ -70,7 +70,7 @@ public interface IObs {
      *
      * @return observation longitude, based on the sensor location.
      */
-    public int getLongitude();
+    int getLongitude();
 
     /**
      * <b> Accessor </b>
@@ -80,7 +80,7 @@ public interface IObs {
      *
      * @return observation elevation, based on the sensor location.
      */
-    public int getElevation();
+    int getElevation();
 
     /**
      * <b> Accessor </b>
@@ -90,7 +90,7 @@ public interface IObs {
      *
      * @return observation scalar value.
      */
-    public double getValue();
+    double getValue();
 
     /**
      * <b> Accessor </b>
@@ -101,7 +101,7 @@ public interface IObs {
      * @return flag bit-field showing whether the corresponding quality check
      * algorithm passed or failed.
      */
-    public char[] getQchCharFlag();
+    char[] getQchCharFlag();
 
     /**
      * <b> Mutator </b>
@@ -116,7 +116,7 @@ public interface IObs {
      * @param nFlags whether the corresponding quality checking algorithm passed
      *               or failed.
      */
-    public void setQchCharFlag(char[] nFlags);
+    void setQchCharFlag(char[] nFlags);
 
     /**
      * <b> Accessor </b>
@@ -126,7 +126,7 @@ public interface IObs {
      *
      * @return quality confidence level.
      */
-    public float getConfValue();
+    float getConfValue();
 
     /**
      * <b> Mutator </b>
@@ -139,7 +139,7 @@ public interface IObs {
      *
      * @param fConfidence quality confidence level.
      */
-    public void setConfValue(float fConfidence);
+    void setConfValue(float fConfidence);
 
     /**
      * <b> Accessor </b>
@@ -149,7 +149,7 @@ public interface IObs {
      *
      * @return the timestamp when the obs was most recently updated.
      */
-    public long getRecvTimeLong();
+    long getRecvTimeLong();
 
 
 }

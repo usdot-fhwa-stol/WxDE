@@ -1,7 +1,6 @@
 package wde.qchs;
 
-import wde.util.MathUtil;
-
+import org.apache.log4j.Logger;
 import ucar.nc2.FileWriter2;
 import ucar.nc2.NetcdfFile;
 import ucar.nc2.NetcdfFileWriter.Version;
@@ -11,6 +10,7 @@ import ucar.nc2.dt.GridDatatype;
 import ucar.nc2.dt.grid.GridDataset;
 import ucar.nc2.time.CalendarDate;
 import ucar.nc2.write.Nc4ChunkingDefault;
+import wde.util.MathUtil;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -32,6 +32,9 @@ import java.util.List;
  * downloading, reading, and retrieving observation values for remote data sets.
  */
 abstract class RemoteGrid implements Runnable {
+
+    private final Logger logger = Logger.getLogger(this.getClass());
+
     /**
      * Lookup arrays map names between model and observation types.
      */
@@ -41,6 +44,11 @@ abstract class RemoteGrid implements Runnable {
     protected String[] m_sObsTypes;
     protected List<GridDatatype> m_oGrids;
     protected GridDataSource m_oGridDataSource;
+
+    static {
+        RTMA.getInstance();
+        Radar.getInstance();
+    }
 
     /**
      * Default package private constructor.
@@ -272,7 +280,8 @@ abstract class RemoteGrid implements Runnable {
 
             return getGridDataSource().readValue(oGrid, index);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.debug("An error has occurred while attempting to read a value from the grid. This might be due to the grid not being available at this time.", e);
+            //e.printStackTrace();
         }
 
         return Double.NaN;
@@ -290,7 +299,7 @@ abstract class RemoteGrid implements Runnable {
         return m_oGridDataSource;
     }
 
-    protected abstract Path getGridDatasetPath();
+    protected abstract Path getGridDatasetPath() throws Exception;
 
     protected void convertToNetcdf4(NetcdfFile netcdfFile, String outputLocation) throws Exception {
         try {

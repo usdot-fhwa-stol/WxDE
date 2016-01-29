@@ -7,7 +7,6 @@ import wde.compute.algo.PavementSlickness;
 import wde.compute.algo.PrecipitationIntensity;
 import wde.compute.algo.PrecipitationType;
 import wde.compute.algo.Visibility;
-import wde.dao.ObsTypeDao;
 import wde.obs.IObsSet;
 import wde.util.Config;
 import wde.util.ConfigSvc;
@@ -15,10 +14,12 @@ import wde.util.threads.AsyncQ;
 import wde.util.threads.ILockFactory;
 import wde.util.threads.StripeLock;
 
-import javax.sql.DataSource;
 import java.sql.Connection;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 public class InferenceMgr extends AsyncQ<IObsSet> implements ILockFactory<InferenceSeqMgr> {
 
@@ -33,7 +34,7 @@ public class InferenceMgr extends AsyncQ<IObsSet> implements ILockFactory<Infere
     private InferenceSeq[] inferenceSeqs = new InferenceSeq[]{
             new InferenceSeq(
                     2001018,
-                    new char[]{'M', 'P'},
+                    new char[]{'M'},
                     new Class[]{
                             PrecipitationType.class,
                             PrecipitationIntensity.class,
@@ -52,7 +53,7 @@ public class InferenceMgr extends AsyncQ<IObsSet> implements ILockFactory<Infere
     /**
      * Pointer to the singleton instance of {@code QChSMgr}.
      */
-    private static InferenceMgr g_oInstance = new InferenceMgr();
+    private static final InferenceMgr g_oInstance = new InferenceMgr();
 
     /**
      * List of sequence managers ordered by the observation-type they manage.
@@ -77,52 +78,43 @@ public class InferenceMgr extends AsyncQ<IObsSet> implements ILockFactory<Infere
     private InferenceMgr() {
         logger.info("Calling constructor");
 
-        // apply QChSMgr configuration
-        ConfigSvc oConfigSvc = ConfigSvc.getInstance();
-        Config oConfig = oConfigSvc.getConfig(this);
-
-        // increase the queue depth for more thread concurrency
-        MAX_THREADS = oConfig.getInt("queuedepth", MAX_THREADS);
-
-        setMaxThreads(MAX_THREADS);
-        m_oLock = new StripeLock<InferenceSeqMgr>(this, MAX_THREADS);
-
-        Connection iConnection = null;
-        WDEMgr wdeMgr = WDEMgr.getInstance();
         try {
-            DataSource iDataSource = wdeMgr.getDataSource(oConfig.getString("datasource", null));
 
-            if (iDataSource == null)
-                return;
+            // apply QChSMgr configuration
+            ConfigSvc oConfigSvc = ConfigSvc.getInstance();
+            Config oConfig = oConfigSvc.getConfig(this);
 
-            iConnection = iDataSource.getConnection();
-            if (iConnection == null)
-                return;
+            // increase the queue depth for more thread concurrency
+            MAX_THREADS = oConfig.getInt("queuedepth", MAX_THREADS);
 
-            ObsTypeDao obsTypeDao = ObsTypeDao.getInstance();
-            for(InferenceSeq seq : inferenceSeqs) {
+            setMaxThreads(MAX_THREADS);
+            m_oLock = new StripeLock<>(this, MAX_THREADS);
+
+            Connection iConnection = null;
+            WDEMgr wdeMgr = WDEMgr.getInstance();
+
+            //DataSource iDataSource = wdeMgr.getDataSource(oConfig.getString("datasource", null));
+
+            for(InferenceSeq seq : resolveSequences()) {
                 InferenceSeqMgr seqMgr = null;
                 if (m_seqMgrMap.containsKey(seq.getObsTypeId())) {
                     seqMgr = m_seqMgrMap.get(seq.getObsTypeId());
                 } else {
-                    int obTypeId = seq.getObsTypeId();
-                    if (obsTypeDao.getObsType(obTypeId) != null) {
-                        seqMgr = new InferenceSeqMgr(
-                                seq.getObsTypeId(),
-                                MAX_THREADS,
-                                iConnection
-                        );
+                    seqMgr = new InferenceSeqMgr(
+                            seq.getObsTypeId(),
+                            MAX_THREADS,
+                            null
+                    );
 
-                        m_oLock.writeLock();
-                        m_seqMgrMap.put(seq.getObsTypeId(), seqMgr);
-                        m_oLock.writeUnlock();
-                    }
+                    m_oLock.writeLock();
+                    m_seqMgrMap.put(seq.getObsTypeId(), seqMgr);
+                    m_oLock.writeUnlock();
                 }
                 seqMgr.addInferenceSeq(seq);
                 m_oLock.readUnlock();
             }
 
-            iConnection.close();
+            //iConnection.close();
             wdeMgr.register(getClass().getName(), this);
         } catch (Exception e) {
             e.printStackTrace();
@@ -136,18 +128,10 @@ public class InferenceMgr extends AsyncQ<IObsSet> implements ILockFactory<Infere
      *
      * @return the singleton instance of {@code InferenceMgr}.
      */
-    public InferenceMgr getInstance() {
+    public static InferenceMgr getInstance() {
         return g_oInstance;
     }
 
-    /**
-     * Finds a quality doInference sequence manager to handle the provided observation
-     * set. The {@link InferenceSeqMgr#run(IObsSet)} method is then invoked on the
-     * retrieved sequence manager, and provided observation set. This performs
-     * quality checking algorithms on the supplied set by climate-region.
-     *
-     * @param iObsSet observation set to quality doInference.
-     */
     @Override
     public void run(IObsSet iObsSet) {
         // find a seq mgr to handle the obs set
@@ -158,18 +142,16 @@ public class InferenceMgr extends AsyncQ<IObsSet> implements ILockFactory<Infere
         }
         m_oLock.readUnlock();
 
-        // the seq mgr list is read-only and can be unlocked before indexing
         if (oSeqMgr != null) {
-
-            //
-            // Call the run(...) function on the matched sequence manager and pass-in the
-            // obsset.
-            //
             oSeqMgr.run(iObsSet);
         }
 
         // queue obs set for next process
         WDEMgr.getInstance().queue(iObsSet);
+    }
+
+    protected Set<InferenceSeq> resolveSequences() {
+        return new HashSet<>(Arrays.asList(inferenceSeqs));
     }
 
 
@@ -187,5 +169,9 @@ public class InferenceMgr extends AsyncQ<IObsSet> implements ILockFactory<Infere
      */
     public InferenceSeqMgr getLock() {
         return new InferenceSeqMgr();
+    }
+
+    public static void main(String[] args) {
+
     }
 }

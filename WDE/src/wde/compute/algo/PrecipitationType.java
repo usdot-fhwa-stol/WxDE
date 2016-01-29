@@ -6,7 +6,6 @@ import wde.metadata.ISensor;
 import wde.obs.IObs;
 import wde.obs.Observation;
 
-import java.util.Date;
 import java.util.Set;
 
 public class PrecipitationType extends Inference<PrecipitationType> {
@@ -18,6 +17,10 @@ public class PrecipitationType extends Inference<PrecipitationType> {
     public static final int SNOW = 3;
 
     public final float air_temp_wgt = 0.50f;
+
+    public PrecipitationType() {
+        
+    }
 
     @Override
     public synchronized Set<InferenceResult> doInference(int obsTypeId, ISensor sensor, IObs obs) {
@@ -40,9 +43,9 @@ public class PrecipitationType extends Inference<PrecipitationType> {
 
         IObs pseudoObs = new Observation(
                 1000000,
-                obs.getSourceId(),
-                obs.getSensorId(),
-                new Date().getTime(),
+                0,
+                0,
+                obs.getObsTimeLong(),
                 obs.getRecvTimeLong(),
                 obs.getLatitude(),
                 obs.getLongitude(),
@@ -63,5 +66,13 @@ public class PrecipitationType extends Inference<PrecipitationType> {
             return 0;
 
         return super.compareTo(other);
+    }
+
+    protected static void main(String[] args) {
+        PrecipitationType precipType1 = new PrecipitationType();
+        PrecipitationType precipType2 = new PrecipitationType();
+
+        //precipType1.doInference(0, )
+
     }
 }

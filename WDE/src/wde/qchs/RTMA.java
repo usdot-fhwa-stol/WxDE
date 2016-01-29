@@ -1,6 +1,9 @@
 package wde.qchs;
 
+import wde.util.Scheduler;
+
 import java.net.MalformedURLException;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -49,7 +52,7 @@ public final class RTMA extends RemoteGrid {
         m_oSrcFileUrlFragment.setTimeZone(TimeZone.getTimeZone("Etc/UTC"));
         m_oOutputFilename.setTimeZone(TimeZone.getTimeZone("Etc/UTC"));
         run(); // manually initialize first run, then set schedule
-//		Scheduler.getInstance().schedule(this, 60 * 55, 3600, true);
+		Scheduler.getInstance().schedule(this, 60 * 55, 3600, true);
     }
 
 
@@ -136,7 +139,7 @@ public final class RTMA extends RemoteGrid {
     }
 
     @Override
-    protected Path getGridDatasetPath() {
-        return Paths.get("./data/rtma.ncml").toAbsolutePath();
+    protected Path getGridDatasetPath() throws URISyntaxException {
+        return Paths.get(getClass().getResource("/rtma.ncml").toURI()).toAbsolutePath();
     }
 }

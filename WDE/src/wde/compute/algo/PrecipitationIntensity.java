@@ -44,7 +44,6 @@ public class PrecipitationIntensity extends Inference {
         InferenceResult result = new InferenceResult();
         resultSet.add(result);
 
-        result.setRan();
         result.setName("PrecipitationIntensity");
         result.setObsTypeId(obsTypeId);
 
@@ -148,8 +147,8 @@ public class PrecipitationIntensity extends Inference {
 
         IObs pseudoObs = new Observation(
                 1000001,
-                obs.getSourceId(),
-                obs.getSensorId(),
+                0,
+                0,
                 obs.getObsTimeLong(),
                 obs.getRecvTimeLong(),
                 obs.getLatitude(),

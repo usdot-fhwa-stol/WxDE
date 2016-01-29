@@ -36,6 +36,7 @@ Modification History:
 	<property name="qchs_deployment_dir" location="deploy/wde_qchs"/>
 	<property name="warfile" value="ROOT"/>
     <property name="deploy" location="deploy"/>
+    <property name="config" location="config"/>
 
 	<property name="app-type" value="web"/>
 	<property name="build-type" value="archive"/>
@@ -87,7 +88,7 @@ Modification History:
 				<exclude name="inc/mainContent_demo.html"/>
 			</fileset>
 		</copy>
-		
+
 		<!-- Copy the libraries to the dist directory -->
 		<mkdir dir="${assembly}/WEB-INF/lib"/>
 		<copy todir="${assembly}/WEB-INF/lib">
@@ -130,6 +131,13 @@ Modification History:
 		<copy todir="${assembly}/WEB-INF/classes">
 			<fileset dir="${build}/classes"/>
 		</copy>
+
+        <!-- Copy the ncml files to the classes folder so they will be on the classpath. -->
+		<copy todir="${assembly}/WEB-INF/classes/">
+            <fileset dir="${config}/ncml">
+                <include name="*.ncml" />
+            </fileset>
+        </copy>
 				
 		<!-- Create the directories needed by the particular applications. -->
 		<!-- The metadata, subscriptions and monitor are only required by the web application. -->

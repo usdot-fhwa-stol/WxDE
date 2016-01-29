@@ -18,7 +18,6 @@ public class InferenceResult {
      */
     private double m_dConfidence;
     private boolean m_bCancel;
-    private boolean m_bRan;
     private String m_sName;
     private int m_iObsTypeId;
     private Set<IObs> m_observationSet = new HashSet<IObs>();
@@ -30,14 +29,6 @@ public class InferenceResult {
      * </p>
      */
     public InferenceResult() {
-    }
-
-    public synchronized boolean ran() {
-        return m_bRan;
-    }
-
-    public synchronized void setRan() {
-        m_bRan = true;
     }
 
     public synchronized double getConfidence() {

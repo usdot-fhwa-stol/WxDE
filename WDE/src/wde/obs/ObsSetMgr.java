@@ -257,7 +257,7 @@ public class ObsSetMgr implements Comparable<ObsSetMgr>, ILockFactory<ObsIter> {
         }
 
         while (nInnerIndex-- > 0) {
-            Observation oObs = oObsSet.get(nInnerIndex);
+            Observation oObs = (Observation) oObsSet.get(nInnerIndex);
 
             // attempt to find an existing obs to update
             oObs.setHashValue(oSearchObs.getHash(oObs.getLatitude(), oObs.getLongitude()));
@@ -287,7 +287,7 @@ public class ObsSetMgr implements Comparable<ObsSetMgr>, ILockFactory<ObsIter> {
         oSearchObs.clear();
         int nListSize = m_oObs.size(); // check for duplicates
         while (nInnerIndex-- > 0) {
-            Observation oObs = oObsSet.get(nInnerIndex);
+            Observation oObs = (Observation) oObsSet.get(nInnerIndex);
             // default search timestamp of 0 is never in the list and should
             // always find the lowest index for the current obs sensor
             oSearchObs.setSensorId(oObs.getSensorId());
@@ -508,7 +508,7 @@ public class ObsSetMgr implements Comparable<ObsSetMgr>, ILockFactory<ObsIter> {
      * timestamps, then by sensor id with the
      * {@link ObsByTime#compare(Observation, Observation)} method.
      */
-    private class ObsByTime implements Comparator<Observation> {
+    private class ObsByTime implements Comparator<IObs> {
         /**
          * <b> Default Constructor </b>
          * <p>
@@ -526,7 +526,7 @@ public class ObsSetMgr implements Comparable<ObsSetMgr>, ILockFactory<ObsIter> {
          * @param oRhs the {@code Obs} to compare to {@code oLhs}
          * @return 0 if the observations match by timestamp or sensor id.
          */
-        public int compare(Observation oLhs, Observation oRhs) {
+        public int compare(IObs oLhs, IObs oRhs) {
             // compare the timestamp and then the sensor id
             // this may not work well in the case of vehicle sensors
             long lCompare = oLhs.getObsTimeLong() - oRhs.getObsTimeLong();

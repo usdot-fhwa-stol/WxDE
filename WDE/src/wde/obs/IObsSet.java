@@ -4,12 +4,13 @@
  */
 package wde.obs;
 
+import java.util.List;
 
 /**
  * Provides an interface for observation sets, to allow standard access, and
  * modification.
  */
-public interface IObsSet {
+public interface IObsSet extends List<IObs> {
     /**
      * <b> Accessor </b>
      * <p>
@@ -18,7 +19,7 @@ public interface IObsSet {
      *
      * @return Observation type contained in the {@code ObsSet}.
      */
-    public int getObsType();
+    int getObsType();
 
     /**
      * <b> Accessor </b>
@@ -28,7 +29,7 @@ public interface IObsSet {
      *
      * @return queue state attribute.
      */
-    public int getState();
+    int getState();
 
     /**
      * <b> Mutator </b>
@@ -41,7 +42,7 @@ public interface IObsSet {
      *
      * @param nState queue state
      */
-    public void setState(int nState);
+    void setState(int nState);
 
     /**
      * <b> Mutator </b>
@@ -52,7 +53,7 @@ public interface IObsSet {
      * Extensions must implement this method.
      * </p>
      */
-    public void ignoreTime();
+    void ignoreTime();
 
     /**
      * Creates a new {@link Observation} instance with the supplied properties, then
@@ -68,8 +69,8 @@ public interface IObsSet {
      * @param tElev      elevation of the observing sensor.
      * @param dValue     observation value.
      */
-    public void addObs(int nSourceId, int nSensorId, long lTimestamp, long recvTime, int nLat, int nLon,
-                       short tElev, double dValue);
+    void addObs(int nSourceId, int nSensorId, long lTimestamp, long recvTime, int nLat, int nLon,
+                short tElev, double dValue);
 
     /**
      * Creates a new {@link Observation} instance with the supplied properties, then
@@ -91,21 +92,21 @@ public interface IObsSet {
      *                    algorithm passed or failed.
      * @param fConfidence quality confidence level.
      */
-    public void addObs(int nSourceId, int nSensorId, long lTimestamp, long recvTime, int nLat, int nLon,
-                       short tElev, double dValue, char[] qcFlags, float fConfidence);
+    void addObs(int nSourceId, int nSensorId, long lTimestamp, long recvTime, int nLat, int nLon,
+                short tElev, double dValue, char[] qcFlags, float fConfidence);
 
-    /**
-     * <b> Accessor </b>
-     * Returns the {@code IObs} object in the observation set at the supplied
-     * index.
-     * <p>
-     * Extensions must implement this method.
-     * </p>
-     *
-     * @param nIndex index of the observation of interest.
-     * @return the object at index {@code nIndex}.
-     */
-    public IObs get(int nIndex);
+//    /**
+//     * <b> Accessor </b>
+//     * Returns the {@code IObs} object in the observation set at the supplied
+//     * index.
+//     * <p>
+//     * Extensions must implement this method.
+//     * </p>
+//     *
+//     * @param nIndex index of the observation of interest.
+//     * @return the object at index {@code nIndex}.
+//     */
+//    T get(int nIndex);
 
     /**
      * <b> Accessor </b>
@@ -115,7 +116,7 @@ public interface IObsSet {
      *
      * @return the size of the observation set.
      */
-    public int size();
+    int size();
 
     /**
      * <b> Accessor </b>
@@ -125,5 +126,5 @@ public interface IObsSet {
      *
      * @return Observation set serial identifier.
      */
-    public int serial();
+    int serial();
 }

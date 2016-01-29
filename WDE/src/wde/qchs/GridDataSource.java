@@ -40,10 +40,18 @@ public class GridDataSource {
 
     private enum _ {}
     private static final Logger LOGGER = LoggerFactory.getLogger(_.class.getEnclosingClass());
-    private final DiskCache2 cache;
+    private static final DiskCache2 cache;
     private final NetcdfDataset netcdfDataset;
-    private Path cacheDirPath;
+    private static final Path cacheDirPath;
     private GridDataset gridDataset;
+
+    static {
+        cacheDirPath = Paths.get("/tmp/griddatasource-cache/");
+        cache = new DiskCache2(cacheDirPath.toString(), true, 60 * 24 * 30, 60);
+        Aggregation.setPersistenceCache(cache);
+
+        startCache();
+    }
 
 
     protected GridDataSource(NetcdfDataset netcdfDataset, GridDataset gridDataset) {
@@ -56,10 +64,6 @@ public class GridDataSource {
         this.netcdfDataset = netcdfDataset;
         this.gridDataset = gridDataset;
 
-        this.cacheDirPath = Paths.get("/tmp/griddatasource-cache/");
-        this.cache = new DiskCache2(cacheDirPath.toString(), true, 60 * 24 * 30, 60);
-        Aggregation.setPersistenceCache(cache);
-
         init();
     }
 
@@ -68,10 +72,6 @@ public class GridDataSource {
             throw new IllegalArgumentException("netcdfDataset");
 
         this.netcdfDataset = netcdfDataset;
-
-        this.cacheDirPath = Paths.get("/tmp/griddatasource-cache/");
-        this.cache = new DiskCache2(cacheDirPath.toString(), true, 60 * 24 * 30, 60);
-        Aggregation.setPersistenceCache(cache);
 
         init();
     }
@@ -234,14 +234,14 @@ public class GridDataSource {
      * <p/>
      * This is to be called during shutdown of the process.
      */
-    public void shutdown() {
+    public static void shutdown() {
         if (cache != null) {
             cache.cleanCache(cacheDirPath.toFile(), new StringBuilder(), true);
             shutdownCache();
         }
     }
 
-    protected synchronized void startCache() {
+    protected static synchronized void startCache() {
         getLogger().debug("Started Netcdf file cache.");
 
         if (Files.notExists(cacheDirPath)) {
@@ -265,8 +265,12 @@ public class GridDataSource {
         getLogger().debug("Netcf file cache has been started.");
     }
 
-    protected synchronized void shutdownCache() {
-        cache.exit();
+    protected static synchronized void shutdownCache() {
+        if (cache != null) {
+            NetcdfDataset.disableNetcdfFileCache();
+            cache.exit();
+        }
+
         NetcdfDataset.shutdown();
     }
 
@@ -277,7 +281,6 @@ public class GridDataSource {
 
     protected synchronized void init() {
         config();
-        startCache();
     }
 
     public synchronized GridDataset getGridDataset() {
