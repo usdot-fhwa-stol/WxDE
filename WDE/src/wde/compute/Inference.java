@@ -1,5 +1,6 @@
 package wde.compute;
 
+import org.apache.log4j.Logger;
 import wde.compute.algo.ObservationTypes.Mapping;
 import wde.dao.ObsTypeDao;
 import wde.data.shp.Polyline;
@@ -14,6 +15,8 @@ import java.util.Set;
 import java.util.TreeSet;
 
 public abstract class Inference<T extends Inference> implements Comparable<T> {
+
+    private final Logger logger = Logger.getLogger(this.getClass());
 
     protected InferenceSeq m_seq;
     protected int m_seqOrder;
@@ -145,5 +148,9 @@ public abstract class Inference<T extends Inference> implements Comparable<T> {
     @Override
     public int compareTo(T o) {
         return m_seqOrder - o.m_seqOrder;
+    }
+
+    protected Logger getLogger() {
+        return logger;
     }
 }

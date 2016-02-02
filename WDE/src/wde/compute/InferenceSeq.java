@@ -52,6 +52,8 @@ public class InferenceSeq extends Inference<InferenceSeq> {
                 Class<Inference> clazz = inferences[i];
                 Inference inference = clazz.newInstance();
                 inference.init(this, i);
+
+                m_oInferences.add(inference);
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -86,19 +88,19 @@ public class InferenceSeq extends Inference<InferenceSeq> {
         Set<InferenceResult> aggregateResults = newInferenceResultSet();
 
         if (m_oInferences != null && m_oInferences.size() > 0) {
-
             ObsSet inferredObsSet = getObsMgr().getObsSet(obsTypeId);
             for (Inference inference : m_oInferences) {
-                Set<InferenceResult> results = inference.doInference(obsTypeId, sensor, obs);
+                if (inference == null)
+                    continue;
+                try {
+                    Set<InferenceResult> results = inference.doInference(obsTypeId, sensor, obs);
+                    processResults(results);
 
-                for (InferenceResult result : results) {
-                    if (result.isCanceled()) {
-                        bCanceled = true;
-                        break;
-                    }
+                    aggregateResults.addAll(results);
+                } catch (Exception e) {
+                    getLogger().error("An exception was encountered while executing/processing inference.", e);
                 }
             }
-
         }
 
         return aggregateResults;
@@ -107,6 +109,10 @@ public class InferenceSeq extends Inference<InferenceSeq> {
     protected void processResults(Set<InferenceResult> results) {
 
         for(InferenceResult result : results) {
+            if (result == null || result.isCanceled()) {
+                continue;
+            }
+
             Set<IObs> observations = result.getObservations();
             if (observations != null || observations.size() == 0) {
                 Collection<IObsSet> obsSets = buildObsSets(observations);

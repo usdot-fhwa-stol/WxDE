@@ -7,6 +7,8 @@ import wde.compute.algo.PavementSlickness;
 import wde.compute.algo.PrecipitationIntensity;
 import wde.compute.algo.PrecipitationType;
 import wde.compute.algo.Visibility;
+import wde.dao.ObsTypeDao;
+import wde.metadata.ObsType;
 import wde.obs.IObsSet;
 import wde.util.Config;
 import wde.util.ConfigSvc;
@@ -14,7 +16,6 @@ import wde.util.threads.AsyncQ;
 import wde.util.threads.ILockFactory;
 import wde.util.threads.StripeLock;
 
-import java.sql.Connection;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -23,7 +24,7 @@ import java.util.Set;
 
 public class InferenceMgr extends AsyncQ<IObsSet> implements ILockFactory<InferenceSeqMgr> {
 
-    private static final Logger logger = Logger.getLogger(InferenceMgr.class);
+    private final Logger logger = Logger.getLogger(this.getClass());
 
     /*
      * TODO:
@@ -90,10 +91,7 @@ public class InferenceMgr extends AsyncQ<IObsSet> implements ILockFactory<Infere
             setMaxThreads(MAX_THREADS);
             m_oLock = new StripeLock<>(this, MAX_THREADS);
 
-            Connection iConnection = null;
             WDEMgr wdeMgr = WDEMgr.getInstance();
-
-            //DataSource iDataSource = wdeMgr.getDataSource(oConfig.getString("datasource", null));
 
             for(InferenceSeq seq : resolveSequences()) {
                 InferenceSeqMgr seqMgr = null;
@@ -106,15 +104,11 @@ public class InferenceMgr extends AsyncQ<IObsSet> implements ILockFactory<Infere
                             null
                     );
 
-                    m_oLock.writeLock();
                     m_seqMgrMap.put(seq.getObsTypeId(), seqMgr);
-                    m_oLock.writeUnlock();
                 }
                 seqMgr.addInferenceSeq(seq);
-                m_oLock.readUnlock();
             }
 
-            //iConnection.close();
             wdeMgr.register(getClass().getName(), this);
         } catch (Exception e) {
             e.printStackTrace();
@@ -142,6 +136,13 @@ public class InferenceMgr extends AsyncQ<IObsSet> implements ILockFactory<Infere
         }
         m_oLock.readUnlock();
 
+        ObsTypeDao obsTypeDao = ObsTypeDao.getInstance();
+        if (obsTypeDao == null) {
+            logger.error("Could not get an instance of ObsTypeDao.");
+            return;
+        }
+
+        ObsType obstype = obsTypeDao.getObsType(iObsSet.getObsType());
         if (oSeqMgr != null) {
             oSeqMgr.run(iObsSet);
         }

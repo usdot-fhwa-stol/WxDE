@@ -171,10 +171,6 @@ public class InferenceSeqMgr extends AsyncQ<IObsSet>
 
                     if (result.getObservations().size() > 0) {
                         logger.debug("The inference algorithm created " + size + " observations.");
-
-//                        for (final IObsSet resultObsSet : buildObsSet(result.getObservations())) {
-//                            WDEMgr.getInstance().queue(resultObsSet);
-//                        }
                     }
                 }
             }
