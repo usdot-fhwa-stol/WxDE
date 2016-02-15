@@ -199,6 +199,9 @@ public class PavementSlickness extends Inference {
                 obs.getElevation(),
                 pavement_slickness ? 1 : 0
         );
+        pseudoObs.setConfValue(confidence);
+
+        result.setObsTypeId(1000002);
         result.addObservation(pseudoObs);
 
         return resultSet;

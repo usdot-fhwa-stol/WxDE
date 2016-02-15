@@ -1,6 +1,7 @@
 package wde.compute;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import wde.compute.algo.ObservationTypes.Mapping;
 import wde.dao.ObsTypeDao;
 import wde.data.shp.Polyline;
@@ -16,48 +17,35 @@ import java.util.TreeSet;
 
 public abstract class Inference<T extends Inference> implements Comparable<T> {
 
-    private final Logger logger = Logger.getLogger(this.getClass());
+    private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     protected InferenceSeq m_seq;
     protected int m_seqOrder;
-    /**
-     * Pointer to the sensors cache.
-     */
-    //protected SensorDao sensorDao = null;
     protected Connection m_oConnection;
-
-    /**
-     * Pointer to the observation manager instance.
-     */
-    protected ObsMgr m_oObsMgr;// = ObsMgr.getInstance();
+    private ObsMgr m_obsMgr = null;
 
     public Inference() {
     }
 
-    /**
-     * <b> Default Constructor </b>
-     * <p>
-     * Creates new instances of {@code Qch}
-     * </p>
-     */
     public Inference(InferenceSeq seq, int seqOrder) {
         this.m_seq = seq;
         this.m_seqOrder = seqOrder;
     }
 
     public ObsMgr getObsMgr() {
-        if (m_oObsMgr == null) {
-            m_oObsMgr = ObsMgr.getInstance();
+        if (m_obsMgr == null) {
+            m_obsMgr = ObsMgr.getInstance();
         }
-        return m_oObsMgr;
+
+        return m_obsMgr;
     }
 
-    public int getObsTypeId() {
+    public int[] getObsTypeIds() {
         if (m_seq != null) {
-            return m_seq.getObsTypeId();
+            return m_seq.getObsTypeIds();
         }
 
-        return -1;
+        return new int[] { /* null */ };
     }
 
     public Double getRelatedObsValue(Mapping observation, IObs obs) {
@@ -65,12 +53,21 @@ public abstract class Inference<T extends Inference> implements Comparable<T> {
         try {
             ObsTypeDao obsTypeDao = ObsTypeDao.getInstance();
 
-            int obsTypeId = obsTypeDao.getObsTypeId(observation.getVdtObsTypeName());
-            IObs relatedObs = getRelatedObs(obsTypeId, obs);
+            for(String obsTypeName : observation.getNames()) {
+                int obsTypeId = obsTypeDao.getObsTypeId(obsTypeName);
+                if (obsTypeId > 0)
+                    continue;
 
-            value = relatedObs.getValue();
+                IObs relatedObs = getRelatedObs(obsTypeId, obs);
+                if (relatedObs == null)
+                    continue;
+
+                value = relatedObs.getValue();
+                break;
+            }
         } catch (Exception e) {
-            e.printStackTrace();
+            //e.printStackTrace();
+            logger.debug("An exception was encountered while attempting to retrieve related observation value.", e);
         }
 
         return value;
@@ -117,7 +114,8 @@ public abstract class Inference<T extends Inference> implements Comparable<T> {
             useObs = selectedObs;
 
         } catch (Exception e) {
-            e.printStackTrace();
+            //e.printStackTrace();
+            logger.debug("An exception was encountered while attempting retrieve related observations.", e);
         }
 
         return useObs;

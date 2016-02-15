@@ -9,7 +9,7 @@
         <scan dateFormatMark="MRMS_MergedBaseReflectivityQC_00.00_#yyyyDDD-HHmmss"
               location="/opt/collectors/radar/data"
               suffix=".nc"
-              subdirs="true"
+              subdirs="false"
                 />
     </aggregation>
 </netcdf>

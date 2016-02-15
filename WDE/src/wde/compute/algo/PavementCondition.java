@@ -165,6 +165,9 @@ public class PavementCondition extends Inference {
                 obs.getElevation(),
                 pavement_condition
         );
+        pseudoObs.setConfValue(confidence);
+
+        result.setObsTypeId(1000002);
         result.addObservation(pseudoObs);
 
         return resultSet;

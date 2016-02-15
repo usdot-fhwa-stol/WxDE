@@ -53,8 +53,9 @@ public class PrecipitationType extends Inference<PrecipitationType> {
                 precip_type);
 
         confidence = confidence + (air_temp_input_conf * air_temp_wgt);
-
+        pseudoObs.setConfValue(confidence);
         result.setConfidence(confidence);
+        result.setObsTypeId(1000000);
         result.addObservation(pseudoObs);
 
         return resultSet;

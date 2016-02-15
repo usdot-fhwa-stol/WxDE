@@ -38,12 +38,22 @@ public class GridDataSource {
     private static final String FEATURE_TYPE = "featureType";
     private static final String FEATURE_TYPE_GRID = "GRID";
 
-    private enum _ {}
+    private enum _ { /* intentionally empty */ }
     private static final Logger LOGGER = LoggerFactory.getLogger(_.class.getEnclosingClass());
     private static final DiskCache2 cache;
-    private final NetcdfDataset netcdfDataset;
     private static final Path cacheDirPath;
+
+    /**
+     * This might not be available immediately if using an NcML descriptor file. The markup might
+     * point to a directory that doesn't contain any matching data files, so the dataset won't be
+     * accessible if that is the case. Assuming that a scan element is being used that refreshes
+     * itself, then acccess to the GridDataset might be delayed.
+     *
+     * A lock shouldn't be used in this case as you aren't to wait for its availability, as it
+     * might never become available.
+     */
     private GridDataset gridDataset;
+    private final NetcdfDataset netcdfDataset;
 
     static {
         cacheDirPath = Paths.get("/tmp/griddatasource-cache/");

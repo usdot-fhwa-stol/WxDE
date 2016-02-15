@@ -4,10 +4,12 @@ import wde.WDEMgr;
 import wde.metadata.ISensor;
 import wde.obs.IObs;
 import wde.obs.IObsSet;
+import wde.obs.ObsMgr;
 import wde.obs.ObsSet;
 import wde.obs.Observation;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -16,16 +18,12 @@ import java.util.Set;
 import java.util.TreeSet;
 
 /**
- * Provides a means of sequencing inference algorithms, and distinguishing
- * these sequences by climate region.
- * <p>
- * Implements {@code Comparable<QChSeq>} to enforce an ordering based on
- * climate id.
- * </p>
+ * Provides a means of sequencing inference algorithms, and distinguishing these sequences by observation types.
+ *
  */
 public class InferenceSeq extends Inference<InferenceSeq> {
 
-    private int m_obsTypeId;
+    private int[] m_obsTypeIds;
     private char[] m_platformFilter;
 
     /**
@@ -37,15 +35,22 @@ public class InferenceSeq extends Inference<InferenceSeq> {
         super(null, 0);
     }
 
-    InferenceSeq(int obsTypeId, char[] platformFilter) {
+    InferenceSeq(int[] obsTypeIds, char[] platformFilter) {
         super(null, 0);
 
-        this.m_obsTypeId = obsTypeId;
+        //
+        // Sort the arrays for later when using a binary search against the array to find an
+        // obstype or filter element.
+        //
+        Arrays.sort(obsTypeIds);
+        Arrays.sort(platformFilter);
+
+        this.m_obsTypeIds = obsTypeIds;
         this.m_platformFilter = platformFilter;
     }
 
-    public InferenceSeq(int obsTypeId, char[] platformFilter, Class<Inference>[] inferences) {
-        this(obsTypeId, platformFilter);
+    public InferenceSeq(int[] obsTypeIds, char[] platformFilter, Class<Inference>[] inferences) {
+        this(obsTypeIds, platformFilter);
 
         for(int i = 0; i < inferences.length; ++i) {
             try {
@@ -73,12 +78,12 @@ public class InferenceSeq extends Inference<InferenceSeq> {
     }
 
     @Override
-    public int getObsTypeId() {
-        return this.m_obsTypeId;
+    public int[] getObsTypeIds() {
+        return this.m_obsTypeIds;
     }
 
-    protected void init(int obsTypeId, char[] platformFilter) {
-        m_obsTypeId = obsTypeId;
+    protected void init(int[] obsTypeIds, char[] platformFilter) {
+        m_obsTypeIds = obsTypeIds;
         m_platformFilter = platformFilter;
     }
 
@@ -106,7 +111,7 @@ public class InferenceSeq extends Inference<InferenceSeq> {
         return aggregateResults;
     }
 
-    protected void processResults(Set<InferenceResult> results) {
+    protected void processResults(Set<InferenceResult> results) throws Exception {
 
         for(InferenceResult result : results) {
             if (result == null || result.isCanceled()) {
@@ -115,10 +120,17 @@ public class InferenceSeq extends Inference<InferenceSeq> {
 
             Set<IObs> observations = result.getObservations();
             if (observations != null || observations.size() == 0) {
-                Collection<IObsSet> obsSets = buildObsSets(observations);
+                final Collection<IObsSet> obsSets = buildObsSets(observations);
                 for(IObsSet obsSet : obsSets) {
                     if (obsSet == null) {
                         continue;
+                    }
+
+                    for(IObs obs : obsSet) {
+                        getLogger().debug("Created Infered Observation: obstypeid={}, value={}, confidence={}",
+                                obs.getObsTypeId(),
+                                obs.getValue(),
+                                obs.getConfValue());
                     }
 
                     WDEMgr.getInstance().queue(obsSet);
@@ -127,8 +139,9 @@ public class InferenceSeq extends Inference<InferenceSeq> {
         }
     }
 
-    protected Collection<IObsSet> buildObsSets(Set<IObs> observationList) {
-        if (observationList == null) {
+    protected Collection<IObsSet> buildObsSets(Set<IObs> observationList) throws Exception {
+        if (observationList == null || observationList.size() == 0) {
+            getLogger().debug("Encountered a null observation within the observation list.");
             return new ArrayList<>();
         }
 
@@ -140,13 +153,17 @@ public class InferenceSeq extends Inference<InferenceSeq> {
             // Retrieve an existing IObsSet or create an existing if one doesn't already exist
             // for the specific obsTypeId.
             //
-            IObsSet obsSet;
+            IObsSet obsSet = ObsMgr.getInstance().getObsSet(obsTypeId);
             if (!obsSetMap.containsKey(obs.getObsTypeId())) {
-                //obsSet = obsSetMap.put(obsTypeId, ObsMgr.getInstance().getObsSet(obsTypeId));
-                obsSet = new ObsSet(obsTypeId, ObsSet.SERIAL);
+                //obsSet = new ObsSet(obsTypeId, ObsSet.SERIAL);
                 obsSetMap.put(obsTypeId, obsSet);
             } else {
                 obsSet = obsSetMap.get(obs.getObsTypeId());
+            }
+
+            //debug purposes
+            if (obsSet == null) {
+                throw new Exception("obsSet was null.");
             }
 
             obsSet.add(obs);
@@ -175,10 +192,10 @@ public class InferenceSeq extends Inference<InferenceSeq> {
         if (other == this)
             return 0;
 
-        return m_obsTypeId - other.m_obsTypeId;
+        return Arrays.hashCode(m_obsTypeIds) - Arrays.hashCode(other.m_obsTypeIds);
     }
 
-    public void testBuildObsSet() {
+    public void testBuildObsSet() throws Exception {
         Set<IObs> obsSet = new HashSet<>();
         for(int i = 0; i < 10; ++i) {
             obsSet.add(new Observation(i, 0, 0, 0, 0, 0, 0, 0, 0.0));
@@ -190,6 +207,10 @@ public class InferenceSeq extends Inference<InferenceSeq> {
 
     public static void main(String[] args) {
         InferenceSeq seq = new InferenceSeq();
-        seq.testBuildObsSet();
+        try {
+            seq.testBuildObsSet();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }

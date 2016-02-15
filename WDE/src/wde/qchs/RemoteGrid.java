@@ -1,6 +1,7 @@
 package wde.qchs;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import ucar.nc2.FileWriter2;
 import ucar.nc2.NetcdfFile;
 import ucar.nc2.NetcdfFileWriter.Version;
@@ -33,7 +34,9 @@ import java.util.List;
  */
 abstract class RemoteGrid implements Runnable {
 
-    private final Logger logger = Logger.getLogger(this.getClass());
+    //private final Logger logger = Logger.getLogger(this.getClass());
+    //private enum _ { /* intentionally empty */ }
+    private final Logger logger = LoggerFactory.getLogger(getClass());
 
     /**
      * Lookup arrays map names between model and observation types.
@@ -45,20 +48,26 @@ abstract class RemoteGrid implements Runnable {
     protected List<GridDatatype> m_oGrids;
     protected GridDataSource m_oGridDataSource;
 
-    static {
-        RTMA.getInstance();
-        Radar.getInstance();
-    }
+//    static {
+//        RTMA.getInstance();
+//        Radar.getInstance();
+//    }
 
     /**
      * Default package private constructor.
      */
     RemoteGrid() {
         try {
+            logger.debug("Constructor called");
+
             init();
         } catch (Exception ex) {
             ex.printStackTrace();
         }
+    }
+
+    public Logger getLogger() {
+        return logger;
     }
 
     public Path getIncomingStoragePath() {
@@ -74,6 +83,7 @@ abstract class RemoteGrid implements Runnable {
     public abstract URL getDatasetBaseUrl() throws MalformedURLException;
 
     protected synchronized void init() {
+        logger.debug("Initializing the grid data source. This is currently only configuration.");
         config();
 
         try {
@@ -84,6 +94,7 @@ abstract class RemoteGrid implements Runnable {
     }
 
     protected synchronized void initGridDataSource() throws Exception {
+        logger.debug("Initializing grid data source.");
         Path datasetPath = getGridDatasetPath();
         if (Files.notExists(datasetPath)) {
             //throw new IllegalArgumentException("The configured grid dataset path does not exist: " + );
@@ -125,6 +136,8 @@ abstract class RemoteGrid implements Runnable {
      */
     //@Override
     public void run() {
+        logger.debug("Began remote grid task.");
+
         GregorianCalendar oNow = getNow();
 
         Path datasetFilePath = null;
@@ -229,6 +242,8 @@ abstract class RemoteGrid implements Runnable {
         } catch (Exception e) {
             e.printStackTrace();
         }
+
+        logger.debug("Remote grid task completed.");
     }
 
     /**
@@ -238,6 +253,8 @@ abstract class RemoteGrid implements Runnable {
      * @return the grid data for the variable specified by observation type.
      */
     protected GridDatatype getGridByObs(int nObsTypeId) throws Exception {
+        logger.debug("getGridByObs({})", nObsTypeId);
+
         boolean bFound = false;
         int nIndex = m_nObsTypes.length;
         while (!bFound && nIndex-- > 0)
@@ -246,7 +263,10 @@ abstract class RemoteGrid implements Runnable {
         if (!bFound || m_nGridMap[nIndex] < 0) // requested obstype not available
             return null;
 
-        return m_oGrids.get(m_nGridMap[nIndex]); // grid by obstypeid
+        final GridDatatype grid = m_oGrids.get(m_nGridMap[nIndex]);
+        logger.debug("Obstype id {} = grid {}", nObsTypeId, nIndex, grid.getInfo());
+
+        return grid; // grid by obstypeid
     }
 
     public synchronized double getReading(int nObsTypeId, long lTimestamp, int nLat, int nLon) {
@@ -278,11 +298,14 @@ abstract class RemoteGrid implements Runnable {
             final CalendarDate timestamp = CalendarDate.of(lTimestamp);
             final int[] index = getGridDataSource().buildIndex(oGrid, timestamp, nLat, nLon);
 
-            return getGridDataSource().readValue(oGrid, index);
+            double value = getGridDataSource().readValue(oGrid, index);
+            logger.debug("getReading({}, {}, {}, {}) = {}", nObsTypeId, lTimestamp, nLat, nLon, value);
         } catch (Exception e) {
             logger.debug("An error has occurred while attempting to read a value from the grid. This might be due to the grid not being available at this time.", e);
             //e.printStackTrace();
         }
+
+        logger.debug("getReading({}, {}, {}, {}) = null", nObsTypeId, lTimestamp, nLat, nLon);
 
         return Double.NaN;
     }

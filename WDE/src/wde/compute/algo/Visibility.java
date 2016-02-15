@@ -82,7 +82,7 @@ public class Visibility extends Inference {
         float env_dew_temp = getRelatedObsValue(ObservationTypes.nss_dew_temp_mean, obs).floatValue();
         float dew_temp = determine_temp(mobile_dew_temp, env_dew_temp);
 
-        float rh = getRelatedObsValue(ObservationTypes.ess_relative_Humidity, obs).floatValue();
+        float rh = getRelatedObsValue(ObservationTypes.ess_relative_humidity, obs).floatValue();
         //float rh = calc_rh(air_temp, dew_temp);
 
         // Get addtional VDT variables
@@ -175,6 +175,9 @@ public class Visibility extends Inference {
                 obs.getElevation(),
                 visibility
         );
+        pseudoObs.setConfValue(confidence);
+
+        result.setObsTypeId(1000004);
         result.addObservation(pseudoObs);
 
         return resultSet;

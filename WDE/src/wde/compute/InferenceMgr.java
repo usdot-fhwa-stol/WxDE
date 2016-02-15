@@ -31,12 +31,18 @@ public class InferenceMgr extends AsyncQ<IObsSet> implements ILockFactory<Infere
      *
      * This is in place until another means of location extensions is in place. This would normally
      * be something I would leave to a container to resolve and build, but one isn't being used.
+     *
+     * This responsibility should really be with a builder object to construct the InferenceSeq, and not
+     * InferenceMgr knowing about the construction bits... a bit out of the scope for this class.
      */
     private InferenceSeq[] inferenceSeqs = new InferenceSeq[]{
             new InferenceSeq(
-                    2001018,
+                    new int[] {
+                            2001180, /* canAirTemperature */
+                            5733 /* essAirTemperature */
+                    },
                     new char[]{'M'},
-                    new Class[]{
+                    new Class[] {
                             PrecipitationType.class,
                             PrecipitationIntensity.class,
                             PavementSlickness.class,
@@ -80,7 +86,6 @@ public class InferenceMgr extends AsyncQ<IObsSet> implements ILockFactory<Infere
         logger.info("Calling constructor");
 
         try {
-
             // apply QChSMgr configuration
             ConfigSvc oConfigSvc = ConfigSvc.getInstance();
             Config oConfig = oConfigSvc.getConfig(this);
@@ -94,19 +99,21 @@ public class InferenceMgr extends AsyncQ<IObsSet> implements ILockFactory<Infere
             WDEMgr wdeMgr = WDEMgr.getInstance();
 
             for(InferenceSeq seq : resolveSequences()) {
-                InferenceSeqMgr seqMgr = null;
-                if (m_seqMgrMap.containsKey(seq.getObsTypeId())) {
-                    seqMgr = m_seqMgrMap.get(seq.getObsTypeId());
-                } else {
-                    seqMgr = new InferenceSeqMgr(
-                            seq.getObsTypeId(),
-                            MAX_THREADS,
-                            null
-                    );
+                for (int seqObsTypeId : seq.getObsTypeIds()) {
+                    InferenceSeqMgr seqMgr = null;
+                    if (m_seqMgrMap.containsKey(seq.getObsTypeIds())) {
+                        seqMgr = m_seqMgrMap.get(seq.getObsTypeIds());
+                    } else {
+                        seqMgr = new InferenceSeqMgr(
+                                seqObsTypeId,
+                                MAX_THREADS,
+                                null
+                        );
 
-                    m_seqMgrMap.put(seq.getObsTypeId(), seqMgr);
+                        m_seqMgrMap.put(seqObsTypeId, seqMgr);
+                    }
+                    seqMgr.addInferenceSeq(seq);
                 }
-                seqMgr.addInferenceSeq(seq);
             }
 
             wdeMgr.register(getClass().getName(), this);
@@ -117,11 +124,6 @@ public class InferenceMgr extends AsyncQ<IObsSet> implements ILockFactory<Infere
         logger.info("Completing constructor");
     }
 
-    /**
-     * <b> Accessor </b>
-     *
-     * @return the singleton instance of {@code InferenceMgr}.
-     */
     public static InferenceMgr getInstance() {
         return g_oInstance;
     }

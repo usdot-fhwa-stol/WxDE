@@ -14,6 +14,8 @@ import wde.util.threads.StripeLock;
 
 import java.sql.Connection;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Set;
 
 public class InferenceSeqMgr extends AsyncQ<IObsSet>
         implements Comparable<InferenceSeqMgr>, ILockFactory<InferenceSeq> {
@@ -122,10 +124,13 @@ public class InferenceSeqMgr extends AsyncQ<IObsSet>
             //
             // Ensure the sequence is only run if it can handle the current observation type.
             //
-            if (sequence.getObsTypeId() != obsSet.getObsType()) {
-                logger.trace("Moving to the next sequence. The current obstypeid doesn't match.");
-                continue;
+            if (Arrays.binarySearch(sequence.getObsTypeIds(), obsSet.getObsType()) > 0) {
+
             }
+//            if (sequence.getObsTypeIds() != obsSet.getObsType()) {
+//                logger.trace("Moving to the next sequence. The current obstypeid doesn't match.");
+//                continue;
+//            }
 
             logger.debug("ObsSet obstypeid=" + obsSet.getObsType() + " size=" + obsSet.size());
             for (final IObs obs : obsSet) {
@@ -160,17 +165,19 @@ public class InferenceSeqMgr extends AsyncQ<IObsSet>
                     continue;
                 }
 
-                final InferenceResult result = (InferenceResult) sequence.doInference(m_nObsTypeId, sensor, obs);
-                if (result == null) {
-                    logger.debug("Skipping inference result because null was received from sequence.");
-                    continue;
-                }
+                final Set<InferenceResult> results = sequence.doInference(m_nObsTypeId, sensor, obs);
+                for(InferenceResult result : results) {
+                    if (result == null) {
+                        logger.debug("Skipping inference result because null was received from sequence.");
+                        continue;
+                    }
 
-                if (!result.isCanceled()) {
-                    final int size = result.getObservations().size();
+                    if (!result.isCanceled()) {
+                        final int size = result.getObservations().size();
 
-                    if (result.getObservations().size() > 0) {
-                        logger.debug("The inference algorithm created " + size + " observations.");
+                        if (result.getObservations().size() > 0) {
+                            logger.debug("The inference algorithm created " + size + " observations.");
+                        }
                     }
                 }
             }

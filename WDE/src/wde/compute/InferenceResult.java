@@ -5,7 +5,7 @@ import wde.obs.IObs;
 import java.util.HashSet;
 import java.util.Set;
 
-public class InferenceResult {
+public class InferenceResult implements Comparable<InferenceResult> {
 
     /**
      * Indicates whether the quality doInference algorithm ran successfully or not.
@@ -65,5 +65,10 @@ public class InferenceResult {
 
     public void addObservation(IObs observation) {
         m_observationSet.add(observation);
+    }
+
+    @Override
+    public int compareTo(InferenceResult o) {
+        return getObsTypeId() - o.getObsTypeId();
     }
 }

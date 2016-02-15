@@ -155,6 +155,9 @@ public class PrecipitationIntensity extends Inference {
                 obs.getLongitude(),
                 obs.getElevation(),
                 precip_intensity);
+        pseudoObs.setConfValue(confidence);
+
+        result.setObsTypeId(1000001);
         result.addObservation(pseudoObs);
 
         return resultSet;

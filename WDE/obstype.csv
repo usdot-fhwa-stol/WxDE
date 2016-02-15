@@ -1,0 +1,271 @@
+essLatitude,10^-6 degrees,Latitude of the ESS station [observation] per WGS-84 datum
+essLongitude,10^-6 degrees,East longitude from the Prime Meridian of the ESS station [observation]
+essVehicleBearing,degrees clockwise from true North,Current bearing of the vehicle
+essVehicleOdometer,meters,Current odometer reading of the vehicle
+essReferenceHeight,meters above mean sea level,"Reference elevation of the ESS; height to base of station for permanent ESS height to the ground surface upon which the ESS resides for transportable ESS, or height to surface under vehicle for mobile ESS"
+essAtmosphericPressure,"10^-1 millibars, or 10^-1 hectopascals",Force per unit area exerted by the atmosphere
+windSensorAvgSpeed,10^-1 meters per second,Two-minute average of the wind speed
+windSensorAvgDirection,degrees clockwise from true North,Two-min. average of wind direction (CW from North)
+windSensorSpotSpeed,10^-1 meters per second,Instantaneous wind speed
+windSensorSpotDirection,degrees clockwise from true North,Instantaneous wind direction (CW from North)
+windSensorGustSpeed,10^-1 meters per second,Maximum wind gust recorded during preceding 10 min.
+windSensorGustDirection,degrees clockwise from true North,Direction of max. wind gust during preceding 10 min.
+windSensorSituation,integer,Describes the weather and travel situation in terms of wind from staffed stations only. Specific ranges for these values are defined in the Glossary of Meteorology
+essAirTemperature,10^-1 degrees Celsius,Instantaneous dry-bulb temperature
+essWetBulbTemp,10^-1 degrees Celsius,Instantaneous wet-bulb temperature
+essDewpointTemp,10^-1 degrees Celsius,Instantaneous dewpoint temperature
+essMaxTemp,10^-1 degrees Celsius,Maximum air temperature during preceding 24 hours
+essMinTemp,10^-1 degrees Celsius,Minimum air temperature during preceding 24 hours
+essRelativeHumidity,percent,Relative humidity
+essAdjacentSnowDepth,centimeters,Depth of undrifted & unplowed snow off roadways
+essRoadwaySnowDepth,centimeters,Depth of unpacked snow on roadway surface
+essRoadwaySnowpackDepth,centimeters,Depth of packed snow on roadway surface
+essPrecipYesNo,integer,Indicates whether or not precip is detected: (1) precip; (2) noPrecip; (3) error
+essPrecipRate,10^-1 grams per sq. meter per second,Rate of rainfall or water equivalent of snow
+essSnowfallAccumRate,10^-7 meters per second,Rate of snowfall accumulation
+essPrecipSituation,integer,Description of precipitation type & intensity; see NTCIP 1204 for validation rules and text mapping
+essIceThickness,millimeters,Thickness of the ice
+essPrecipitationStartTime,"seconds since 00:00:00 Jan 1, 1970 UTC",Time when most recent precipitation event began
+essPrecipitationEndTime,"seconds since 00:00:00 Jan 1, 1970 UTC",Time when most recent precipitation event ended
+essPrecipitationOneHour,10^-1 kg per sq meter,Total water equivalent precipitation over preceding 1 hr
+essPrecipitationThreeHours,10^-1 kg per sq meter,Total water equivalent precipitation over preceding 3 hrs
+essPrecipitationSixHours,10^-1 kg per sq meter,Total water equivalent precipitation over preceding 6 hrs
+essPrecipitationTwelveHours,10^-1 kg per sq meter,Total water equivalent precipitation over preceding 12 hrs
+essPrecipitation24Hours,10^-1 kg per sq meter,Total water equivalent precipitation over preceding 24 hrs
+waterLevelSensorReading,centimeters,Depth of the water from a user-defined point
+essTotalSun,minutes,Total amount of sunshine during preceding 24 hrs
+essCloudSituation,integer,Description of amount of cloud cover; see NTCIP 1204 for validation rules and text mapping
+essTotalRadiation,joules per sq meter,Average total radiation during the radiation period
+essTotalRadiationPeriod,seconds,"Length of time essTotalRadiation is averaged [i.e., accumulated]"
+essVisibility,10^-1 meters,Surface visibility
+essVisibilitySituation,integer,Describes visibility of travel environment; see NTCIP 1204 for validation rules and text mapping
+essSurfaceStatus,integer,Describes pavement surface status; see NTCIP 1204 for validation rules and text mapping
+essSurfaceTemperature,10^-1 degrees Celsius,Current pavement surface temperature
+essPavementTemperature,10^-1 degrees Celsius,"Current pavement temp. 2-10 cm below surface, specifically at pavementSensorTemperatureDepth"
+essSurfaceSalinity,parts per one hundred thousand by weight,Pavement [surface] salinity
+essSurfaceFreezePoint,10^-1 degrees Celsius,Solution freeze point temperature
+essSurfaceBlackIceSignal,integer,Indicates whether or not black ice is detected; see NTCIP 1204 for data validation and mapping
+essPavementSensorError,integer,Type of pavement sensor error; see NTCIP 1204 for data validation and mapping
+essSurfaceIceOrWaterDepth,10^-1 millimeters,Current ice thickness or water depth on roadway surface
+essSurfaceConductivityV2,10^-1 millimhos/cm,Conductivity of the ice/liquid mixture on the pavement as detected by the sensor
+pavementSensorTemperatureDepth,centimeters,Depth at which the pavement temperature is detected
+essSubSurfaceTemperature,10^-1 degrees Celsius,Current sub-surface temperature
+essSubSurfaceMoisture,percent,"Sub-surface moisture espressed as a percentage (e.g., 0 indicates dry, 100 indicates saturated)"
+essSubSurfaceSensorError,integer,Type of sensor error; see NTCIP 1204 for data validation and mapping
+essMobileFriction,percent,Measured coefficient of friction
+essMobileObservationGroundState,integer,Prevailing observed ground state of the surrounding environment as determined by the observer; an indicator of past weather conditions; see NTCIP 1204 for data validation and mapping
+essMobileObservationPavement,integer,Prevailing ovserved conditions on the driving surface as determined by the observer; see NTCIP 1204 for data validation and mapping
+essPaveTreatProductType,integer,Type of treatment being applied to the road; see NTCIP1204 for data validation and mapping
+essPaveTreatProductForm,integer,Condtion of the treatment being applied to the road; see NTCIP 1204 for data validation and mapping
+essPercentProductMix,percent,Percentage of the total application mix by weight that is of the type specified in essPaveTreatProductType
+essPaveTreatmentAmount,kg per lane km,Quantity of the treatment being applied
+essPaveTreatmentWidth,meters,Width of the spread of treatment
+essCO,ppm,Concentration of carbon monoxide in the air
+essCO2,ppb,Concentration of carbon dioxide in the air
+essNO,ppm,Concentration of nitrous oxide in the air
+essNO2,ppb,Concentration of nitrous dioxide in the air
+essSO2,ppb,Concentration of sulfur dioxide in the air
+icePercent,percent,Percent of ice cover on roadway
+precip10min,tenths of kilograms per square meter,Total water equivalent precip. over preceding 10 min
+precipType,,Description of precipitation type
+essInstantaneousSolarRadiation,watts per square meter,"The instantaneous ultraviolet, visible, and near-infrared (wavelength of less than 3.0 micrometers) radiation hitting the earth's surface in watts per square meter"
+essSurfaceWaterDepth,millimeters,The current depth of water on the surface of the roadway measured in millimeters.
+essSurfaceStatus2,integer,Describes pavement surface status; see obsvaluemap.csv in metadata for mapping
+essVehicleSpeed,km/hr,Current speed being reported by the vehicle
+essAmbientLight,lux,luminous flux per unit area
+essO3,parts per one hundred billion,Concentration of ozone in the air
+precipIntensity,,Description of precipitation intensity
+canAntiLockBrakeStatus,,anti-lock brake status
+canBrakeBoostApplied,,brake boost applied status
+vdtPrecipitationType,integer,Derived value that describes the type of precipitation in the observation.
+vdtPrecipitationIntesity,integer,Derived value that describes the intensity of the precipitation in the observation.
+vdtPavementCondition,integer,Derived value that describes the pavement conditions in the observation.
+vdtPavementSlickness,integer,Derived value that describes the pavement slickness in the observation.
+vdtVisibility,integer,Derived value that describes the visibility conditions in the observation.
+radar_cref,decibels relative to Z,composite reflectivity from radar grid
+radar_precip_flag,,precip from radar grid
+radar_precip_type,,precip type from radar grid
+cloud_mask,,cloud mask from satellite grid
+canBrakeAppliedStatus,,brake applied status
+canHeading,degrees clockwise from true North,heading
+canLatAcceleration,10^-1 meters per second squared,horizontal lateral acceleration
+canLongAcceleration,10^-1 meters per second squared,horizontal longitudinal acceleration
+canHeadlights,integer,Indicates whether the headlights are on or not
+vdtAirTemperature,10^-1 degrees Celsius,air temperature from the model data
+vdtAtmosphericPressure,"10^-1 millibars, or 10^-1 hectopascals",barometric pressure from the model data
+vdtAirTemperatureAvg,10^-1 degrees Celsius,mean air temperature for the nearest surface stations
+vdtAtmosphericPressureAvg,"10^-1 millibars, or 10^-1 hectopascals",mean barometric pressure for the nearest surface stations
+vdtDewpointTempAvg,10^-1 degrees Celsius,mean dew temp. for the nearest surface stations
+vdtPrecipitationOneHourAvg,10^-1 kg per sq meter,mean hourly precip for the nearest surface stations
+vdtVisibilityAvg,10^-1 meters,mean prevailing vis. for the nearest surface stations
+vdtWindSensorAvgDirection,degrees clockwise from true North,mean wind_dir for the nearest surface stations
+vdtWindSensorAvgSpeed,10^-1 meters per second,mean wind_speed for the nearest surface stations
+canSpeed,10^-1 meters per second,vehicle speed
+canStabilityControlStatus,,stability control status
+canSteeringWheelAngle,degrees clockwise from true North,steering wheel angle
+canSteeringWheelAngleRateOfChange,degrees per second,steering wheel angle rate of change
+canTractionControlState,,traction control state
+canWiperStatus,integer,Indicates whether the wipers are on or not
+canYawRate,degrees per second,yaw rate
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+canAtmosphericPressure,"10^-1 millibars, or 10^-1 hectopascals",barometric pressure from the model data
+canAirTemperature,10^-1 degrees Celsius,air temperature from the model data
