@@ -2,9 +2,9 @@ package wde.qchs.algo;
 
 import java.util.ArrayList;
 
-import wde.data.shp.Polyline;
+import wde.data.osm.Road;
 import wde.obs.IObs;
-import wde.qchs.Roads;
+import wde.data.osm.Roads;
 
 /**
  *
@@ -28,7 +28,7 @@ public class VehNeighbor extends IQR
 	@Override
 	protected void filter(int nLat, int nLon, ArrayList<IObs> oObsSet)
 	{
-		Polyline oLink = Roads.getInstance().getLink(100, nLon, nLat);
+		Road oLink = Roads.getInstance().getLink(100, nLon, nLat);
 		if (oLink == null) // no link found for target
 			oObsSet.clear();
 		else

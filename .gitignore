@@ -6,3 +6,5 @@ target/
 /WDE/*.mf
 /WDE/*.xml
 /WDE/nbproject/
+/osm4j/nbproject/private/
+/protobuf/nbproject/private/
