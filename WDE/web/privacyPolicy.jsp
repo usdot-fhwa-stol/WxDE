@@ -29,7 +29,7 @@
 			contributors and users of data and data processing tools abide by
 			certain rules of engagement. The data and content on this site are
 			licensed under the <a 
-				href="http://wwwcf.fhwa.dot.gov/exit.cfm?link=http://creativecommons.org/licenses/by-sa/3.0/legalcode">
+				href="http://creativecommons.org/licenses/by-sa/3.0/legalcode">
 				Creative Commons Attribution-ShareAlike 3.0 Unported license </a>
 		</p>
 		<br>

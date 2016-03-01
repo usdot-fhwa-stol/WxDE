@@ -41,7 +41,7 @@
 				</ul>
 			</li>
 			
-			<li><a href="/wdeMap.jsp">WxDE Map</a></li>
+			<li><a href="/summaryMap.jsp">WxDE Map</a></li>
 			
 			<li>About
 				<ul>
