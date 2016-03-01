@@ -1,12 +1,7 @@
 package wde.data.osm;
 
-import java.io.DataInputStream;
 import java.util.ArrayList;
-import java.util.Collections;
-
-import wde.util.MathUtil;
-
-import de.topobyte.osm4j.core.model.iface.OsmWay;
+import java.util.TreeMap;
 
 
 /**
@@ -18,7 +13,6 @@ import de.topobyte.osm4j.core.model.iface.OsmWay;
  */
 public class Road
 {
-	public final long m_lId;
 	public final int m_nXmin;
 	public final int m_nYmin;
 	public final int m_nXmax;
@@ -28,6 +22,7 @@ public class Road
 	public final int m_nLength;
 	public final int m_nSpeed = 27; // 27 m/s is approximately 60 mph
 	public final String m_sName;
+	public final String m_sType;
 	private int[] m_oPoints;
 
 
@@ -36,47 +31,42 @@ public class Road
 	 */
 	private Road()
 	{
-		m_lId = 0; // initialize all final member variables
+		// initialize all final member variables
 		m_nXmin = m_nYmin = m_nXmax = m_nYmax = m_nXmid = m_nYmid = m_nLength = 0;
-		m_sName = "";
+		m_sName = m_sType = "".intern();
 	}
 
 
-	public Road(ArrayList<OsmLatLon> oNodes, OsmLatLon oSort, OsmWay oWay)
+	public Road(TreeMap<String, String> oTags, ArrayList<Roads.Node> oNodes)
 	{
 		int nYmax = Integer.MIN_VALUE; // init temp bounds to opposite extremes
 		int nXmax = Integer.MIN_VALUE; // so that bounding box can be narrowed
 		int nYmin = Integer.MAX_VALUE;
 		int nXmin = Integer.MAX_VALUE;
 		
-		m_lId = oWay.getId();
-		m_oPoints = new int[oWay.getNumberOfNodes()];
-		for (int nIndex = 0; nIndex < m_oPoints.length; nIndex++)
+		m_oPoints = new int[oNodes.size() * 2]; // copy coordinates to int array
+		for (int nIndex = 0; nIndex < oNodes.size(); nIndex++)
 		{
-			int nNodeIndex = Collections.binarySearch(oNodes, oWay.getNodeId(nIndex));
-			if (nNodeIndex >= 0) // node should always be found
-			{
-				OsmLatLon oLatLon = oNodes.get(nNodeIndex);
+			Roads.Node oNode = oNodes.get(nIndex);
 
-				int nLat = MathUtil.toMicro(oLatLon.m_dLat);
-				int nLon = MathUtil.toMicro(oLatLon.m_dLon);
+			int nLat = oNode.m_nLat;
+			int nLon = oNode.m_nLon;
 
-				if (nLat > nYmax) // adjust vertical bounds
-					nYmax = nLat;
+			if (nLat > nYmax) // adjust vertical bounds
+				nYmax = nLat;
 
-				if (nLat < nYmin)
-					nYmin = nLat;
+			if (nLat < nYmin)
+				nYmin = nLat;
 
-				if (nLon > nXmax) // adjust horizontal bounds
-					nXmax = nLon;
+			if (nLon > nXmax) // adjust horizontal bounds
+				nXmax = nLon;
 
-				if (nLon < nXmin)
-					nXmin = nLon;
+			if (nLon < nXmin)
+				nXmin = nLon;
 
-				int nPointIndex = nIndex * 2; // save point data
-				m_oPoints[nPointIndex] = nLon; // points are stored in xy order
-				m_oPoints[++nPointIndex] = nLat;
-			}
+			int nPointIndex = nIndex * 2; // save point data
+			m_oPoints[nPointIndex] = nLon; // points are stored in xy order
+			m_oPoints[++nPointIndex] = nLat;
 		}
 
 		m_nYmax = nYmax; // save bounding box
@@ -85,8 +75,16 @@ public class Road
 		m_nXmin = nXmin;
 
 		m_nXmid = m_nYmid = m_nLength = 0; // finish setting member variables
-		// get the name tag
-		m_sName = "";
+		String sName = oTags.get("name");
+		if (sName == null)
+			m_sName = "".intern();
+		else // interning should save some memory
+			m_sName = sName.intern();
+		sName = oTags.get("highway");
+		if (sName == null)
+			m_sType = "".intern();
+		else // interning should save some memory
+			m_sType = sName.intern();
 	}
 
 

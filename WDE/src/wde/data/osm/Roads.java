@@ -6,21 +6,14 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
+import java.util.TreeMap;
+import javax.xml.parsers.SAXParserFactory;
+import org.xml.sax.Attributes;
+import org.xml.sax.InputSource;
+import org.xml.sax.XMLReader;
+import org.xml.sax.helpers.DefaultHandler;
 
-import wde.data.osm.OsmLatLon;
-import wde.data.osm.Road;
-import wde.data.osm.SegIterator;
-import wde.data.osm.Utility;
 import wde.util.MathUtil;
-
-import de.topobyte.osm4j.core.access.OsmIterator;
-import de.topobyte.osm4j.core.model.iface.EntityContainer;
-import de.topobyte.osm4j.core.model.iface.EntityType;
-import de.topobyte.osm4j.core.model.iface.OsmNode;
-import de.topobyte.osm4j.core.model.iface.OsmWay;
-import de.topobyte.osm4j.pbf.seq.PbfIterator;
-//import de.topobyte.osm4j.xml.dynsax.OsmXmlIterator;
 
 
 /**
@@ -31,9 +24,19 @@ import de.topobyte.osm4j.pbf.seq.PbfIterator;
  * @author  bryan.krueger
  * @version 1.0 (October 2, 2015)
  */
-public class Roads extends ArrayList<Roads.GridIndex> implements Comparator<int[]>
+public class Roads extends DefaultHandler
 {
+	private static final String[] TYPES = {"secondary", "unclassified", 
+		"residential", "service", "track"};
 	private static final Roads g_oRoads = new Roads();
+
+	boolean m_bWay;
+	ArrayList<GridIndex> m_oGridCache = new ArrayList(); // 2D indexed roads
+	ArrayList<GridIndex> m_oGrids = new ArrayList(); // grids that roads intersect
+	ArrayList<Node> m_oNodes = new ArrayList(); // temporary node list
+	ArrayList<Node> m_oWayNodes = new ArrayList(); // temporary nodes in a way
+	TreeMap<String, String> m_oTags = new TreeMap(); // temporary way tags
+	Node m_oSearch = new Node(); // convenience node search object
 
 
 	/**
@@ -50,60 +53,102 @@ public class Roads extends ArrayList<Roads.GridIndex> implements Comparator<int[
 	/**
 	 * <b> Default Private Constructor </b>
 	 * <p>
-	 * Creates a new instance of Roads upon class loading and reads shape files 
+	 * Creates a new instance of Roads upon class loading and reads osm XML files 
 	 * from a well-defined directory into memory for fast lookup. Client 
 	 * components obtain a singleton reference through the getInstance method.
 	 * </p>
 	 */
 	private Roads()
 	{
-		// reusable list that contains the set of grids each road intersects
-		ArrayList<GridIndex> oGrids = new ArrayList();
-		OsmLatLon oNodeSort = new OsmLatLon(); // use sorting method
-		ArrayList<OsmLatLon> oNodes = new ArrayList(); // node data lookup list
-
-//		File[] oDirs = new File("/opt/shp").listFiles(); // default shp location
-		File[] oFiles = new File("C:/Users/bryan.krueger/Desktop/wip/Clarus/vdt/osm").listFiles(); // default osm location
-		for (File oFile : oFiles)
+		try
 		{
-			if (oFile.isDirectory() || !oFile.getName().endsWith(".pbf"))
-				continue; // skip directories, only need pbf files
-
-			try
+			XMLReader iXmlReader = SAXParserFactory.newInstance().newSAXParser().getXMLReader();
+			iXmlReader.setContentHandler(this);
+//		File[] oDirs = new File("/opt/shp").listFiles(); // default shp location
+			File[] oFiles = new File("C:/Users/bryan.krueger/Desktop/wip/Clarus/vdt/osm").listFiles(); // default osm location
+			for (File oFile : oFiles)
 			{
+				if (oFile.isDirectory() || !oFile.getName().endsWith(".osm"))
+					continue; // skip directories, only need osm xml files
+
 				BufferedInputStream oOsm = new BufferedInputStream(new FileInputStream(oFile));
-				OsmIterator oOsmIt = new PbfIterator(oOsm, false); // read nodes and ways
-				for (EntityContainer oCont : oOsmIt) // iterate through entities
-				{
-					if (oCont.getType() == EntityType.Node) // nodes encountered first
-					{
-						OsmNode oNode = (OsmNode)oCont.getEntity();
-						OsmLatLon oLatLon = new OsmLatLon(oNode.getId(), 
-							oNode.getLatitude(), oNode.getLongitude());
-						int nIndex = Collections.binarySearch(oNodes, oLatLon, oNodeSort);
-						if (nIndex < 0) // save nodes in sorted order
-							oNodes.add(~nIndex, oLatLon); // should never be any duplicates
-					}
- 
-					if (oCont.getType() == EntityType.Way) // process ways after nodes
-					{
-						Road oRoad = new Road(oNodes, oNodeSort, (OsmWay)oCont.getEntity());
-						oGrids.clear(); // reuse grid index set
-						SegIterator oSegIt = oRoad.iterator();
-						while (oSegIt.hasNext()) // get each line segment
-							getGrids(oGrids, oSegIt.next()); // determine grid cells of line
+				iXmlReader.parse(new InputSource(oOsm));
+			}
+			m_oGrids.clear(); // temporary grid buffer no longer needed
+			m_oGrids = null;
+			m_oNodes.clear(); // node list no longer needed
+			m_oNodes = null;
+			m_oSearch = null; // release temporary buffer objects
+			m_oTags = null;
+			m_oWayNodes = null;
+		}
+		catch (Exception oException)
+		{
+		}
+	}
 
-						for (GridIndex oGrid : oGrids)
-							if (!oGrid.contains(oRoad)) // treat the grid index as a set
-								oGrid.add(oRoad); // add polyline definition to index
-					}
-				}
-				oOsm.close(); // done reading shape file
-			}
-			catch (Exception oException)
+
+	@Override
+ 	public void startElement(String sUri, String sLocalName, 
+		String sQname, Attributes iAtt)
+	{
+		if (sQname.compareTo("node") == 0) // insert into node lookup array
+		{
+			Node oNode = new Node(iAtt.getValue("id"), iAtt.getValue("lat"), 
+				iAtt.getValue("lon")); // there should be no duplicate node ids
+			m_oNodes.add(~Collections.binarySearch(m_oNodes, oNode), oNode);
+		}
+
+		if (sQname.compareTo("way") == 0)
+			m_bWay = true; // only state change is needed
+
+		if (sQname.compareTo("nd") == 0)
+		{
+			m_oSearch.m_lId = Long.parseLong(iAtt.getValue("ref"));
+			int nIndex = Collections.binarySearch(m_oNodes, m_oSearch);
+			if (nIndex >= 0) // add node to temporary way node list
+				m_oWayNodes.add(m_oNodes.get(nIndex));
+		}
+
+		if (sQname.compareTo("tag") == 0 && m_bWay) // save way tags
+			m_oTags.put(iAtt.getValue("k"), iAtt.getValue("v"));
+	}
+
+
+	private static boolean ignore(String sType)
+	{
+		if (sType == null)
+			return true;
+	
+		int nIndex = TYPES.length;
+		while (nIndex-- > 0)
+			if (sType.compareTo(TYPES[nIndex]) == 0)
+				return true;
+	
+		return false;
+	}
+
+
+	@Override
+ 	public void endElement(String sUri, String sLocalName, String sQname)
+	{
+		if (sQname.compareTo("way") == 0)
+		{
+			if (!ignore(m_oTags.get("highway"))) // filter out residential roads
 			{
-				oException.printStackTrace();
+				Road oRoad = new Road(m_oTags, m_oWayNodes); // use buffered data
+				m_oGrids.clear(); // reuse grid index set
+				SegIterator oSegIt = oRoad.iterator();
+				while (oSegIt.hasNext()) // get each line segment
+					getGrids(m_oGrids, oSegIt.next()); // determine grid cells of line
+
+				for (GridIndex oGrid : m_oGrids) // returned grids are already in cache
+					if (!oGrid.contains(oRoad)) // treat each grid index as a set
+						oGrid.add(oRoad); // add polyline definition to index
 			}
+			m_oWayNodes.clear(); // clear way node list
+			m_oTags.clear(); // clear key value map
+			m_bWay = false; // reset state
 		}
 	}
 
@@ -152,15 +197,15 @@ public class Roads extends ArrayList<Roads.GridIndex> implements Comparator<int[
 			for (int nX = nXbeg; nX <= nXend; nX++)
 			{
 				oSearch.setHash(nX, nY);
-				int nGrid = Collections.binarySearch(this, oSearch);
+				int nGrid = Collections.binarySearch(m_oGridCache, oSearch);
 				if (nGrid < 0) // existing grid cell not found
 				{
 					oGrid = new GridIndex(); // create new grid hash index
 					oGrid.m_nHash = oSearch.m_nHash; // copy current hash value
-					add(~nGrid, oGrid); // add new grid cell to primary cache
+					m_oGridCache.add(~nGrid, oGrid); // add new grid cell to primary cache
 				}
 				else
-					oGrid = get(nGrid);
+					oGrid = m_oGridCache.get(nGrid);
 
 				nGrid = Collections.binarySearch(oGrids, oSearch);
 				if (nGrid < 0) // add grid cell reference to output set
@@ -210,17 +255,41 @@ public class Roads extends ArrayList<Roads.GridIndex> implements Comparator<int[
 	}
 
 
-	@Override
-	public int compare(int[] oLhs, int[] oRhs)
+	class Node implements Comparable<Node>
 	{
-		int nCompare = oLhs[0] - oRhs[0];
-		if (nCompare == 0)
-			return oLhs[1] - oRhs[1];
-		return nCompare;
+		public long m_lId;
+		public int m_nLat;
+		public int m_nLon;
+
+
+		Node()
+		{
+		}
+
+
+		Node(String sId, String sLat, String sLon)
+		{
+			m_lId = Long.parseLong(sId);
+			m_nLat = MathUtil.toMicro(Double.parseDouble(sLat));
+			m_nLon = MathUtil.toMicro(Double.parseDouble(sLon));
+		}
+
+	
+		@Override
+		public int compareTo(Node oNode)
+		{
+			if (m_lId < oNode.m_lId)
+				return -1;
+
+			if (m_lId > oNode.m_lId)
+				return 1;
+
+			return 0;
+		}
 	}
 
 
-	class GridIndex extends ArrayList<Road> implements Comparable<GridIndex>
+	private class GridIndex extends ArrayList<Road> implements Comparable<GridIndex>
 	{
 		private static final int GRID_SPACING = 50000; // ~3.5 miles
 		int m_nHash;
@@ -269,7 +338,9 @@ public class Roads extends ArrayList<Roads.GridIndex> implements Comparator<int[
 		throws Exception
 	{
 		Roads oRoads = Roads.getInstance();
-		Road oRoad = oRoads.getLink(100, -84572239, 43610290);
+		Road oRoad = oRoads.getLink(100, -95239404, 38959084);
+		System.out.println(oRoad.m_sName);
+		oRoad = oRoads.getLink(100, -95816923, 39050285);
 		System.out.println(oRoad.m_sName);
 	}
 }

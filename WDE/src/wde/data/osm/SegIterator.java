@@ -11,6 +11,7 @@ import java.util.Iterator;
 public class SegIterator implements Iterator<int[]>
 {
 	private int m_nPos;
+	private int m_nEnd;
 	private int[] m_oPoints;
 	private final int[] m_oLine = new int[4]; // 2D line
 
@@ -28,14 +29,15 @@ public class SegIterator implements Iterator<int[]>
    */
 	SegIterator(int[] oPoints)
 	{
-		m_oPoints = oPoints;
+		m_oPoints = oPoints; // local immutable copy of road line segments
+		m_nEnd = oPoints.length - 2; // line segment end boundary
 	}
 
 
 	@Override
 	public boolean hasNext()
 	{
-		return (m_oPoints.length > 1 && m_nPos < m_oPoints.length);
+		return (m_nPos < m_nEnd);
 	}
 
 
