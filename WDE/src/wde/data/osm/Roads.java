@@ -3,40 +3,28 @@ package wde.data.osm;
 
 import java.io.BufferedInputStream;
 import java.io.File;
+import java.io.DataInputStream;
 import java.io.FileInputStream;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.TreeMap;
-import javax.xml.parsers.SAXParserFactory;
-import org.xml.sax.Attributes;
-import org.xml.sax.InputSource;
-import org.xml.sax.XMLReader;
-import org.xml.sax.helpers.DefaultHandler;
 
 import wde.util.MathUtil;
 
 
 /**
- * A singleton that reads a directory of openstreetmap.org PBF files and then 
+ * A singleton that reads a directory of processed Openstreetmap files and then 
  * responds to queries for roadways that are within a specified distance from 
  * a target point.
  * 
  * @author  bryan.krueger
  * @version 1.0 (October 2, 2015)
  */
-public class Roads extends DefaultHandler
+public class Roads
 {
-	private static final String[] TYPES = {"secondary", "unclassified", 
-		"residential", "service", "track"};
 	private static final Roads g_oRoads = new Roads();
 
-	boolean m_bWay;
 	ArrayList<GridIndex> m_oGridCache = new ArrayList(); // 2D indexed roads
 	ArrayList<GridIndex> m_oGrids = new ArrayList(); // grids that roads intersect
-	ArrayList<Node> m_oNodes = new ArrayList(); // temporary node list
-	ArrayList<Node> m_oWayNodes = new ArrayList(); // temporary nodes in a way
-	TreeMap<String, String> m_oTags = new TreeMap(); // temporary way tags
-	Node m_oSearch = new Node(); // convenience node search object
 
 
 	/**
@@ -53,7 +41,7 @@ public class Roads extends DefaultHandler
 	/**
 	 * <b> Default Private Constructor </b>
 	 * <p>
-	 * Creates a new instance of Roads upon class loading and reads osm XML files 
+	 * Creates a new instance of Roads upon class loading and reads binary files 
 	 * from a well-defined directory into memory for fast lookup. Client 
 	 * components obtain a singleton reference through the getInstance method.
 	 * </p>
@@ -62,93 +50,42 @@ public class Roads extends DefaultHandler
 	{
 		try
 		{
-			XMLReader iXmlReader = SAXParserFactory.newInstance().newSAXParser().getXMLReader();
-			iXmlReader.setContentHandler(this);
-//		File[] oDirs = new File("/opt/shp").listFiles(); // default shp location
-			File[] oFiles = new File("C:/Users/bryan.krueger/Desktop/wip/Clarus/vdt/osm").listFiles(); // default osm location
+			File[] oFiles = new File("/opt/osm").listFiles(); // default osm location
 			for (File oFile : oFiles)
 			{
-				if (oFile.isDirectory() || !oFile.getName().endsWith(".osm"))
-					continue; // skip directories, only need osm xml files
+				if (oFile.isDirectory() || !oFile.getName().endsWith(".osm.bin"))
+					continue; // skip directories, only need processed OSM binary files
 
-				BufferedInputStream oOsm = new BufferedInputStream(new FileInputStream(oFile));
-				iXmlReader.parse(new InputSource(oOsm));
+				DataInputStream oOsmBin = new DataInputStream(
+					new BufferedInputStream(new FileInputStream(oFile)));
+				try
+				{
+					for (;;) // this will execute until end-of-file is thrown
+					{
+						m_oGrids.clear(); // reuse grid buffer
+						Road oRoad = new Road(oOsmBin); // read road definition from file
+						SegIterator oSegIt = oRoad.iterator();
+						while (oSegIt.hasNext())
+						{
+							int[] oLine = oSegIt.next(); // determine grid cells that 
+							getGrids(m_oGrids, oLine); // intersect with line segments
+						}
+
+						for (GridIndex oGrid : m_oGrids) // each grid cell should 
+							if (!oGrid.contains(oRoad)) // only include a road once
+								oGrid.add(oRoad);
+					}
+				}
+				catch (Exception oException)
+				{
+					// should only be an end-of-file, which is normal
+				}
+				oOsmBin.close();
 			}
-			m_oGrids.clear(); // temporary grid buffer no longer needed
-			m_oGrids = null;
-			m_oNodes.clear(); // node list no longer needed
-			m_oNodes = null;
-			m_oSearch = null; // release temporary buffer objects
-			m_oTags = null;
-			m_oWayNodes = null;
+			m_oGrids = null; // temporary grid buffer no longer needed
 		}
 		catch (Exception oException)
 		{
-		}
-	}
-
-
-	@Override
- 	public void startElement(String sUri, String sLocalName, 
-		String sQname, Attributes iAtt)
-	{
-		if (sQname.compareTo("node") == 0) // insert into node lookup array
-		{
-			Node oNode = new Node(iAtt.getValue("id"), iAtt.getValue("lat"), 
-				iAtt.getValue("lon")); // there should be no duplicate node ids
-			m_oNodes.add(~Collections.binarySearch(m_oNodes, oNode), oNode);
-		}
-
-		if (sQname.compareTo("way") == 0)
-			m_bWay = true; // only state change is needed
-
-		if (sQname.compareTo("nd") == 0)
-		{
-			m_oSearch.m_lId = Long.parseLong(iAtt.getValue("ref"));
-			int nIndex = Collections.binarySearch(m_oNodes, m_oSearch);
-			if (nIndex >= 0) // add node to temporary way node list
-				m_oWayNodes.add(m_oNodes.get(nIndex));
-		}
-
-		if (sQname.compareTo("tag") == 0 && m_bWay) // save way tags
-			m_oTags.put(iAtt.getValue("k"), iAtt.getValue("v"));
-	}
-
-
-	private static boolean ignore(String sType)
-	{
-		if (sType == null)
-			return true;
-	
-		int nIndex = TYPES.length;
-		while (nIndex-- > 0)
-			if (sType.compareTo(TYPES[nIndex]) == 0)
-				return true;
-	
-		return false;
-	}
-
-
-	@Override
- 	public void endElement(String sUri, String sLocalName, String sQname)
-	{
-		if (sQname.compareTo("way") == 0)
-		{
-			if (!ignore(m_oTags.get("highway"))) // filter out residential roads
-			{
-				Road oRoad = new Road(m_oTags, m_oWayNodes); // use buffered data
-				m_oGrids.clear(); // reuse grid index set
-				SegIterator oSegIt = oRoad.iterator();
-				while (oSegIt.hasNext()) // get each line segment
-					getGrids(m_oGrids, oSegIt.next()); // determine grid cells of line
-
-				for (GridIndex oGrid : m_oGrids) // returned grids are already in cache
-					if (!oGrid.contains(oRoad)) // treat each grid index as a set
-						oGrid.add(oRoad); // add polyline definition to index
-			}
-			m_oWayNodes.clear(); // clear way node list
-			m_oTags.clear(); // clear key value map
-			m_bWay = false; // reset state
 		}
 	}
 
@@ -201,7 +138,7 @@ public class Roads extends DefaultHandler
 				if (nGrid < 0) // existing grid cell not found
 				{
 					oGrid = new GridIndex(); // create new grid hash index
-					oGrid.m_nHash = oSearch.m_nHash; // copy current hash value
+					oGrid.m_nHash = oSearch.m_nHash; // copy current search hash value
 					m_oGridCache.add(~nGrid, oGrid); // add new grid cell to primary cache
 				}
 				else
@@ -331,16 +268,5 @@ public class Roads extends DefaultHandler
 		{
 			return m_nHash - oGridIndex.m_nHash;
 		}
-	}
-
-
-	public static void main(String[] sArgs)
-		throws Exception
-	{
-		Roads oRoads = Roads.getInstance();
-		Road oRoad = oRoads.getLink(100, -95239404, 38959084);
-		System.out.println(oRoad.m_sName);
-		oRoad = oRoads.getLink(100, -95816923, 39050285);
-		System.out.println(oRoad.m_sName);
 	}
 }
