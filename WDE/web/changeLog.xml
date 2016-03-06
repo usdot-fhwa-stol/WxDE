@@ -1,238 +1,48 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <changelogs>
-	<changelog>
-		<date>July 31, 2014</date>
-		<heading>Integration with Research Data Exchange (RDE)</heading>
-		<news>
-			<![CDATA[
-				- Implemented integration application program interface (API) for the Research Data Exchange (RDE).<br>
-				- Implemented landing page for RDE users to query for data using coordinate-based query wizard.<br>
-				- Simplified the data subscription creation and sharing processes.
-			]]>
-		</news>
-		<url>/changeLog.jsp</url>
-		<link>internal</link>
-		<featured>true</featured>
+        <changelog>
+                <date>March 1, 2016</date>
+                <heading>Data Sharing Agreements</heading>
+                <news>
+                        Some data collection sites are shown as gray dots on the map, indicating that data are not available for public display.
+                        There are several possible reasons for this, but it may be that the contributor has not yet signed a data sharing agreement.
+                        We encourage all states and other weather data contributors to sign such an agreement in order to provide a richer database
+                        to our research community.
+                </news>
+                <url>/newsPage.jsp</url>
+                <link>internal</link>
+                <featured>true</featured>
 	</changelog>
 	<changelog>
-		<date>May 29, 2014</date>
-		<heading>Weather Telematics (WxTelematics) Data Integration</heading>
-		<news>
-			<![CDATA[
-				- Integrated WxTelematics data (shown as blue dots on the map).<br>
-				- Updated Vehicle Data Translator (VDT) observation type names to align more with the National Transportation
-				  Communications for Intelligent Transportation System Protocol (NTCIP) 1204 and Society for Automotive Engineers (SAE) J2735.<br>
-				- Integrated data subscription with user management and simplified the subscription and sharing process.<br>
-				- Improved rendering performance on the Summary Map and the Google Map.<br>
-				- Updated unit toggling between Metric and English; now works in both the info window and the shade.<br>
-				- Fixed various bug issues.
-			]]>
-		</news>
-		<url>/changeLog.jsp</url>
-		<link>internal</link>
-		<featured>true</featured>
-	</changelog>
-	<changelog>
-		<date>March 25, 2014</date>
-		<heading>VDT for Michigan and User Interface (UI) Updates</heading>
-		<news>
-			<![CDATA[
-				- Extended VDT capability for Michigan Integrated Mobile Observations (IMOs).<br>
-				- Introduced shade display as an alternative to the info window.<br>
-				- Linked the state Summary Map to collection status.<br>
-				- Detailed collection statistics now available under Admin -> Reports.<br>
-				- Metadata from the Data -> Metadata -> Tables page can now be downloaded.<br>
-				- Minnesota and Michigan road segment definition files are now available in the Data -> Metadata -> Files page.
-			]]>
-		</news>
-		<url>/changeLog.jsp</url>
-		<link>internal</link>
-		<featured>true</featured>
-	</changelog>
-	<changelog>
-		<date>January 10, 2014</date>
-		<heading>VDT Segment Data Integration and UI Enhancement</heading>
-		<news>
-			<![CDATA[
-				- Completed integration of VDT segment statistics and assessment.<br>
-				- Changed the mobile observation display for performance improvement.<br>
-				- Improved info window display with fix header.<br>
-				- Fixed bug in query wizard using geospatial coordinates.		
-			]]>
-		</news>
-		<url>/changeLog.jsp</url>
-		<link>internal</link>
-		<featured>true</featured>
-	</changelog>
-	<changelog>
-		<date>December 19, 2013</date>
-		<heading>Metadata Updates and VDT Integration</heading>
-		<news>
-			<![CDATA[		
-				- Recovered metadata for 65 MN IMOs and 257 sensors for VDT probe data.<br>
-				- Integrated VDT segment data in the database and midtier.		
-			]]>
-		</news>
-		<url>/changeLog.jsp</url>
-		<link>internal</link>
-		<featured>true</featured>
-	</changelog>
-	<changelog>
-		<date>December 16, 2013</date>
-		<heading>Frequently Asked Questions (FAQs) and VDT Updates</heading>
-		<news>
-			<![CDATA[
-				- Recovered metadata for 42 MI IMOs and 2,061 sensors including 60 belonging to the newly added MI IMOs.<br>
-				- Populated FAQs.<br>
-				- Added date and time for feedback.<br>
-				- Added unique email constraint in user registration.<br>
-				- Improved data query on observation types.<br>
-				- Added wxde_support email for notification.<br>
-				- Fixed VDT integration code to support increasing Network Common Data Form (NetCDF) 
-				arrays and keep alive WxDE subscription as VDT input.<br>
-				- Updated the radar data collector to remove old folders to conserve disk space.<br>
-				- Completed other UI fixes.		
-			]]>
-		</news>
-		<url>/changeLog.jsp</url>
-		<link>internal</link>
-		<featured>false</featured>
-	</changelog>
-	<changelog>
-		<date>November 18, 2013</date>
-		<heading>Email Verification</heading>
-		<news>
-			<![CDATA[
-				- Added email verification, password reset, and user identification (ID) recovery.<br>
-				- Updated Google Analytics header information.<br>
-				- Completed other UI fixes.
-			]]>
-		</news>
-		<url>/changeLog.jsp</url>
-		<link>internal</link>
-		<featured>false</featured>
-	</changelog>
-	<changelog>
-		<date>November 14, 2013</date>
-		<heading>New VDT Observations</heading>
-		<news>
-			<![CDATA[
-				- Added new observation types (anti-lock brake status [ABS], speed, heading, etc.) for VDT data.<br>
-				- Identified and recovered metadata for 99 stations and 499 sensors for VDT data.
-			]]>
-		</news>
-		<url>/changeLog.jsp</url>
-		<link>internal</link>
-		<featured>false</featured>
-	</changelog>
-	<changelog>
-		<date>November 5, 2013</date>
-		<heading>UI and Database Fixes</heading>
-		<news>
-			<![CDATA[
-				- Added FAQ under the About menu with the same look and feel from the RDE.  
-				Content is under development.<br>
-				- Fixed map display for transportable stations.<br>
-				- Fixed Daylight Saving Time in the database.<br>
-			]]>
-		</news>
-		<url>/changeLog.jsp</url>
-		<link>internal</link>
-		<featured>false</featured>
-	</changelog>
-	<changelog>
-		<date>October 31, 2013</date>
-		<heading>VDT and UI Fixes</heading>
-		<news>
-			<![CDATA[
-				- Fixed VDT temperature readings.<br>
-				- Fixed header and quality check flag printout in query/subscription result.<br>
-				- Masked the password for subscription results.<br>
-				- Changed the color of the Subscribe button.
-			]]>
-		</news>
-		<url>/changeLog.jsp</url>
-		<link>internal</link>
-		<featured>false</featured>
-	</changelog>
-	<changelog>
-		<date>October 29, 2013</date>
-		<heading>VDT Integration</heading>
-		<news>
-			<![CDATA[
-				- Integrated VDT quality checked probe data.
-			]]>
-		</news>
-		<url>/changeLog.jsp</url>
-		<link>internal</link>
-		<featured>false</featured>
-	</changelog>
-	<changelog>
-		<date>October 21, 2013</date>
-		<heading>UI Bug Fixes</heading>
-		<news>
-			<![CDATA[
-				- Removed special HTML characters from the feedback description.<br>
-				- Removed Observation.jsp link from the minimenu.<br>
-				- Fixed the adjustable height in the showQueryResults.jsp.
-			]]>
-		</news>
-		<url>/changeLog.jsp</url>
-		<link>internal</link>
-		<featured>false</featured>
-	</changelog>
-	<changelog>
-		<date>October 16, 2013</date>
-		<heading>New UI Updates</heading>
-		<news>
-			<![CDATA[
-				- Added About menu.<br>
-				- Linked Terms of Use.<br>
-				- Linked Change Log.<br>
-				- Moved Data Sources from the Admin menu to the About menu.<br>
-				- Fixed Internet Explorer 8 cache bug.<br>
-				- Completed various UI fixes.<br>
-				- Fixed user edit bug.<br>
-				- Fixed sensor metadata problems.
-			]]>
-		</news>
-		<url>/changeLog.jsp</url>
-		<link>internal</link>
-		<featured>false</featured>
-	</changelog>
-	<changelog>
-		<date>September 13, 2013</date>
-		<heading>WxDE Demonstration Instance Opened</heading>
-		<news>
-			The WxDE 1.0 opens closed beta access to United States Department of Transportation
-			users for review and comment.  Open beta will follow after closed beta testing.
-		</news>
-		<url>/newsPage.jsp</url>
-		<link>internal</link>
-		<featured>false</featured>
-	</changelog>
-	<changelog>
-		<date>July 20, 2013</date>
-		<heading>RWM Stakeholder Meeting</heading>
-		<news>
-			The 2013 Road Weather Management Stakeholder 
-			Meeting was held July 16 through July 18 in 
-			Little Rock, Arkansas. 
-		</news>
-		<url>http://www.its.dot.gov/meetings/roadweather_meeting_stakeholder2013.htm</url>
-		<link>external</link>
-		<featured>true</featured>
-	</changelog>
-	<changelog>
-		<date>July 16, 2013</date>
-		<heading>WxDE Interim Instance Opened</heading>
-		<news>
-			The WxDE Interim Instance was opened for business 
-			and its availability was announced at the 
-			2013 Road Weather Management Stakeholder Meeting. 
-		</news>
-		<url>/newsPage.jsp</url>
-		<link>internal</link>
-		<featured>true</featured>
-	</changelog>
+                <date>April 12, 2016</date>
+                <heading>WxDE Version 3.3</heading>
+                <news>
+                        The WxDE team is currently developing several system enhancements that will be available in version 3.3.
+                        Map enhancements will improve performance and update control of various layers of information display.
+                        We have also added three new quality checks and are implementing an inference module from the Vehicle Data Translator.
+                </news>
+                <url>/changeLog.jsp</url>
+                <link>internal</link>
+                <featured>true</featured>
+        </changelog>
+        <changelog>
+                <date>April 25-27, 2016</date>
+                <heading>Coming Up...</heading>
+                <news>
+ 			International Conference on Winter Maintenance and Surface Transportation Weather, Fort Collins, CO.
+                </news>
+                <url>http://www.cvent.com/events/2016-international-conference-workshop-on-winter-maintenance-and-surface-transportation-weather/event-summary-68f0128fa8f541a7a72894d622be6b02.aspx</url>
+                <link>external</link>
+                <featured>true</featured>
+        </changelog>
+        <changelog>
+                <date>April 27-29, 2016</date>
+                <heading>Coming Up...</heading>
+                <news>
+			Standing International Road Weather Commission (SIRWEC) Conference, Fort Collins, CO.
+                </news>
+                <url>http://www.sirwec.org/</url>
+                <link>external</link>
+                <featured>true</featured>
+        </changelog>
 </changelogs>
