@@ -4,7 +4,6 @@
  */
 package wde.obs;
 
-import net.sf.saxon.exslt.Random;
 import wde.WDEMgr;
 
 import java.util.ArrayList;

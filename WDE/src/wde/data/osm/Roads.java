@@ -1,30 +1,30 @@
-package wde.qchs;
+package wde.data.osm;
 
 
 import java.io.BufferedInputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.DataInputStream;
+import java.io.FileInputStream;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 
-import wde.data.shp.Polyline;
-import wde.data.shp.PolylinePart;
-import wde.data.shp.Utility;
 import wde.util.MathUtil;
 
 
 /**
- * A singleton that reads a directory of SHP files and then responds to queries 
- * for polylines that are within a specified distance from a target point.
+ * A singleton that reads a directory of processed Openstreetmap files and then 
+ * responds to queries for roadways that are within a specified distance from 
+ * a target point.
  * 
  * @author  bryan.krueger
  * @version 1.0 (October 2, 2015)
  */
-public class Roads extends ArrayList<Roads.GridIndex> implements Comparator<int[]>
+public class Roads
 {
 	private static final Roads g_oRoads = new Roads();
+
+	ArrayList<GridIndex> m_oGridCache = new ArrayList(); // 2D indexed roads
+	ArrayList<GridIndex> m_oGrids = new ArrayList(); // grids that roads intersect
 
 
 	/**
@@ -41,48 +41,51 @@ public class Roads extends ArrayList<Roads.GridIndex> implements Comparator<int[
 	/**
 	 * <b> Default Private Constructor </b>
 	 * <p>
-	 * Creates a new instance of Roads upon class loading and reads shape files 
+	 * Creates a new instance of Roads upon class loading and reads binary files 
 	 * from a well-defined directory into memory for fast lookup. Client 
 	 * components obtain a singleton reference through the getInstance method.
 	 * </p>
 	 */
 	private Roads()
 	{
-		File[] oDirs = new File("/opt/shp").listFiles(); // default shp location
-		for (File oDir : oDirs)
+		try
 		{
-			if (!oDir.isDirectory())
-				continue; // shp files should be inside indiviual directories
-
-			String sShpFile = oDir.getPath() + "/" + oDir.getName() + ".shp";
-			try
+			File[] oFiles = new File("/opt/osm").listFiles(); // default osm location
+			for (File oFile : oFiles)
 			{
-				DataInputStream oShp = new DataInputStream(
-					new BufferedInputStream(new FileInputStream(sShpFile)));
-				oShp.skipBytes(100); // ignore shp header section
-				ArrayList<GridIndex> oGrids = new ArrayList();
-				Polyline oPolyline = new Polyline();
-				while (oShp.available() > 0) // polyline data are available
+				if (oFile.isDirectory() || !oFile.getName().endsWith(".osm.bin"))
+					continue; // skip directories, only need processed OSM binary files
+
+				DataInputStream oOsmBin = new DataInputStream(
+					new BufferedInputStream(new FileInputStream(oFile)));
+				try
 				{
-					oGrids.clear(); // reuse grid index set
-					int[] oPolyData = Polyline.read(oShp); // read polyline definition
-					oPolyline.set(oPolyData);
-					while (oPolyline.hasNext()) // for each part of the polyline
+					for (;;) // this will execute until end-of-file is thrown
 					{
-						PolylinePart oPart = oPolyline.next();
-						while (oPart.hasNext()) // get each line segment
-							getGrids(oGrids, oPart.next()); // determine grid cells of line
-					}
+						m_oGrids.clear(); // reuse grid buffer
+						Road oRoad = new Road(oOsmBin); // read road definition from file
+						SegIterator oSegIt = oRoad.iterator();
+						while (oSegIt.hasNext())
+						{
+							int[] oLine = oSegIt.next(); // determine grid cells that 
+							getGrids(m_oGrids, oLine); // intersect with line segments
+						}
 
-					for (GridIndex oGrid : oGrids)
-						if (!oGrid.contains(oPolyData)) // treat the grid index as a set
-							oGrid.add(oPolyData); // add polyline definition to index
+						for (GridIndex oGrid : m_oGrids) // each grid cell should 
+							if (!oGrid.contains(oRoad)) // only include a road once
+								oGrid.add(oRoad);
+					}
 				}
-				oShp.close(); // done reading shape file
+				catch (Exception oException)
+				{
+					// should only be an end-of-file, which is normal
+				}
+				oOsmBin.close();
 			}
-			catch (Exception oException)
-			{
-			}
+			m_oGrids = null; // temporary grid buffer no longer needed
+		}
+		catch (Exception oException)
+		{
 		}
 	}
 
@@ -90,12 +93,10 @@ public class Roads extends ArrayList<Roads.GridIndex> implements Comparator<int[
 	/**
 	 * Determines the set of grid cells that intersect the specified area.
 	 *
-	 * @param nXmin	the smallest horizontal coordinate of the target region.
-	 * @param nYmin	the smallest vertical coordinate of the target region.
-	 * @param nXmax	the largest horizontal coordinate of the target region.
-	 * @param nYmax	the largest vertical coordinate of the target region.
-	 * 
-	 * @return the list of grid cells that intersect the defined region.
+	 * @param oGrids	an array that accumulates GridIndex object that 
+	 *								intersect the provided region.
+	 * @param oRegion	a pair of integer coordinates representing the 
+	 *								region used for comparison to a GridIndex.
 	 */
 	private void getGrids(ArrayList<GridIndex> oGrids, int[] oRegion)
 	{
@@ -133,15 +134,15 @@ public class Roads extends ArrayList<Roads.GridIndex> implements Comparator<int[
 			for (int nX = nXbeg; nX <= nXend; nX++)
 			{
 				oSearch.setHash(nX, nY);
-				int nGrid = Collections.binarySearch(this, oSearch);
+				int nGrid = Collections.binarySearch(m_oGridCache, oSearch);
 				if (nGrid < 0) // existing grid cell not found
 				{
 					oGrid = new GridIndex(); // create new grid hash index
-					oGrid.m_nHash = oSearch.m_nHash; // copy current hash value
-					add(~nGrid, oGrid); // add new grid cell to primary cache
+					oGrid.m_nHash = oSearch.m_nHash; // copy current search hash value
+					m_oGridCache.add(~nGrid, oGrid); // add new grid cell to primary cache
 				}
 				else
-					oGrid = get(nGrid);
+					oGrid = m_oGridCache.get(nGrid);
 
 				nGrid = Collections.binarySearch(oGrids, oSearch);
 				if (nGrid < 0) // add grid cell reference to output set
@@ -160,7 +161,7 @@ public class Roads extends ArrayList<Roads.GridIndex> implements Comparator<int[
 	 * 
 	 * @return the nearest road link to the target point or null if none found.
 	 */
-	public Polyline getLink(int nTol, int nLon, int nLat)
+	public Road getLink(int nTol, int nLon, int nLat)
 	{
 		ArrayList<GridIndex> oGrids = new ArrayList();
 		int nLonTol = (int)(nTol / Math.cos(Math.PI * MathUtil.fromMicro(nLat) / 180.0));
@@ -169,17 +170,16 @@ public class Roads extends ArrayList<Roads.GridIndex> implements Comparator<int[
 			return null;
 
 		int nDist = Integer.MAX_VALUE; // track minimum distance
-		int[] nPolyData = null;
-		Polyline oLink = new Polyline();
+		Road oLink = null;
 		for (GridIndex oGrid : oGrids)
 		{
-			for (int[] oPoly : oGrid)
+			for (Road oRoad : oGrid)
 			{
-				oLink.set(oPoly); // use the longitude adjusted tolerance
-				int nSqDist = oLink.snap(nLonTol, nLon, nLat);
+				// use the longitude adjusted tolerance
+				int nSqDist = oRoad.snap(nLonTol, nLon, nLat);
 				if (nSqDist >= 0 && nSqDist < nDist)
 				{
-					nPolyData = oPoly; // save the polyline data the 
+					oLink = oRoad; // save the polyline data that is the 
 					nDist = nSqDist; // shortest distance from the point
 				}
 			}
@@ -188,33 +188,57 @@ public class Roads extends ArrayList<Roads.GridIndex> implements Comparator<int[
 		if (nDist == Integer.MAX_VALUE)
 			return null; // no link found
 	
-		oLink.set(nPolyData);
 		return oLink;
 	}
 
-	@Override
-	public int compare(int[] oLhs, int[] oRhs)
+
+	class Node implements Comparable<Node>
 	{
-		int nCompare = oLhs[0] - oRhs[0];
-		if (nCompare == 0)
-			return oLhs[1] - oRhs[1];
-		return nCompare;
+		public long m_lId;
+		public int m_nLat;
+		public int m_nLon;
+
+
+		Node()
+		{
+		}
+
+
+		Node(String sId, String sLat, String sLon)
+		{
+			m_lId = Long.parseLong(sId);
+			m_nLat = MathUtil.toMicro(Double.parseDouble(sLat));
+			m_nLon = MathUtil.toMicro(Double.parseDouble(sLon));
+		}
+
+	
+		@Override
+		public int compareTo(Node oNode)
+		{
+			if (m_lId < oNode.m_lId)
+				return -1;
+
+			if (m_lId > oNode.m_lId)
+				return 1;
+
+			return 0;
+		}
 	}
 
 
-	/**
-	 * <b> Default Private Constructor </b>
-	 * <p>
-	 * Contains a set of polylines that represent road links and are grouped 
-	 * by a grid hash index.
-	 * </p>
-	 */
-	class GridIndex extends ArrayList<int[]> implements Comparable<GridIndex>
+	private class GridIndex extends ArrayList<Road> implements Comparable<GridIndex>
 	{
 		private static final int GRID_SPACING = 50000; // ~3.5 miles
 		int m_nHash;
 
 
+		/**
+		 * <b> Default Private Constructor </b>
+		 * <p>
+		 * Contains a set of polylines that represent road links and are grouped 
+		 * by a grid hash index.
+		 * </p>
+		 */
 		private GridIndex()
 		{
 		}

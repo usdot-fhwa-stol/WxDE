@@ -1,4 +1,4 @@
-package wde.data.shp;
+package wde.data.osm;
 
 
 /**

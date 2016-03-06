@@ -1,0 +1,22 @@
+UPDATE conf.csvc SET midnightoffset=240, collectioninterval=300, endpoint='ftp://wxftp.dtn.com', username='rwisks_synesis', password='mu96RJZR4ELutp' WHERE contribid='20,69';
+UPDATE conf.csvcollector SET collectdelay=60, timestampid=4, filepath='''KSDOTMET''yyyyMMddHHmm''.CSV''' WHERE csvcid=45 AND filepath='''AtmosphericData.txt''';
+UPDATE conf.csvcollector SET collectdelay=60, timestampid=4, filepath='''KSDOTROAD''yyyyMMddHHmm''.CSV''' WHERE csvcid=45 AND filepath='''SurfaceData.txt''';
+UPDATE conf.csvcoldef SET multiplier=NULL, ignorevalues='1001.0' WHERE collectorid=111 AND columnid=2 AND obstypeid=5733;
+UPDATE conf.csvcoldef SET multiplier=NULL, ignorevalues='1001.0' WHERE collectorid=111 AND columnid=3 AND obstypeid=575;
+UPDATE conf.csvcoldef SET ignorevalues='101' WHERE collectorid=111 AND columnid=4 AND obstypeid=581;
+UPDATE conf.csvcoldef SET multiplier=NULL, ignorevalues='65535.000' WHERE collectorid=111 AND columnid=10 AND obstypeid=554;
+UPDATE conf.csvcoldef SET classname='wde.cs.ascii.DataValue', ignorevalues=NULL WHERE collectorid=111 AND columnid=11 AND obstypeid=206;
+UPDATE conf.csvcoldef SET classname='wde.cs.ascii.DataValue', ignorevalues=NULL WHERE collectorid=111 AND columnid=12 AND obstypeid=207;
+UPDATE conf.csvcoldef SET multiplier=NULL, ignorevalues=NULL WHERE collectorid=111 AND columnid=13 AND obstypeid=587;
+UPDATE conf.csvcoldef SET multiplier=NULL, ignorevalues=NULL WHERE collectorid=111 AND columnid=14 AND obstypeid=5817;
+UPDATE conf.csvcoldef SET ignorevalues=NULL WHERE collectorid=111 AND columnid=15 AND obstypeid=5101;
+DELETE FROM conf.csvcoldef WHERE collectorid=111 AND columnid=16 AND obstypeid=0;
+
+UPDATE conf.csvcoldef SET classname='wde.cs.ascii.DataValue', ignorevalues=NULL WHERE collectorid=112 AND columnid=3 AND obstypeid=51137;
+UPDATE conf.csvcoldef SET multiplier=NULL, ignorevalues='1001.0' WHERE collectorid=112 AND columnid=4 AND obstypeid=51138;
+UPDATE conf.csvcoldef SET multiplier=NULL, ignorevalues='1001.0' WHERE collectorid=112 AND columnid=5 AND obstypeid=511313;
+UPDATE conf.csvcoldef SET ignorevalues=NULL WHERE collectorid=112 AND columnid=6 AND obstypeid=0;
+UPDATE conf.csvcoldef SET ignorevalues=NULL WHERE collectorid=112 AND columnid=7 AND obstypeid=0;
+UPDATE conf.csvcoldef SET multiplier=NULL, ignorevalues='1001.0' WHERE collectorid=112 AND columnid=10 AND obstypeid=51165;
+UPDATE conf.csvcoldef SET ignorevalues='65535.00' WHERE collectorid=112 AND columnid=11 AND obstypeid=58212;
+DELETE FROM conf.csvcoldef WHERE collectorid=112 AND columnid=12 AND obstypeid=0;

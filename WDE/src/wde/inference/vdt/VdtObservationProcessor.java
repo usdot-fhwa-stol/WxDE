@@ -1,7 +1,7 @@
 package wde.inference.vdt;
 
 import wde.dao.ObsTypeDao;
-import wde.data.shp.Polyline;
+import wde.data.osm.Road;
 import wde.inference.InferenceResult;
 import wde.inference.InferenceResultProcessor;
 import wde.inference.Inferencer;
@@ -19,7 +19,7 @@ import wde.obs.ObsMgr;
 import wde.obs.ObsSet;
 import wde.obs.Observation;
 import wde.qchs.Radar;
-import wde.qchs.Roads;
+import wde.data.osm.Roads;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -365,14 +365,14 @@ public class VdtObservationProcessor extends ObservationProcessor {
             throw new NullPointerException("obsSet");
 
         Roads roads = Roads.getInstance();
-        Polyline obsLink = roads.getLink(100, obs.getLongitude(), obs.getLatitude());
+        Road obsLink = roads.getLink(100, obs.getLongitude(), obs.getLatitude());
         if (obsLink == null) {
             getLogger().debug("No link found for observation: {" + obs + "}");
             obsSet.clear();
         } else {
 
             for (IObs obsCurrentIter : obsSet) {
-                Polyline obsCurrentIterLink = roads.getLink(100, obsCurrentIter.getLongitude(), obs.getLatitude());
+                Road obsCurrentIterLink = roads.getLink(100, obsCurrentIter.getLongitude(), obs.getLatitude());
                 if (obsCurrentIterLink != null) {
                     obsSet.remove(obsCurrentIterLink);
                 }
@@ -385,14 +385,14 @@ public class VdtObservationProcessor extends ObservationProcessor {
             throw new NullPointerException("obsSet");
 
         Roads roads = Roads.getInstance();
-        Polyline obsLink = roads.getLink(100, obs.getLongitude(), obs.getLatitude());
+        Road obsLink = roads.getLink(100, obs.getLongitude(), obs.getLatitude());
         if (obsLink == null) {
             getLogger().debug("No link found for observation: {" + obs + "}");
             obsSet.clear();
         } else {
 
             for (IObs obsCurrentIter : obsSet) {
-                Polyline obsCurrentIterLink = roads.getLink(100, obsCurrentIter.getLongitude(), obs.getLatitude());
+                Road obsCurrentIterLink = roads.getLink(100, obsCurrentIter.getLongitude(), obs.getLatitude());
                 if (obsCurrentIterLink != null) {
                     obsSet.remove(obsCurrentIterLink);
                 }
