@@ -1,4 +1,4 @@
-package wde.qchs;
+package wde.cs.ext;
 
 import ucar.nc2.dt.GridDatatype;
 

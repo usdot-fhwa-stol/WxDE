@@ -12,8 +12,8 @@ public class SegIterator implements Iterator<int[]>
 {
 	private int m_nPos;
 	private int m_nEnd;
-	private int[] m_oPoints;
-	private final int[] m_oLine = new int[4]; // 2D line
+	private int[] m_nPoints;
+	private final int[] m_nLine = new int[4]; // 2D line
 
 
   /**
@@ -27,10 +27,10 @@ public class SegIterator implements Iterator<int[]>
   /**
    * Package private constructor to read private Road points
    */
-	SegIterator(int[] oPoints)
+	SegIterator(int[] nPoints)
 	{
-		m_oPoints = oPoints; // local immutable copy of road line segments
-		m_nEnd = oPoints.length - 2; // line segment end boundary
+		m_nPoints = nPoints; // local immutable copy of road line segments
+		m_nEnd = nPoints.length - 2; // line segment end boundary
 	}
 
 
@@ -44,9 +44,9 @@ public class SegIterator implements Iterator<int[]>
 	@Override
 	public int[] next()
 	{
-		System.arraycopy(m_oPoints, m_nPos, m_oLine, 0, m_oLine.length);
+		System.arraycopy(m_nPoints, m_nPos, m_nLine, 0, m_nLine.length);
 		m_nPos += 2; // shift line to next point
-		return m_oLine;
+		return m_nLine;
 	}
 
 

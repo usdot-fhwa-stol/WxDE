@@ -50,6 +50,7 @@ public class Roads
 	{
 		try
 		{
+			int nRoadId = 0;
 			File[] oFiles = new File("/opt/osm").listFiles(); // default osm location
 			for (File oFile : oFiles)
 			{
@@ -63,7 +64,7 @@ public class Roads
 					for (;;) // this will execute until end-of-file is thrown
 					{
 						m_oGrids.clear(); // reuse grid buffer
-						Road oRoad = new Road(oOsmBin); // read road definition from file
+						Road oRoad = new Road(++nRoadId, oOsmBin); // load road definition
 						SegIterator oSegIt = oRoad.iterator();
 						while (oSegIt.hasNext())
 						{
