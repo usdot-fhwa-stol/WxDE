@@ -1,0 +1,1 @@
+swig -includeall -java -module metro4j -Wall -v -I./include macadam.i

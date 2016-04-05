@@ -1,0 +1,16 @@
+required: boolean,double,double,double[],long,long[],  double[],double[],double[],double[],double[],double[],double[],double[],double[],double[],double[],double[],double[],double[],long[],  boolean[],double,long,long,boolean,long
+found:    boolean,double,double,double[],int, double[],double[],double[],double[],double[],double[],double[],double[],double[],double[],double[],double[],double[],double[],double[],double[],double[], double,int, int, boolean,double,boolean,double
+
+
+bFlat, dMLat, dMLon, dpZones[],   nNbrOfZone,  npMateriau[], dpTA[], dpQP[], dpFF[], dpPS[], dpFsPy[], dpFI[], dpFT[], dpTYP[], dpRc[], dpTAO[], dpRTO[], dpDTO[],  dpAH[], dpTimeO[], npSWO[], bpNoObs[], dDeltaT,                  nLenObservation, nNbrTimeSteps,  bSilent, tmtTyp
+bFlat, fLat,  fLon,  lLayerThick, nNbrOfLayer, lLayerType,   lAT,    lQP,    lWS,    lAP,    lSF,      lIR,    lFA,    lPI,     lSC,    lAT_obs, lST_obs, lSST_obs, lAH,    lTime_obs, lSWO,    bNoObs,    fDeltaTMetroObservation,  nLenObservation, nNbrTimeSteps,  bSilent, dSstDepth, bDeepTemp, dDeepTemp
+
+macadam.Do_Metro(bFlat,
+    fLat, fLon,
+    lLayerThick, nNbrOfLayer, lL
+    lAT, lQP, lWS, lAP, lSF, lIR,
+    lAT_obs,lST_obs, lSST_obs,
+    lAH, lTime_obs, lSWO, bNo
+    fDeltaTMetroObservation, nLenObs
+    nNbrTimeSteps, bSilent,
+    dSstDepth, bDeepTemp, dDeepTemp)

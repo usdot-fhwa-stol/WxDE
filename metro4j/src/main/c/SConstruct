@@ -1,0 +1,44 @@
+import os
+
+prefix = '/usr/local'
+LOCAL_LIB_DIR = os.path.join(prefix, 'lib')
+LOCAL_INC_DIR = os.path.join(prefix, 'include') 
+METRO_INC_DIR = os.path.join(LOCAL_INC_DIR, 'metro')
+
+env = Environment(
+    CPPPATH=[
+        '.',
+        LOCAL_INC_DIR,
+        'include',
+        '/Library/Java/JavaVirtualMachines/jdk1.7.0_79.jdk/Contents/Home/include',
+        '/Library/Java/JavaVirtualMachines/jdk1.7.0_79.jdk/Contents/Home/include/darwin'
+    ],
+    LIBPATH=[[LOCAL_LIB_DIR]],
+    FORTRANFLAGS='-fdefault-integer-8'
+)
+
+Export('env prefix LOCAL_LIB_DIR LOCAL_INC_DIR')
+    
+lib = env.Library('metro', [
+    'global.c',
+    'macadam.c',
+    'metro4j.c'
+    'array2matrix.f',
+    'balanc.f',
+    'constPhys.f',
+    'coupla.f',
+    'flxsurfz.f',
+    'grille.f',
+    'initial.f',
+    'lib_gen.f',
+    'lib_therm.f'
+    ])
+
+env.Alias('install', env.Install(LOCAL_LIB_DIR, 'libmetro.a'))
+env.Alias('install', env.Install(METRO_INC_DIR, [
+    'include/global.h',
+    'include/macadam.h',
+    'include/number.h'
+]))
+
+Default(lib)
