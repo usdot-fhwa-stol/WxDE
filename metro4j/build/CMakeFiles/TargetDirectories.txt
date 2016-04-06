@@ -1,7 +1,0 @@
-/Users/jschultz/Source/wxde/metro4j/build/CMakeFiles/edit_cache.dir
-/Users/jschultz/Source/wxde/metro4j/build/CMakeFiles/rebuild_cache.dir
-/Users/jschultz/Source/wxde/metro4j/build/CMakeFiles/list_install_components.dir
-/Users/jschultz/Source/wxde/metro4j/build/CMakeFiles/install.dir
-/Users/jschultz/Source/wxde/metro4j/build/CMakeFiles/install/strip.dir
-/Users/jschultz/Source/wxde/metro4j/build/CMakeFiles/install/local.dir
-/Users/jschultz/Source/wxde/metro4j/build/CMakeFiles/metro.dir

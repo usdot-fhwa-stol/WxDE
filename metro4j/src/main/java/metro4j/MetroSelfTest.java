@@ -57,8 +57,6 @@ public class MetroSelfTest {
             out.println("Array size: " + size);
 
             Metro4J.Do_Metro(a.getBoolean(0), a.getDouble(1), a.getDouble(2), toDoubleArray(a.getJSONArray(3)), a.getLong(4), toLongArray(a.getJSONArray(5)), toDoubleArray(a.getJSONArray(6)), toDoubleArray(a.getJSONArray(7)), toDoubleArray(a.getJSONArray(8)), toDoubleArray(a.getJSONArray(9)), toDoubleArray(a.getJSONArray(10)), toDoubleArray(a.getJSONArray(11)), toDoubleArray(a.getJSONArray(12)), toDoubleArray(a.getJSONArray(13)), toDoubleArray(a.getJSONArray(14)), toDoubleArray(a.getJSONArray(15)), toDoubleArray(a.getJSONArray(16)), toDoubleArray(a.getJSONArray(17)), toDoubleArray(a.getJSONArray(18)), toDoubleArray(a.getJSONArray(19)), toLongArray(a.getJSONArray(20)), toBooleanArray(a.getJSONArray(21)), a.getDouble(22), a.getLong(23), a.getLong(24), a.getBoolean(25), a.getLong(26));
-
-
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
