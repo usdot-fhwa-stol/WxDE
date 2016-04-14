@@ -988,3 +988,7 @@ INSERT INTO conf.csvcoldef (collectorid,columnid,obstypeid,classname,unit) VALUE
 INSERT INTO conf.csvcoldef (collectorid,columnid,obstypeid,classname) VALUES (140101,35,589,'wde.cs.ascii.Ignore');
 
 UPDATE conf.boundary SET datatype=0 WHERE name='Georgia' AND datatype=2;
+UPDATE meta.sensor SET sensorindex=4 WHERE platformid>140000 AND platformid<140028 AND sensorindex=3;
+UPDATE meta.sensor SET sensorindex=3 WHERE platformid>140000 AND platformid<140028 AND sensorindex=2;
+UPDATE meta.sensor SET sensorindex=2 WHERE platformid>140000 AND platformid<140028 AND sensorindex=1;
+UPDATE meta.sensor SET sensorindex=1 WHERE platformid>140000 AND platformid<140028 AND sensorindex=0;

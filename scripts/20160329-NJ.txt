@@ -72,3 +72,13 @@ UPDATE meta.platform SET platformcode='5987' WHERE contribid=33 AND totime IS NU
 UPDATE meta.platform SET platformcode='5988' WHERE contribid=33 AND totime IS NULL AND platformcode='nj_rt295_springfield';
 UPDATE meta.platform SET platformcode='5990' WHERE contribid=33 AND totime IS NULL AND platformcode='nj_rt70_mp26';
 UPDATE meta.platform SET platformcode='5959' WHERE contribid=33 AND totime IS NULL AND platformcode='nj_rt280_pleasant';
+
+UPDATE meta.sensor SET sensorindex=9 WHERE platformid IN (SELECT id FROM meta.platform WHERE contribid=33 AND totime IS NULL) AND sensorindex=8;
+UPDATE meta.sensor SET sensorindex=8 WHERE platformid IN (SELECT id FROM meta.platform WHERE contribid=33 AND totime IS NULL) AND sensorindex=7;
+UPDATE meta.sensor SET sensorindex=7 WHERE platformid IN (SELECT id FROM meta.platform WHERE contribid=33 AND totime IS NULL) AND sensorindex=6;
+UPDATE meta.sensor SET sensorindex=6 WHERE platformid IN (SELECT id FROM meta.platform WHERE contribid=33 AND totime IS NULL) AND sensorindex=5;
+UPDATE meta.sensor SET sensorindex=5 WHERE platformid IN (SELECT id FROM meta.platform WHERE contribid=33 AND totime IS NULL) AND sensorindex=4;
+UPDATE meta.sensor SET sensorindex=4 WHERE platformid IN (SELECT id FROM meta.platform WHERE contribid=33 AND totime IS NULL) AND sensorindex=3;
+UPDATE meta.sensor SET sensorindex=3 WHERE platformid IN (SELECT id FROM meta.platform WHERE contribid=33 AND totime IS NULL) AND sensorindex=2;
+UPDATE meta.sensor SET sensorindex=2 WHERE platformid IN (SELECT id FROM meta.platform WHERE contribid=33 AND totime IS NULL) AND sensorindex=1;
+UPDATE meta.sensor SET sensorindex=1 WHERE platformid IN (SELECT id FROM meta.platform WHERE contribid=33 AND totime IS NULL) AND sensorindex=0;

@@ -1,5 +1,5 @@
 /**
- * @file RTMARange.java
+ * @file RTMA.java
  */
 package wde.qchs.algo;
 

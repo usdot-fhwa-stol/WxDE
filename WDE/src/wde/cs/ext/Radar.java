@@ -1,12 +1,11 @@
 package wde.cs.ext;
 
-import ucar.nc2.dt.GridDatatype;
-
 import java.io.BufferedInputStream;
 import java.net.URL;
 import java.util.Date;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import wde.util.Scheduler;
 
 
 public class Radar extends RemoteGrid
@@ -19,15 +18,16 @@ public class Radar extends RemoteGrid
 
 	private Radar()
 	{
+		m_nDelay = 90; // collection three minutes after source file ready
+		m_nRange = 120; // radar files are updated every two minutes
+		m_nLimit = 3; // keep up to thirty radar files
 		m_nObsTypes = new int[]{0};
 		m_sObsTypes = new String[]{"MergedBaseReflectivityQC_altitude_above_msl"};
 		m_sHrz = "lon";
 		m_sVrt = "lat";
-		m_sBaseDir = "C:/Users/bryan.krueger/"; // should be configured
 		m_sBaseURL = "http://mrms.ncep.noaa.gov/data/2D/MergedBaseReflectivityQC/";
 
-		run(); // manually initialize first run, then set schedule
-//		Scheduler.getInstance().schedule(this, 60 * 55, 3600, true);
+		Scheduler.getInstance().schedule(this, 90, 120, true);
 	}
 
 
@@ -71,24 +71,11 @@ public class Radar extends RemoteGrid
 	}
 
 
-	/**
-	 * Retrieves the current radar grid data.
-	 *
-	 * @param nObsTypeId	the observation type identifier used to find grid data.
-	 * 
-	 * @return the grid data for the variable specified by observation type.
-	 */
-	@Override
-	protected GridDatatype getGridByObs(int nObsTypeId)
-	{
-		return super.getGridByObs(0); // observation type is ignored for radar
-	}
-
-
 	public static void main(String[] sArgs)
 		throws Exception
 	{
 		Radar oRadar = Radar.getInstance();
+		Thread.sleep(600000);
 		System.out.println(oRadar.getReading(0, System.currentTimeMillis(), 43000000, -94000000));
 	}
 }

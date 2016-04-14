@@ -4,31 +4,35 @@ package wde.cs.ext;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.TimeZone;
+import wde.util.Scheduler;
 
 
 /**
- * Real-Time Mesoscale Analysis. This singleton class downloads hourly RTMA 
- * files from the National Weather Service and provides a lookup method to 
- * retrieve the model value for the supported observation types that are then 
- * used to quality check the measured observation.
+ Real-Time Mesoscale Analysis. This singleton class downloads hourly RTMA 
+ files from the National Weather Service and provides a lookup method to 
+ retrieve the model value for the supported observation types that are then 
+ used to quality check the measured observation.
  */
 public final class RTMA extends RemoteGrid
 {
 	private static final RTMA g_oRTMA = new RTMA();
-
 	private final SimpleDateFormat m_oSrcFile = new SimpleDateFormat(
 		"'rtma2p5.'yyyyMMdd'/rtma2p5.t'HH'z.2dvarges_ndfd.grb2'");
 
 
 	/**
-	 * <b> Default Private Constructor </b>
+	 * <b> Default package private constructor </b>
 	 * <p>
-	 * Creates a new instance of RTMA upon class loading. Client components 
-	 * obtain a singleton reference through the getInstance method.
+	 * Creates a new instance of RTMA. It initializes NetCDF observation 
+	 * type reference names to system observation type mapping, latitude and 
+	 * longitude name mapping, and remote source and local storage directory.
 	 * </p>
 	 */
-	private RTMA()
+	RTMA()
 	{
+		m_nDelay = 180; // collection three minutes after source file ready
+		m_nRange = 3600; // RTMA forecast is hourly, from x:50 to x+1:50
+		m_nLimit = 3; // keep up to three RTMA files
 		m_nObsTypes = new int[]{575, 554, 5733, 5101, 56105, 56108, 56104};
 		m_sObsTypes = new String[]
 		{
@@ -39,19 +43,18 @@ public final class RTMA extends RemoteGrid
 		};
 		m_sHrz = "x";
 		m_sVrt = "y";
-		m_sBaseDir = "C:/Users/bryan.krueger/"; // should be configured
 		m_sBaseURL = "ftp://ftp.ncep.noaa.gov/pub/data/nccf/com/rtma/prod/";
 
 		m_oSrcFile.setTimeZone(TimeZone.getTimeZone("Etc/UTC"));
-		run(); // manually initialize first run, then set schedule
-//		Scheduler.getInstance().schedule(this, 60 * 55, 3600, true);
+		run();
+		Scheduler.getInstance().schedule(this, 3300, 3600, true);
 	}
 
 
 	/**
 	 * Returns a reference to singleton RTMA model data cache.
 	 *
-	 * @return reference to RTMA instance.
+	 * @return reference to RTMA data lookup instance.
 	 */
 	public static RTMA getInstance()
 	{
@@ -60,7 +63,7 @@ public final class RTMA extends RemoteGrid
 
 
 	/**
-	 * RTMA uses this method to determine remote filename based on current time.
+	 * RTMAGrid uses this method to determine remote filename based on current time.
 	 *
 	 * @param oNow	timestamp Date object used for time-based dynamic URLs
 	 * 
@@ -82,15 +85,15 @@ public final class RTMA extends RemoteGrid
 
 
 	/**
-	 * Finds the RTMA model value for an observation type by time and location.
+	 * Finds the RTMAGrid model value for an observation type by time and location.
 	 *
 	 * @param nObsTypeId	the observation type to lookup.
 	 * @param lTimestamp	the timestamp of the observation.
 	 * @param nLat				the latitude of the requested data.
 	 * @param nLon				the longitude of the requested data.
 	 * 
-	 * @return	the RTMA model value for the requested observation type for the 
-	 *					specified time at the specified location.
+	 * @return	the RTMAGrid model value for the requested observation type for the 
+					specified time at the specified location.
 	 */
 	@Override
 	public synchronized double getReading(int nObsTypeId, long lTimestamp, int nLat, int nLon)
