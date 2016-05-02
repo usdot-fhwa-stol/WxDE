@@ -15,6 +15,6 @@ if [ ! -d $BUILD_DIR ]; then
 fi
 pushd $BUILD_DIR
 cmake ..
-make clean
 make
+make install
 popd
