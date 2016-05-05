@@ -1,6 +1,7 @@
 package wde.ws;
 
 import java.io.IOException;
+import java.sql.Array;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -29,9 +30,15 @@ import org.codehaus.jackson.JsonEncoding;
 import org.codehaus.jackson.JsonFactory;
 import org.codehaus.jackson.JsonGenerator;
 import wde.dao.ObsTypeDao;
+import wde.dao.PlatformDao;
+import wde.dao.SensorDao;
 import wde.dao.Units;
+import wde.metadata.IPlatform;
+import wde.metadata.ISensor;
 import wde.metadata.ObsType;
 import wde.util.MathUtil;
+import wde.util.QualityCheckFlagUtil;
+import wde.util.QualityCheckFlags;
 
 /**
  *
@@ -50,6 +57,7 @@ public abstract class LayerServlet extends HttpServlet
   protected static final String OBS_TABLE_PLACEHOLDER = "[OBS_DATE_TABLE]";
   protected static final String PLATFORM_LIST_PLACEHOLDER = "[PLATFORM_ID_LIST]";
 
+  protected final PlatformDao m_oPlatformDao = PlatformDao.getInstance();
   protected final ObsTypeDao m_oObsTypeDao = ObsTypeDao.getInstance();
   protected final Units m_oUnits = Units.getInstance();
   private final boolean m_bHasObs;
@@ -61,26 +69,39 @@ public abstract class LayerServlet extends HttpServlet
 
   protected DataSource m_oDatasource;
 
+  protected SensorDao m_oSensoDao = SensorDao.getInstance();
+
   protected boolean m_oQueryUsersMicros;
 
-  protected String m_sObsQueryTemplate
+  protected final static String m_sBaseObsSelect
           = "SELECT\n"
           + "o.value,\n"
           + "o.obstime,\n"
-          + "o.obstypeid\n"
-          + "FROM\n"
+          + "o.obstypeid,\n"
+          + "o.qchcharflag,\n"
+          + "o.confValue,\n"
+          + "o.sourceid,\n"
+          + "o.sensorid\n";
+
+  protected final static String m_sBaseObsFrom
+          = "FROM\n"
           + "meta.platform p\n"
           + "INNER JOIN meta.sensor s ON p.id = s.platformid\n"
-          + "INNER JOIN " + OBS_TABLE_PLACEHOLDER + " o ON s.id = o.sensorid\n"
-          + "WHERE\n"
+          + "INNER JOIN " + OBS_TABLE_PLACEHOLDER + " o ON s.id = o.sensorid\n";
+
+  protected final static String m_sBaseObsWhere
+          = "WHERE\n"
           + "p.id IN ( " + PLATFORM_LIST_PLACEHOLDER + ")\n"
           + "AND o.obstime >= ?\n"
           + "AND o.obstime <= ?\n"
-          //          + "AND o.latitude >= ?\n"
-          //          + "AND o.latitude <= ?\n"
-          //          + "AND o.longitude >= ?\n"
-          //          + "AND o.longitude <= ?\n"
-          + "ORDER BY obstypeid, obstime desc";
+          + "AND o.latitude >= ?\n"
+          + "AND o.latitude <= ?\n"
+          + "AND o.longitude >= ?\n"
+          + "AND o.longitude <= ?\n";
+
+  protected final static String m_sBaseObsOrderBy = "ORDER BY obstypeid, obstime desc";
+
+  protected final static String m_sStandardObsQueryTemplate = m_sBaseObsSelect + m_sBaseObsFrom + m_sBaseObsWhere + m_sBaseObsOrderBy;
 
   public LayerServlet(boolean bHasObs, int... nZoomLevels) throws NamingException
   {
@@ -108,48 +129,48 @@ public abstract class LayerServlet extends HttpServlet
   protected void processRequest(HttpServletRequest oReq, HttpServletResponse oResp)
           throws ServletException, IOException
   {
-    String sRequestUri = oReq.getRequestURI();
-
-    if (sRequestUri.endsWith("GetZoomLevels"))
+    try
     {
-      try (JsonGenerator oOutputGenerator = m_oJsonFactory.createJsonGenerator(oResp.getOutputStream(), JsonEncoding.UTF8))
+      String sRequestUri = oReq.getRequestURI();
+
+      if (sRequestUri.endsWith("GetZoomLevels"))
       {
-        oOutputGenerator.writeStartArray();
+        try (JsonGenerator oOutputGenerator = m_oJsonFactory.createJsonGenerator(oResp.getOutputStream(), JsonEncoding.UTF8))
+        {
+          oOutputGenerator.writeStartArray();
 
-        for (Integer nZoomLevel : m_nZoomLevels)
-          oOutputGenerator.writeNumber(nZoomLevel);
+          for (Integer nZoomLevel : m_nZoomLevels)
+            oOutputGenerator.writeNumber(nZoomLevel);
 
-        oOutputGenerator.writeEndArray();
+          oOutputGenerator.writeEndArray();
+        }
+        return;
       }
-      return;
-    }
-    else if (sRequestUri.contains("platformObs"))
-    {// Pattern.compile("^(?:[a-zA-Z0-9_-]*/){1,}platformObs/[0-9]*/[0-9]{1,30}$").matcher(requestUrl).matches()
-      if (!m_bHasObs || !m_oObsRequestPattern.matcher(sRequestUri).find())
+      else if (sRequestUri.contains("platformObs"))
+      {// Pattern.compile("^(?:[a-zA-Z0-9_-]*/){1,}platformObs/[0-9]*/[0-9]{1,30}$").matcher(requestUrl).matches()
+        if (!m_oObsRequestPattern.matcher(sRequestUri).find())
+        {
+          oResp.setStatus(HttpStatus.SC_BAD_REQUEST);
+          return;
+        }
+
+        processObsRequest(oReq, oResp);
+      }
+
+      if (!m_oLayerRequestPatter.matcher(sRequestUri).find())
       {
         oResp.setStatus(HttpStatus.SC_BAD_REQUEST);
         return;
       }
 
-      processObsRequest(oReq, oResp);
-    }
+      String[] sUriParts = sRequestUri.split("/");
 
-    if (!m_oLayerRequestPatter.matcher(sRequestUri).find())
-    {
-      oResp.setStatus(HttpStatus.SC_BAD_REQUEST);
-      return;
-    }
+      if (sUriParts.length < 8)
+      {
+        oResp.setStatus(HttpStatus.SC_BAD_REQUEST);
+        return;
+      }
 
-    String[] sUriParts = sRequestUri.split("/");
-
-    if (sUriParts.length < 8)
-    {
-      oResp.setStatus(HttpStatus.SC_BAD_REQUEST);
-      return;
-    }
-
-    try
-    {
       long lTimeStamp = Long.parseLong(sUriParts[sUriParts.length - 7]);
       int nZoom = Integer.parseInt(sUriParts[sUriParts.length - 6]);
       double dLat1 = Double.parseDouble(sUriParts[sUriParts.length - 5]);
@@ -164,23 +185,17 @@ public abstract class LayerServlet extends HttpServlet
       oPlatformRequest.setRequestZoom(nZoom);
       oPlatformRequest.setRequestObsType(nObsTypeId);
 
-      try
-      {
-        processLayerRequest(oReq, oResp, oPlatformRequest);
-      }
-      catch (Exception oEx)
-      {
-        m_oLogger.error("", oEx);
-      }
-    }
-    catch (NumberFormatException oEx)
-    {
-      m_oLogger.error("Unable to parse URL parts", oEx);
-    }
+      processLayerRequest(oReq, oResp, oPlatformRequest);
 
+    }
+    catch (Exception ex)
+    {
+      m_oLogger.error("", ex);
+      oResp.setStatus(500);
+    }
   }
 
-  protected void processObsRequest(HttpServletRequest oReq, HttpServletResponse oResp) throws IOException, ServletException
+  protected void processObsRequest(HttpServletRequest oReq, HttpServletResponse oResp) throws Exception
   {
 
     String[] sUriParts = oReq.getRequestURI().split("/");
@@ -203,53 +218,111 @@ public abstract class LayerServlet extends HttpServlet
     oObsRequest.setRequestTimestamp(lRequestTime);
     try (JsonGenerator oOutputGenerator = m_oJsonFactory.createJsonGenerator(oResp.getOutputStream(), JsonEncoding.UTF8))
     {
+      oOutputGenerator.writeStartObject();
 
-      try (Connection oConnection = m_oDatasource.getConnection())
+      if (m_bHasObs)
       {
-        try (PreparedStatement oPrepradeStmt = prepareObsStatement(oConnection, oObsRequest))
-        {
 
-          try (ResultSet oResult = oPrepradeStmt.executeQuery())
+        try (Connection oConnection = m_oDatasource.getConnection())
+        {
+          try (PreparedStatement oPrepradeStmt = prepareObsStatement(oConnection, oObsRequest))
           {
 
-            DecimalFormat oNumberFormatter = new DecimalFormat("0.##");
-            SimpleDateFormat oDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss Z");
-            Date oDate = new Date();
-            oOutputGenerator.writeStartArray();
-
-            ArrayList<Integer> oReturnedObsTypes = new ArrayList<Integer>();
-            while (oResult.next())
+            try (ResultSet oResult = oPrepradeStmt.executeQuery())
             {
-              int nObsTypeId = oResult.getInt("obstypeid");
-              int nObsTypeIndex = Collections.binarySearch(oReturnedObsTypes, nObsTypeId);
-              if (nObsTypeIndex >= 0)
-                continue;
-              else
-                oReturnedObsTypes.add(~nObsTypeIndex, nObsTypeId);
+              DecimalFormat oNumberFormatter = new DecimalFormat("0.##");
+              DecimalFormat oConfFormat = new DecimalFormat("##0");
+              SimpleDateFormat oDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+              oDateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
+              Date oDate = new Date();
+              oOutputGenerator.writeArrayFieldStart("obs");
 
-              double dObsValue = oResult.getDouble("value");
-              Timestamp oObsTimestamp = oResult.getTimestamp("obstime");
+              ArrayList<Integer> oReturnedObsTypes = new ArrayList<Integer>();
+              while (oResult.next())
+              {
+                int nObsTypeId = oResult.getInt("obstypeid");
+                int nObsTypeIndex = Collections.binarySearch(oReturnedObsTypes, nObsTypeId);
+                if (nObsTypeIndex >= 0)
+                  continue;
+                else
+                  oReturnedObsTypes.add(~nObsTypeIndex, nObsTypeId);
 
-              ObsType oObsType = m_oObsTypeDao.getObsType(nObsTypeId);
-              oOutputGenerator.writeStartArray();
-              oOutputGenerator.writeString(oObsType.getObsType());
-              oOutputGenerator.writeString(oNumberFormatter.format(dObsValue));
-              oOutputGenerator.writeString(oObsType.getObsInternalUnit());
-              oOutputGenerator.writeString(oNumberFormatter.format(m_oUnits.getConversion(oObsType.getObsInternalUnit(), oObsType.getObsEnglishUnit()).convert(dObsValue)));
-              oOutputGenerator.writeString(oObsType.getObsEnglishUnit());
-              oDate.setTime(oObsTimestamp.getTime());
-              oOutputGenerator.writeString(oDateFormat.format(oDate));
+                double dObsValue = oResult.getDouble("value");
+                Timestamp oObsTimestamp = oResult.getTimestamp("obstime");
+                int source = oResult.getInt("sourceid");
+                float fConvfValue = oResult.getFloat("confValue");
+
+                ISensor iSensor = m_oSensoDao.getSensor(oResult.getInt("sensorid"));
+
+                if (iSensor == null)
+                  continue;
+
+                QualityCheckFlags oQchFlags = null;
+
+                Array charArr = oResult.getArray("qchCharFlag");
+                if (charArr != null)
+                {
+                  String[] strArray = (String[]) charArr.getArray();
+                  //  char[] charArray = new char[16];
+                  // Arrays.fill(charArray, '-');
+                  char[] charArray = new char[strArray.length];
+                  for (int i = 0; i < strArray.length; i++)
+                    charArray[i] = strArray[i].charAt(0);
+
+                  oQchFlags = QualityCheckFlagUtil.getFlags(source, charArray);
+                }
+                ObsType oObsType = m_oObsTypeDao.getObsType(nObsTypeId);
+
+                oOutputGenerator.writeStartObject();
+
+                oOutputGenerator.writeNumberField("si", iSensor.getSensorIndex());
+                oOutputGenerator.writeStringField("ot", oObsType.getObsType());
+                oDate.setTime(oObsTimestamp.getTime());
+                oOutputGenerator.writeStringField("ts", oDateFormat.format(oDate));
+                oOutputGenerator.writeStringField("mv", oNumberFormatter.format(dObsValue));
+                oOutputGenerator.writeStringField("mu", oObsType.getObsInternalUnit());
+                oOutputGenerator.writeStringField("ev", oNumberFormatter.format(m_oUnits.getConversion(oObsType.getObsInternalUnit(), oObsType.getObsEnglishUnit()).convert(dObsValue)));
+                oOutputGenerator.writeStringField("eu", oObsType.getObsEnglishUnit());
+                oOutputGenerator.writeStringField("cv", oConfFormat.format(fConvfValue));
+                //lt/ln: lat/lng
+
+                if (oQchFlags != null)
+                {
+                  oOutputGenerator.writeNumberField("rf", oQchFlags.getRunFlags());
+                  oOutputGenerator.writeNumberField("pf", oQchFlags.getPassFlags());
+                }
+                else
+                {
+                  oOutputGenerator.writeNumberField("rf", 0);
+                  oOutputGenerator.writeNumberField("pf", 0);
+                }
+
+                oOutputGenerator.writeEndObject();
+              }
+
               oOutputGenerator.writeEndArray();
             }
-            oOutputGenerator.writeEndArray();
           }
         }
       }
-      catch (Exception oEx)
+
+      IPlatform iPlatform = m_oPlatformDao.getPlatform(oObsRequest.getPlatformIds()[0]);
+
+      DecimalFormat oElevationFormatter = new DecimalFormat("#,###");
+
+      if (includeDescriptionInDetails())
       {
-        m_oLogger.error("", oEx);
+        oOutputGenerator.writeStringField("tnm", iPlatform.getDescription());
       }
+      oOutputGenerator.writeStringField("tel", oElevationFormatter.format(iPlatform.getLocBaseElev()));
+
+      oOutputGenerator.writeEndObject();
     }
+  }
+
+  protected boolean includeDescriptionInDetails()
+  {
+    return true;
   }
 
   protected void processLayerRequest(HttpServletRequest oReq, HttpServletResponse oResp, PlatformRequest oPlatformRequest) throws IOException, ServletException, Exception
@@ -363,6 +436,11 @@ public abstract class LayerServlet extends HttpServlet
     return oStatement;
   }
 
+  protected String getPlatformObsQueryTemplate()
+  {
+    return m_sStandardObsQueryTemplate;
+  }
+
   protected PreparedStatement prepareObsStatement(Connection oConnection, ObsRequest oRequest) throws SQLException
   {
     long lStart = oRequest.getRequestTimestamp() - m_lSearchRangeInterval;
@@ -374,7 +452,7 @@ public abstract class LayerServlet extends HttpServlet
     while (--nQCount >= 0)
       oInClauseBuilder.append("?,");
 
-    String sQuery = m_sObsQueryTemplate.replace(OBS_TABLE_PLACEHOLDER, getDateObsTableName(lStart)).replace(PLATFORM_LIST_PLACEHOLDER, oInClauseBuilder.substring(0, oInClauseBuilder.length() - 1));
+    String sQuery = getPlatformObsQueryTemplate().replace(OBS_TABLE_PLACEHOLDER, getDateObsTableName(lStart)).replace(PLATFORM_LIST_PLACEHOLDER, oInClauseBuilder.substring(0, oInClauseBuilder.length() - 1));
 
     int nParameterCount = 0;
     PreparedStatement oStatement = oConnection.prepareStatement(sQuery);
@@ -384,10 +462,12 @@ public abstract class LayerServlet extends HttpServlet
 
     oStatement.setTimestamp(++nParameterCount, new Timestamp(lStart));
     oStatement.setTimestamp(++nParameterCount, new Timestamp(lEnd));
-//    stmt.setInt(++parameterCount, request.getRequestBounds().getSouth());
-//    stmt.setInt(++parameterCount, request.getRequestBounds().getNorth());
-//    stmt.setInt(++parameterCount, request.getRequestBounds().getWest());
-//    stmt.setInt(++parameterCount, request.getRequestBounds().getEast());
+
+    //this won't affect stationary platforms, but could affect mobile platforms
+    oStatement.setInt(++nParameterCount, oRequest.getRequestBounds().getSouth());
+    oStatement.setInt(++nParameterCount, oRequest.getRequestBounds().getNorth());
+    oStatement.setInt(++nParameterCount, oRequest.getRequestBounds().getWest());
+    oStatement.setInt(++nParameterCount, oRequest.getRequestBounds().getEast());
     return oStatement;
   }
 

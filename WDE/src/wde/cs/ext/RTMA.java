@@ -2,7 +2,7 @@ package wde.cs.ext;
 
 
 import java.text.SimpleDateFormat;
-import java.util.Date;
+import java.util.Calendar;
 import java.util.TimeZone;
 import wde.util.Scheduler;
 
@@ -30,8 +30,8 @@ public final class RTMA extends RemoteGrid
 	 */
 	RTMA()
 	{
-		m_nDelay = 180; // collection three minutes after source file ready
-		m_nRange = 3600; // RTMA forecast is hourly, from x:50 to x+1:50
+		m_nDelay = 300000; // collection five minutes after source file ready
+		m_nRange = 3900000; // RTMA forecast is hourly, from x:50 to x+1:50
 		m_nLimit = 3; // keep up to three RTMA files
 		m_nObsTypes = new int[]{575, 554, 5733, 5101, 56105, 56108, 56104};
 		m_sObsTypes = new String[]
@@ -65,16 +65,23 @@ public final class RTMA extends RemoteGrid
 	/**
 	 * RTMAGrid uses this method to determine remote filename based on current time.
 	 *
-	 * @param oNow	timestamp Date object used for time-based dynamic URLs
+	 * @param oNow	Calendar object used for time-based dynamic URLs
 	 * 
 	 * @return the name of the remote data file.
 	 */
 	@Override
-	protected String getFilename(Date oNow)
+	protected String getFilename(Calendar oNow)
 	{
+		if (oNow.get(Calendar.MINUTE) < 52)
+			oNow.add(Calendar.HOUR, -1); // backup one hour when starting late
+
+		oNow.set(Calendar.MILLISECOND, 0); // floor to the nearest minute
+		oNow.set(Calendar.SECOND, 0);
+		oNow.set(Calendar.MINUTE, 55); // set to normal scheduled time
+
 		try
 		{
-			return m_oSrcFile.format(oNow);
+			return m_oSrcFile.format(oNow.getTime());
 		}
 		catch (Exception oException)
 		{

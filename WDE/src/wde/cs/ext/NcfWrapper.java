@@ -150,7 +150,7 @@ class NcfWrapper
 	 *
 	 * @param sFilename	the NetCDF file name to load.
 	 */
-	void load(String sFilename)
+	void load(long lStartTime, long lEndTime, String sFilename)
 		throws Exception
 	{
 		NetcdfFile oNcFile = NetcdfFile.open(sFilename); // stored on RAM disk
@@ -174,6 +174,8 @@ class NcfWrapper
 		m_oGrids = oGrids;
 		m_nGridMap = nGridMap;
 		m_oNcFile = oNcFile;
+		m_lStartTime = lStartTime;
+		m_lEndTime = lEndTime;
 	}
 
 

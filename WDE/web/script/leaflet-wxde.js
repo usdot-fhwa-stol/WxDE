@@ -72,7 +72,7 @@ L.WxdeSummaryMap = L.Map.extend({
     platformDetailsWindow:
             {
               dialog: null,
-              platformDetailsTable: null,
+              platformDetailsDiv: null,
               platformObsTable: null
             },
     selectedTimeFunction: function ()
@@ -95,7 +95,20 @@ L.WxdeSummaryMap = L.Map.extend({
     this._minLayerZoom = 18;
     if (this.options.statesLayer)
     {
+      var thisMap = this;
       this.addLayer(this.options.statesLayer);
+
+      this.options.statesLayer.eachLayer(
+              function (layer)
+              {
+                layer.on('click',
+                        function (e)
+                        {
+
+                          thisMap.setView(e.target.getBounds().getCenter(), thisMap.getMinLayerZoom());
+                          //thisMap.removeLayer(statesGroup);
+                        });
+              });
     }
 
     if (this.options.lstObstypes)
@@ -121,7 +134,7 @@ L.WxdeSummaryMap = L.Map.extend({
           }
           thisMap.updateObstypeLabels();
         },
-        timeout: 600000 // sets timeout to 5 seconds
+        timeout: 3000
       });
     }
   },
@@ -226,11 +239,18 @@ L.WxdeLayer = L.LayerGroup.extend({
     platformDetailsFunction: function (marker)
     {
       var details = [];
-      details.push(["Station Code", marker.getStationCode()]);
+      details.sc = marker.getStationCode();
+      //  details.id = marker.getPlatformId();
+
       var latLng = marker.getLatLng();
-      details.push(["Latitude", latLng.lat.toFixed(6)]);
-      details.push(["Longitude", latLng.lng.toFixed(6)]);
+      details.lat = latLng.lat.toFixed(6);
+      details.lng = latLng.lng.toFixed(6);
+
       return details;
+    },
+    obsRequestBoundsFunction: function (marker)
+    {
+      return marker.requestBounds;
     }
   },
   initialize: function (baseUrl, layerParser, layerMarkerStyle, options)
@@ -298,6 +318,10 @@ L.WxdeLayer = L.LayerGroup.extend({
   _getZoomRequest: function (zoom)
   {
     return this._zoomRequests[zoom];
+  },
+  _getMarkerObsRequestBounds: function (marker)
+  {
+    return this.options.obsRequestBoundsFunction(marker);
   },
   _hasObs: function ()
   {
@@ -385,73 +409,154 @@ L.WxdeLayer = L.LayerGroup.extend({
       {
         var obsTable = $(thisDetailsWindow.platformObsTable);
         //mae table visible or invisible based on _hasobs
-        if (thisLayer._hasObs())
-        {
-          var bounds = this.requestBounds;
-          obsTable.show();
-          obsTable.find('tbody > tr').remove();
-          obsTable.find('tbody:last-child').append('<tr><td>Loading data...</td></tr>');
-          $.ajax({
-            type: "GET",
-            url: thisLayer._baseUrl + "/platformObs/" + this.getPlatformId() + "/" + thisLayer._wxdeMap.getSelectedTime() + "/" + bounds.getNorth() + "/" + bounds.getWest() + "/" + bounds.getSouth() + "/" + bounds.getEast(),
-            complete: function (data, status)
-            {
-              var obsList = $.parseJSON(data.responseText);
+        var QCH_MAX = 15;
+        var colCount = QCH_MAX + 6;
 
+
+        var platformDetails = thisLayer.getPlatformDetails(this);
+
+        var detailsDiv = thisDetailsWindow.platformDetailsDiv;
+
+        var detailsContent = '';
+
+        detailsContent += platformDetails.sc + '<br />';
+
+        detailsContent += 'Lat, Lon: ' + platformDetails.lat;
+        detailsContent += ', ' + platformDetails.lng + '<br />';
+
+        detailsDiv.html(detailsContent);
+
+        var bounds = thisLayer._getMarkerObsRequestBounds(this);
+        obsTable.show();
+        obsTable.find('tbody > tr').remove();
+        obsTable.find('tbody:last-child').append('<tr><td colspan="' + colCount + '">Loading data...</td></tr>');
+
+
+
+        $.ajax({
+          type: "GET",
+          url: thisLayer._baseUrl + "/platformObs/" + this.getPlatformId() + "/" + thisLayer._wxdeMap.getSelectedTime() + "/" + bounds.getNorth() + "/" + bounds.getWest() + "/" + bounds.getSouth() + "/" + bounds.getEast(),
+          complete: function (data, status)
+          {
+            if (data.responseText === '')
+            {
               obsTable.find('tbody > tr').remove();
+              obsTable.find('tbody:last-child').append('<tr><td colspan="' + colCount + '">Error loading data</td></tr>');
+              return;
+            }
+            var additionalDetails = $.parseJSON(data.responseText);
+
+            detailsContent = '';
+
+            detailsContent += platformDetails.sc + '<br />';
+
+            if (additionalDetails.tnm)
+              detailsContent += additionalDetails.tnm + '<br />';
+
+            detailsContent += 'Lat, Lon: ' + platformDetails.lat;
+            detailsContent += ', ' + platformDetails.lng + '<br />';
+            if (additionalDetails.tel)
+              detailsContent += 'Elevation: ' + additionalDetails.tel;
+
+            detailsDiv.html(detailsContent);
+
+
+            var obsList = additionalDetails.obs;
+
+            obsTable.find('tbody > tr').remove();
+
+            if (!obsList || obsList.length === 0)
+            {
+              obsTable.find('tbody:last-child').append('<tr><td colspan="' + colCount + '">No data</td></tr>');
+            }
+            else
+            {
+
+
+              var m_oQCh =
+                      [
+                        [{im: "b", tx: ""}, {im: "nr", tx: "not run"}],
+                        [{im: "n", tx: "not passed"}, {im: "p", tx: "passed"}]
+                      ];
+
 
               var newRows = '';
               for (var rowIndex = 0; rowIndex < obsList.length; ++rowIndex)
               {
-                var row = obsList[rowIndex];
+                var iObs = obsList[rowIndex];
                 newRows += '<tr>';
-                for (var colIndex = 0; colIndex < row.length; ++colIndex)
+                newRows += "<td class=\"timestamp\">" + iObs.ts + "</td>\n";
+                newRows += "<td class=\"obsType\">" + iObs.ot + "</td>\n";
+                newRows += "<td class=\"td-ind\">" + iObs.si + "</td>\n";
+
+                newRows += "<td class=\"td-value\">";
+                if (thisLayer._wxdeMap.useMetricValue())
+                  newRows += iObs.mv;
+                else
+                  newRows += iObs.ev;
+                newRows += "</td>\n";
+
+                newRows += "<td class=\"unit\">";
+                var unit;
+                if (thisLayer._wxdeMap.useMetricValue())
+                  unit = iObs.mu;
+                else
+                  unit = iObs.eu;
+
+                if (unit)
+                  newRows += unit;
+                newRows += "</td>\n";
+
+
+                newRows += "<td class=\"conf\">" + 100.00 * iObs.cv + "%</td>\n";
+
+                var sRun = Number(iObs.rf).toString(2);
+                while (sRun.length < QCH_MAX)
+                  sRun = "0" + sRun;
+
+                var sPass = Number(iObs.pf).toString(2);
+                while (sPass.length < QCH_MAX)
+                  sPass = "0" + sPass;
+
+                var nIndex = QCH_MAX;
+                while (--nIndex >= 0)
                 {
-                  newRows += '<td>';
-                  if (row[colIndex])
-                    newRows += row[colIndex];
-                  newRows += '</td>';
+                  var nRow = Number(sRun.charAt(nIndex));
+                  var nCol = Number(sPass.charAt(nIndex));
+                  var oFlag = m_oQCh[nRow][nCol];
+
+                  newRows += "    <td><img alt='Icon' src=\"image/";
+                  newRows += oFlag.im;
+                  newRows += ".png\" alt=\"";
+                  newRows += oFlag.tx;
+                  newRows += "\"/></td>\n";
                 }
+
                 newRows += '</tr>';
               }
 
               obsTable.find('tbody:last-child').append(newRows);
+            }
 
 
+            //    thisDetailsWindow.dialog.dialog("open");
 
-              thisDetailsWindow.dialog.dialog("open");
-            },
-            timeout: 600000 // sets timeout to 5 seconds
-          });
-        }
-        else
-          obsTable.hide();
-
-        var platformDetails = thisLayer.getPlatformDetails(this);
-
-        var detailsTable = $(thisDetailsWindow.platformDetailsTable);
-
-        detailsTable.find('tr').remove();
-
-        var newRows = '';
-        for (var rowIndex = 0; rowIndex < platformDetails.length; ++rowIndex)
-        {
-          var row = platformDetails[rowIndex];
-          newRows += '<tr>';
-          for (var colIndex = 0; colIndex < row.length; ++colIndex)
+            thisDetailsWindow.dialog.resize();
+            thisDetailsWindow.dialog.dialog("option", "position", "center");
+          },
+          error: function (XMLHttpRequest, textStatus, errorThrown)
           {
-            newRows += '<td>';
-            newRows += row[colIndex];
-            newRows += '</td>';
-          }
-          newRows += '</tr>';
+            obsTable.find('tbody > tr').remove();
+            obsTable.find('tbody:last-child').append('<tr><td colspan="' + colCount + '">Error loading data</td></tr>');
+          },
+          timeout: 10000
+        });
+
+        //     if (!thisLayer._hasObs())
+        {
+          thisDetailsWindow.dialog.dialog("open");
         }
 
-        detailsTable.find('tbody:last-child').append(newRows);
-
-
-
-        thisDetailsWindow.dialog.dialog("open");
       };
     }
 
@@ -488,7 +593,7 @@ L.WxdeLayer = L.LayerGroup.extend({
           thisLayer._zoomRequests[zoomLevel] = zoomRequest;
         }
       },
-      timeout: 600000 // sets timeout to 5 seconds
+      timeout: 3000
     });
   },
   refreshData: function (firstLoad)
@@ -608,12 +713,12 @@ L.WxdeLayer = L.LayerGroup.extend({
               }
             }
 
-            if (firstLoad)
-              thisLayer._wxdeMap.reorderLayerElements();
+            // if (firstLoad)
+            thisLayer._wxdeMap.reorderLayerElements();
           },
-          timeout: 600000 // sets timeout to 5 seconds
+          timeout: 30000
         });
-      }
+      } // this will be if a map layer is removed, but added back wiithout panning
       else if (firstLoad)
         this._wxdeMap.reorderLayerElements();
     }

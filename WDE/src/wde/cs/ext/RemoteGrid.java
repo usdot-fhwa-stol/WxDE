@@ -6,7 +6,7 @@ import java.io.BufferedOutputStream;
 import java.io.FileOutputStream;
 import java.net.URL;
 import java.util.ArrayDeque;
-import java.util.Date;
+import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.Iterator;
 
@@ -45,11 +45,11 @@ abstract class RemoteGrid implements Runnable
 	 * Abstract method overridden by subclasses to determine the remote and local 
 	 * file name for their specific remote data set.
 	 *
-	 * @param oNow	timestamp Date object used for time-based dynamic URLs
+	 * @param oNow	Calendar object used for time-based dynamic URLs
 	 * 
 	 * @return the URL where remote data can be retrieved.
 	 */
-	protected abstract String getFilename(Date oNow);
+	protected abstract String getFilename(Calendar oNow);
 
 
 	/**
@@ -60,7 +60,7 @@ abstract class RemoteGrid implements Runnable
 	public void run()
 	{
 		GregorianCalendar oNow = new GregorianCalendar();
-		String sFilename = getFilename(oNow.getTime());
+		String sFilename = getFilename(oNow);
 		if (sFilename == null || m_sPrevFilename.contains(sFilename))
 			return; // file name could not be resolved or matches previous download
 
@@ -85,9 +85,8 @@ abstract class RemoteGrid implements Runnable
 			oOut.close();
 
 			NcfWrapper oNc = new NcfWrapper(m_nObsTypes, m_sObsTypes, m_sHrz, m_sVrt);
-			oNc.load(sDestFile);
-			oNc.m_lStartTime = oNow.getTimeInMillis() - m_nDelay;
-			oNc.m_lEndTime = oNow.getTimeInMillis() + m_nRange;
+			oNc.load(oNow.getTimeInMillis() - m_nDelay, 
+				oNow.getTimeInMillis() + m_nRange, sDestFile);
 
 			NcfWrapper oRemoveNc = null;
 			synchronized(this)

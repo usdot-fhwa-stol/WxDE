@@ -27,14 +27,21 @@ public class RoadSegmentServlet extends LayerServlet
 {
 
   private final Roads m_oRoads = Roads.getInstance();
-  private final int m_nSnapTolerance = 200000;
+  private final int m_nSnapTolerance = 400;
 
   public RoadSegmentServlet() throws NamingException
   {
-    super(true, 6);
+    super(true, 7);
     m_oQueryUsersMicros = true;
   }
 
+  //air temp is 5733 (for testing), real list is 589,5102,5123
+  private final String m_sObsTypeCondition = "AND o.obstypeid IN (5733)\n";
+
+  /**
+   * The inference module currently produces essPrecipSituation (),
+   * essVisibilitySituation (), and essMobileObservation () pavement."
+   */
   private final String m_sBaseSelect
           = "SELECT\n"
           + "p.id\n"
@@ -51,8 +58,6 @@ public class RoadSegmentServlet extends LayerServlet
           + "INNER JOIN " + OBS_TABLE_PLACEHOLDER + " o ON o.sensorid = s.id\n"
           + "WHERE\n"
           + "p.contribid<>4\n"
-          //    + "AND p.category IN ('M')\n"
-          //            + "AND o.obstypeid IN ()\n"
           + "AND o.latitude >= ?\n"
           + "AND o.latitude <= ?\n"
           + "AND o.longitude >= ?\n"
@@ -64,6 +69,7 @@ public class RoadSegmentServlet extends LayerServlet
           = m_sBaseSelect
           + ",null AS value\n"
           + m_sBaseFromWhere
+          + m_sObsTypeCondition
           + "ORDER BY platformid, obstime desc";
 
   private final String m_sQueryWithObsTemplate
@@ -72,6 +78,8 @@ public class RoadSegmentServlet extends LayerServlet
           + m_sBaseFromWhere
           + "AND o.obstypeid = ?\n"
           + "ORDER BY platformid, obstime desc";
+
+  private final String m_sPlatformObsQuery = m_sBaseObsSelect + m_sBaseObsFrom + m_sBaseObsWhere + m_sObsTypeCondition + m_sBaseObsOrderBy;
 
   @Override
   protected void serializeResult(JsonGenerator oJsonGenerator, LatLngBounds oLastRequestBounds, PlatformRequest oCurrentRequest, ResultSet oResult) throws SQLException, IOException
@@ -169,6 +177,12 @@ public class RoadSegmentServlet extends LayerServlet
   }
 
   @Override
+  protected String getPlatformObsQueryTemplate()
+  {
+    return m_sPlatformObsQuery;
+  }
+
+  @Override
   protected PreparedStatement prepareObsStatement(Connection oConnection, ObsRequest oObsRequest) throws SQLException
   {
     //Multiple platforms could have snappped to the same road segment. Re-run the
@@ -176,8 +190,12 @@ public class RoadSegmentServlet extends LayerServlet
     //road. Then call the parent function to query for obs with the list of
     //platform ids
 
+    int nRoadBoundaryPadding = m_nSnapTolerance + 10000;
+
     PlatformRequest oPlatformRequest = new PlatformRequest();
-    oPlatformRequest.setRequestBounds(oObsRequest.getRequestBounds());
+    LatLngBounds oRoadBounds = oObsRequest.getRequestBounds();
+    LatLngBounds oPlatformSearchBounds = new LatLngBounds(oRoadBounds.getNorth() + nRoadBoundaryPadding, oRoadBounds.getEast() + nRoadBoundaryPadding, oRoadBounds.getSouth() - nRoadBoundaryPadding, oRoadBounds.getWest() - nRoadBoundaryPadding);
+    oPlatformRequest.setRequestBounds(oPlatformSearchBounds);
     oPlatformRequest.setRequestTimestamp(oObsRequest.getRequestTimestamp());
 
     ArrayList<Integer> oPlatformIdList = new ArrayList<Integer>();
@@ -210,6 +228,14 @@ public class RoadSegmentServlet extends LayerServlet
       nPlatormIdArray[nPlatformIdIndex++] = nPlatformId;
 
     oObsRequest.setPlatformIds(nPlatormIdArray);
+    oObsRequest.setRequestBounds(oPlatformSearchBounds);
     return super.prepareObsStatement(oConnection, oObsRequest);
   }
+
+  @Override
+  protected boolean includeDescriptionInDetails()
+  {
+    return false;
+  }
+
 }

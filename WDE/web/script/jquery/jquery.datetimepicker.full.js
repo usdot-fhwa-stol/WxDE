@@ -2606,6 +2606,8 @@ var DateFormatter;
 					}
 				}
 
+				top = offset.top - datetimepicker.height() - datetimepickerelement.offsetHeight;
+				
 				node = datetimepicker[0];
 				do {
 					node = node.parentNode;

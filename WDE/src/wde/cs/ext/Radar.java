@@ -2,7 +2,7 @@ package wde.cs.ext;
 
 import java.io.BufferedInputStream;
 import java.net.URL;
-import java.util.Date;
+import java.util.Calendar;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import wde.util.Scheduler;
@@ -18,8 +18,8 @@ public class Radar extends RemoteGrid
 
 	private Radar()
 	{
-		m_nDelay = 90; // collection three minutes after source file ready
-		m_nRange = 120; // radar files are updated every two minutes
+		m_nDelay = 90000; // collection 90 seconds after source file ready
+		m_nRange = 120000; // radar files are updated every two minutes
 		m_nLimit = 3; // keep up to thirty radar files
 		m_nObsTypes = new int[]{0};
 		m_sObsTypes = new String[]{"MergedBaseReflectivityQC_altitude_above_msl"};
@@ -41,12 +41,12 @@ public class Radar extends RemoteGrid
 	 * This method is used to determine the remote filename. It first downloads 
 	 * the base URL as the file index and then iterates to find the latest name.
 	 *
-	 * @param oNow	timestamp Date object used for time-based dynamic URLs
+	 * @param oNow	Calendar object used for time-based dynamic URLs
 	 * 
 	 * @return the name of the remote data file.
 	 */
 	@Override
-	protected String getFilename(Date oNow)
+	protected String getFilename(Calendar oNow)
 	{
 		String sFilename = null;
 		StringBuilder sIndex = new StringBuilder();

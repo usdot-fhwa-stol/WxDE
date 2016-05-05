@@ -1,9 +1,12 @@
 package wde.comp;
 
+import java.util.ArrayList;
 import wde.WDEMgr;
 import wde.cs.ext.Radar;
 import wde.dao.PlatformDao;
 import wde.dao.SensorDao;
+import wde.data.osm.Road;
+import wde.data.osm.Roads;
 import wde.metadata.IPlatform;
 import wde.metadata.ISensor;
 import wde.obs.IObs;
@@ -15,13 +18,15 @@ import wde.util.threads.AsyncQ;
 
 public class InferObs extends AsyncQ<IObsSet>
 {
-	private enum PRECIP_TYPE {NO_PRECIP, RAIN, MIX, SNOW};
+	private final int m_nAirTemp;
+	private final int m_nDewTemp;
+	private final int m_nRh;
+	private final int m_nWindSpd;
+	private final int m_nPrecipSit;
+	private final int m_nVisibilitySit;
+	private final int m_nPavementSit;
 	/**
-	 * observation type identifier for precipitation presence
-	 */
-	private final int m_nPrecipYesNo;
-	/**
-	 * list of accepted observation types
+	 * list of accepted temperature observation types
 	 */
 	private final int[] m_nObsTypes;
 	/**
@@ -32,6 +37,10 @@ public class InferObs extends AsyncQ<IObsSet>
 	 * Instance of platform observation resolving service.
 	 */
 	protected final PlatformDao m_oPlatformDao = PlatformDao.getInstance();
+	/**
+	 * Instance of road resolving service.
+	 */
+	protected final Roads m_oRoads = Roads.getInstance();
 	/**
 	 * Instance of Sensor observation resolving service.
 	 */
@@ -44,16 +53,31 @@ public class InferObs extends AsyncQ<IObsSet>
 	 * Reference to the singleton instance of radar reflectivity.
 	 */
 	private final Radar m_oRadar = Radar.getInstance();
+	/**
+	 * Reference to the singleton instance of this class InferObs.
+	 */
+	private static final InferObs g_oInferObs = new InferObs();
 
 
 	/**
-	 * <b> Default Constructor </b>
+	 * Returns a reference to singleton InferObs processor object.
+	 *
+	 * @return reference to InferObs instance.
+	 */
+	public static InferObs getInstance()
+	{
+		return g_oInferObs;
+	}
+
+
+	/**
+	 * <b> Default Private Constructor </b>
 	 * <p>
-	 * Creates new instances of {@code VdtInference}, of which there should be 
+	 * Creates new instances of {@code InferObs}, of which there should be 
 	 * only one.
 	 * </p>
 	 */
-	InferObs()
+	private InferObs()
 	{
 		Config oConfig = ConfigSvc.getInstance().getConfig(this);
 		String[] sObsTypes = oConfig.getString("accept", "5733,2001180").split(",");
@@ -61,8 +85,16 @@ public class InferObs extends AsyncQ<IObsSet>
 		for (int nIndex = 0; nIndex < sObsTypes.length; nIndex++)
 			m_nObsTypes[nIndex] = Integer.parseInt(sObsTypes[nIndex]);	
 
-		m_nPrecipYesNo = Integer.parseInt(oConfig.getString("essPrecipYesNo", "586"));
-		int nWiperStatus = Integer.parseInt(oConfig.getString("canWiperStatus", "2000001"));
+		// input observation types
+		m_nAirTemp = Integer.parseInt(oConfig.getString("essPrecipSituation", "5733"));;
+		m_nDewTemp = Integer.parseInt(oConfig.getString("essPrecipSituation", "?"));;
+		m_nRh = Integer.parseInt(oConfig.getString("essPrecipSituation", "?"));;
+		m_nWindSpd = Integer.parseInt(oConfig.getString("essPrecipSituation", "?"));;
+		// output observation types
+		m_nPrecipSit = Integer.parseInt(oConfig.getString("essPrecipSituation", "589"));
+		m_nVisibilitySit = Integer.parseInt(oConfig.getString("essVisibilitySituation", "5102"));
+		m_nPavementSit = Integer.parseInt(oConfig.getString("essMobileObservationPavement", "5123"));
+//		int m_nWiperStatus = Integer.parseInt(oConfig.getString("canWiperStatus", "2000001"));
 	}
 
 
@@ -81,36 +113,65 @@ public class InferObs extends AsyncQ<IObsSet>
 	public void run(IObsSet iObsSet)
 	{
 		int nIndex = m_nObsTypes.length;
-		boolean bFound = false;
+		boolean bFound = false; // filter obs types other than air temperatures
 		while (!bFound && nIndex-- > 0)
 			bFound = (iObsSet.getObsType() == m_nObsTypes[nIndex]);
 		
-		if (bFound) // trigger on air temperature observations
+		if (bFound)
 		{
-			// request inferred observation sets
+			ArrayList<RoadObs> oRoads = new ArrayList();
 			nIndex = iObsSet.size();
-			while (nIndex-- > 0)
+			while (nIndex-- > 0) // only process mobile observations
 			{
 				IObs iObs = iObsSet.get(nIndex);
 				ISensor iSensor = m_oSensorDao.getSensor(iObs.getSensorId());
 				IPlatform iPlatform = m_oPlatformDao.getPlatform(iSensor.getPlatformId());
-				if (iPlatform.getCategory() == 'M') // only process mobile observations
-					process(iObs);
+				if (iPlatform.getCategory() == 'M')
+				{
+					Road oRoad = m_oRoads.getLink(1000, iObs.getLongitude(), 
+						iObs.getLatitude());
+					if (oRoad != null) // filter for existing roads and radar value
+					{
+						double dRefl = m_oRadar.getReading(0, iObs.getObsTimeLong(),
+							iObs.getLatitude(), iObs.getLongitude()); // obs type id is 0 for unknown
+						if (!Double.isNaN(dRefl) && !containsRoad(oRoads, oRoad))
+							oRoads.add(new RoadObs(oRoad, dRefl, iObs.getObsTimeLong()));
+					}
+				}
 			}
+
+			for (RoadObs oRoadObs : oRoads)
+			{
+				
+			}
+			// request inferred observation sets
 			// queue inferred observation sets to next stage
 		}
 		
 		m_oWdeMgr.queue(iObsSet); // always requeue received observation set
 	}
 
-	private void process(IObs iObs)
+
+	private static boolean containsRoad(ArrayList<RoadObs> oRoads, Road oRoad)
 	{
-		double dRefl = m_oRadar.getReading(0, iObs.getObsTimeLong(),
-			iObs.getLatitude(), iObs.getLongitude()); // obs type id is 0 for unknown
-		if (Double.isNaN(dRefl))
-			return; // no assessment without available radar value
-	
-		if (dRefl == 0.0)
-			System.out.println();
+		boolean bFound = false;
+		int nIndex = oRoads.size();
+		while (!bFound && nIndex-- > 0) // matching object reference is okay here
+			bFound = oRoads.get(nIndex).m_oRoad == oRoad;
+
+		return bFound;
+	}
+
+
+	private static double calcRh(double dDewTemp, double dAirTemp)
+	{
+		double dPrVapT = 6.112 * Math.exp((17.67 * dAirTemp) / (dAirTemp + 243.5));
+		double dPrVapD = 6.112 * Math.exp((17.67 * dDewTemp) / (dDewTemp + 243.5));
+		return dPrVapD / dPrVapT;
+	}
+
+
+	private void process(RoadObs oRoadObs)
+	{
 	}
 }
