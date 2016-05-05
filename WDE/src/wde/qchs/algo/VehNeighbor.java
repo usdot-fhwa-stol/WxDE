@@ -14,7 +14,7 @@ public class VehNeighbor extends IQR
 {
 	public VehNeighbor()
 	{
-		m_cPlatFilter = new char[]{'M'};
+		m_cPlatFilter = new char[]{'P', 'T'};
 	}
 
 

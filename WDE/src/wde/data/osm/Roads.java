@@ -24,7 +24,6 @@ public class Roads
 	private static final Roads g_oRoads = new Roads();
 
 	ArrayList<GridIndex> m_oGridCache = new ArrayList(); // 2D indexed roads
-	ArrayList<GridIndex> m_oGrids = new ArrayList(); // grids that roads intersect
 
 
 	/**
@@ -48,6 +47,8 @@ public class Roads
 	 */
 	private Roads()
 	{
+		int nRoadId = 0;
+		ArrayList<GridIndex> oGrids = new ArrayList(); // grid/road intersections
 		try
 		{
 			File[] oFiles = new File("/opt/osm").listFiles(); // default osm location
@@ -62,16 +63,16 @@ public class Roads
 				{
 					for (;;) // this will execute until end-of-file is thrown
 					{
-						m_oGrids.clear(); // reuse grid buffer
-						Road oRoad = new Road(oOsmBin); // read road definition from file
+						oGrids.clear(); // reuse grid buffer
+						Road oRoad = new Road(++nRoadId, oOsmBin); // load road definition
 						SegIterator oSegIt = oRoad.iterator();
 						while (oSegIt.hasNext())
 						{
 							int[] oLine = oSegIt.next(); // determine grid cells that 
-							getGrids(m_oGrids, oLine); // intersect with line segments
+							getGrids(oGrids, oLine); // intersect with line segments
 						}
 
-						for (GridIndex oGrid : m_oGrids) // each grid cell should 
+						for (GridIndex oGrid : oGrids) // each grid cell should 
 							if (!oGrid.contains(oRoad)) // only include a road once
 								oGrid.add(oRoad);
 					}
@@ -82,7 +83,6 @@ public class Roads
 				}
 				oOsmBin.close();
 			}
-			m_oGrids = null; // temporary grid buffer no longer needed
 		}
 		catch (Exception oException)
 		{

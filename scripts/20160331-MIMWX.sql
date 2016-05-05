@@ -1,0 +1,46 @@
+UPDATE meta.platform SET platformcode='11340', description='1FTSX21586ED19605 2015 Ford F250 4WD Ext Cab' WHERE contribid=26 AND platformcode='1FTSX21586ED19605';
+UPDATE meta.platform SET platformcode='11341', description='1FT7X2A65DEA64620 2014 Ford F250 2WD Ext Cab' WHERE contribid=26 AND platformcode='1FT7X2A65DEA64620';
+UPDATE meta.platform SET platformcode='11352', description='1FT7X2A69FEA64655 2015 Ford F250 2WD Ext Cab' WHERE contribid=26 AND platformcode='1FT7X2A69FEA64655';
+UPDATE meta.platform SET platformcode='11502', description='1FTFW1EF7EKD83152 2014 Ford F150 4WD Crew Cab' WHERE contribid=26 AND platformcode='1FTFW1EF7EKD83152';
+UPDATE meta.platform SET platformcode='11621', description='1FTFW1EF4EKD77048 2014 Ford F150 4WD Crew Cab' WHERE contribid=26 AND platformcode='1FTFW1EF4EKD77048';
+
+INSERT INTO meta.platform (id,staticid,updatetime,platformcode,category,description,contribid,siteid,maintcontactid) VALUES (260170,260170,'2016-03-31 00:00:00','11333','M','1FTFX1CF9EKD83153 2014 Ford F150 2WD Ext Cab',26,5710,56);
+INSERT INTO meta.platform (id,staticid,updatetime,platformcode,category,description,contribid,siteid,maintcontactid) VALUES (260171,260171,'2016-03-31 00:00:00','11335','M','1FTEW1EF4FFB25757 2015 Ford F150 4WD Crew Cab',26,5710,56);
+INSERT INTO meta.platform (id,staticid,updatetime,platformcode,category,description,contribid,siteid,maintcontactid) VALUES (260172,260172,'2016-03-31 00:00:00','11361','M','1FTEW1EF1FFB14439 2015 Ford F150 4WD Crew Cab',26,5710,56);
+INSERT INTO meta.platform (id,staticid,updatetime,platformcode,category,description,contribid,siteid,maintcontactid) VALUES (260173,260173,'2016-03-31 00:00:00','11516','M','1FTEW1EF8FFA75896 2015 Ford F150',26,5710,56);
+INSERT INTO meta.platform (id,staticid,updatetime,platformcode,category,description,contribid,siteid,maintcontactid) VALUES (260174,260174,'2016-03-31 00:00:00','11364','M','2016 Ford F150 Crew Cab',26,5710,56);
+
+INSERT INTO meta.sensor (sourceid,staticid,updatetime,platformid,contribid,sensorindex,obstypeid,qchparmid,distgroup) VALUES (1,26017001,'2016-03-31 00:00:00',260170,26,0,5733,422,2);
+INSERT INTO meta.sensor (sourceid,staticid,updatetime,platformid,contribid,sensorindex,obstypeid,qchparmid,distgroup) VALUES (1,26017002,'2016-03-31 00:00:00',260170,26,0,51138,420,2);
+INSERT INTO meta.sensor (sourceid,staticid,updatetime,platformid,contribid,sensorindex,obstypeid,qchparmid,distgroup) VALUES (1,26017003,'2016-03-31 00:00:00',260170,26,0,575,421,2);
+INSERT INTO meta.sensor (sourceid,staticid,updatetime,platformid,contribid,sensorindex,obstypeid,qchparmid,distgroup) VALUES (1,26017004,'2016-03-31 00:00:00',260170,26,0,581,423,2);
+INSERT INTO meta.sensor (sourceid,staticid,updatetime,platformid,contribid,sensorindex,obstypeid,qchparmid,distgroup) VALUES (1,26017101,'2016-03-31 00:00:00',260171,26,0,5733,422,2);
+INSERT INTO meta.sensor (sourceid,staticid,updatetime,platformid,contribid,sensorindex,obstypeid,qchparmid,distgroup) VALUES (1,26017102,'2016-03-31 00:00:00',260171,26,0,51138,420,2);
+INSERT INTO meta.sensor (sourceid,staticid,updatetime,platformid,contribid,sensorindex,obstypeid,qchparmid,distgroup) VALUES (1,26017103,'2016-03-31 00:00:00',260171,26,0,575,421,2);
+INSERT INTO meta.sensor (sourceid,staticid,updatetime,platformid,contribid,sensorindex,obstypeid,qchparmid,distgroup) VALUES (1,26017104,'2016-03-31 00:00:00',260171,26,0,581,423,2);
+INSERT INTO meta.sensor (sourceid,staticid,updatetime,platformid,contribid,sensorindex,obstypeid,qchparmid,distgroup) VALUES (1,26017201,'2016-03-31 00:00:00',260172,26,0,5733,422,2);
+INSERT INTO meta.sensor (sourceid,staticid,updatetime,platformid,contribid,sensorindex,obstypeid,qchparmid,distgroup) VALUES (1,26017202,'2016-03-31 00:00:00',260172,26,0,51138,420,2);
+INSERT INTO meta.sensor (sourceid,staticid,updatetime,platformid,contribid,sensorindex,obstypeid,qchparmid,distgroup) VALUES (1,26017203,'2016-03-31 00:00:00',260172,26,0,575,421,2);
+INSERT INTO meta.sensor (sourceid,staticid,updatetime,platformid,contribid,sensorindex,obstypeid,qchparmid,distgroup) VALUES (1,26017204,'2016-03-31 00:00:00',260172,26,0,581,423,2);
+INSERT INTO meta.sensor (sourceid,staticid,updatetime,platformid,contribid,sensorindex,obstypeid,qchparmid,distgroup) VALUES (1,26017301,'2016-03-31 00:00:00',260173,26,0,5733,422,2);
+INSERT INTO meta.sensor (sourceid,staticid,updatetime,platformid,contribid,sensorindex,obstypeid,qchparmid,distgroup) VALUES (1,26017302,'2016-03-31 00:00:00',260173,26,0,51138,420,2);
+INSERT INTO meta.sensor (sourceid,staticid,updatetime,platformid,contribid,sensorindex,obstypeid,qchparmid,distgroup) VALUES (1,26017303,'2016-03-31 00:00:00',260173,26,0,575,421,2);
+INSERT INTO meta.sensor (sourceid,staticid,updatetime,platformid,contribid,sensorindex,obstypeid,qchparmid,distgroup) VALUES (1,26017304,'2016-03-31 00:00:00',260173,26,0,581,423,2);
+INSERT INTO meta.sensor (sourceid,staticid,updatetime,platformid,contribid,sensorindex,obstypeid,qchparmid,distgroup) VALUES (1,26017401,'2016-03-31 00:00:00',260174,26,0,5733,422,2);
+INSERT INTO meta.sensor (sourceid,staticid,updatetime,platformid,contribid,sensorindex,obstypeid,qchparmid,distgroup) VALUES (1,26017402,'2016-03-31 00:00:00',260174,26,0,51138,420,2);
+INSERT INTO meta.sensor (sourceid,staticid,updatetime,platformid,contribid,sensorindex,obstypeid,qchparmid,distgroup) VALUES (1,26017403,'2016-03-31 00:00:00',260174,26,0,575,421,2);
+INSERT INTO meta.sensor (sourceid,staticid,updatetime,platformid,contribid,sensorindex,obstypeid,qchparmid,distgroup) VALUES (1,26017404,'2016-03-31 00:00:00',260174,26,0,581,423,2);
+
+INSERT INTO conf.csvc (id,active,contribid,midnightoffset,collectioninterval,instancename,classname,endpoint,username,password) VALUES (2603,1,'26',210,300,'USA/MI/mobile','wde.cs.ascii.CsvSvc','ftp://rwm.data-env.com','MIMWX','G0Royals!');
+INSERT INTO conf.csvcollector (id,csvcid,collectdelay,retryflag,collecttzid,contenttzid,timestampid,skiplines,filepath) VALUES (260301,2603,0,0,0,0,1,0,'''MixonHill_MWX_wxde.csv''');
+INSERT INTO conf.csvcoldef (collectorid,columnid,obstypeid,classname) VALUES (260301,0,0,'wde.cs.ascii.Ignore');
+INSERT INTO conf.csvcoldef (collectorid,columnid,obstypeid,classname) VALUES (260301,1,0,'wde.cs.ascii.Timestamp');
+INSERT INTO conf.csvcoldef (collectorid,columnid,obstypeid,classname) VALUES (260301,2,0,'wde.cs.ascii.Lat');
+INSERT INTO conf.csvcoldef (collectorid,columnid,obstypeid,classname) VALUES (260301,3,0,'wde.cs.ascii.Lon');
+INSERT INTO conf.csvcoldef (collectorid,columnid,obstypeid,classname) VALUES (260301,4,0,'wde.cs.ascii.Ignore');
+INSERT INTO conf.csvcoldef (collectorid,columnid,obstypeid,classname) VALUES (260301,5,0,'wde.cs.ascii.Ignore');
+INSERT INTO conf.csvcoldef (collectorid,columnid,obstypeid,classname) VALUES (260301,6,0,'wde.cs.ascii.PlatformCode');
+INSERT INTO conf.csvcoldef (collectorid,columnid,obstypeid,classname,unit) VALUES (260301,7,5733,'wde.cs.ascii.DataValue','F');
+INSERT INTO conf.csvcoldef (collectorid,columnid,obstypeid,classname,unit) VALUES (260301,8,51138,'wde.cs.ascii.DataValue','F');
+INSERT INTO conf.csvcoldef (collectorid,columnid,obstypeid,classname,unit) VALUES (260301,9,575,'wde.cs.ascii.DataValue','F');
+INSERT INTO conf.csvcoldef (collectorid,columnid,obstypeid,classname,unit) VALUES (260301,10,581,'wde.cs.ascii.DataValue','%');

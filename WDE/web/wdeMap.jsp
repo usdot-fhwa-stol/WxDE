@@ -17,12 +17,26 @@
     </style>
 
     <link href="/style/WDEMap.css" rel="stylesheet" type="text/css" media="screen"/>
+    <link href="/style/WDEMap2.css" rel="stylesheet" type="text/css" media="screen"/>
     <link rel="stylesheet" href="/style/wdemap-sidebar.css"/>
     <!-- top menu CSS style -->
     <link href="/style/top-mini-nav.css" rel="stylesheet"/>
     <link href="/style/wxde-mini-style.css" rel="stylesheet"/>
     <link rel="stylesheet" href="/style/main-accessibility-styles.css"/>
-    <link href="/style/jquery/overcast/jquery-ui-1.10.2.custom.css" rel="stylesheet" type="text/css"/>
+    <!--
+   <link href="style/jquery/lightness/jquery-ui-full-1.11.4.css" rel="stylesheet">
+    -->
+      <link href="/style/jquery/overcast/jquery-ui-1.10.2.custom.css" rel="stylesheet" type="text/css"/>
+  
+    
+    
+    <link href="style/jquery/jquery.datetimepicker.css" rel="stylesheet">
+	<link rel="stylesheet" href="style/leaflet.css" />
+  
+  
+	<script src="script/us-states.js"></script>
+	<script src="script/leaflet.js"></script>
+<script src="script/leaflet-wxde.js"></script> 
 
     <!-- Pre-load the images. -->
     <script type="text/javascript">
@@ -136,10 +150,16 @@
             imgTestBlank.alt = "Blank";
         }
     </script>
-    <script src="//maps.googleapis.com/maps/api/js?key=AIzaSyDZYilON7LQQ1Fg8th5rot3cFinuvVjO-8&sensor=false"
-            type="text/javascript"></script>
+  
+    
     <script type="text/javascript" src="//code.jquery.com/jquery-1.11.0.min.js"></script>
 
+
+    <!--
+    
+    <script src="script/jquery/jquery-2.2.0.js"></script>
+-->
+	
     <!--[if IE 8]>
     <link href="/style/IE-styles-mini.css" type="text/css" rel="stylesheet">
     <link href="/style/obs-table-ie82.css" type="text/css" rel="stylesheet">
@@ -147,7 +167,7 @@
 
 </head>
 
-<body onload="onLoad()" onunload="onUnload()" class="wde-map-page">
+<body  class="wde-map-page">
 <!-- Include the top part of the page container the Header and Navigation -->
 <jsp:include page="/inc/mini-system-ui/miniHeader.jsp"></jsp:include>
 
@@ -155,107 +175,110 @@
     <img src="/image/minified-map-ui/fhwa-logo-mini.png" alt="FHWA Logo"/><br><br>
 </div>
 <!-- 	/////// -->
-<!-- 	TOP TOOLBAR -->
-<div class="top-toolbar-container" id="top-tools">
-
-    <div class="jumplist-container">
-        <select id="jumpList" title="Jump List" name="jumpList" onchange="Jump()"></select>
-    </div>
-
-    <div class="btn-group pull-left">
-        <button type="button" class="btn btn-xs btn-pills" id="btnInfoWindow">
-            <img src="/image/icons/dark/fa-infowindow.png" class="button-icon hidden" alt="Infowindow Icons"/>
-            <img src="/image/icons/dark/fa-infowindow-alt.png" class="button-icon-alt" alt="Infowindow Icons"/>
-            <span>InfoWindow</span>
-        </button>
-        <button type="button" class="btn btn-xs btn-pills active" id="btnShade">
-            <img src="/image/icons/dark/fa-shade.png" class="button-icon" alt="Shade Icon"/>
-            <img src="/image/icons/dark/fa-shade-alt.png" class="button-icon-alt hidden" alt="Shade Icon"/>
-            <span>Shade</span>
-        </button>
-    </div>
-
-    <div id="progressLabel">Retrieving station data ...</div>
-    <div id="latlong">Lat, Lon:</div>
-    <div id="stationCode">Station Code:</div>
-
-</div>
-<!-- 	END OF TOP TOOLBAR -->
-<!-- 	/////// -->
-<!-- 	BUTTOM TOOLBAR -->
-<div class="bottom-toolbar-container" id="bottom-tools">
-
-    <div class="left-side-tools">
-
-        <select id="obsTypeList" name="obsTypeList" onchange="GetObsValue()" title="Observations"></select>
-        <fieldset title="Units" id="unitsFieldSet" style="display: inline; ">
-            <legend style="display: none;">Units</legend>
-            <input id="rbMetric" name="rbUnits" type="radio" onclick="LabelClicked('m')" title="Metric Units"/> Metric
-            <input id="rbEnglish" name="rbUnits" type="radio" onclick="LabelClicked('e')" title="English Units" checked="checked"/> English
-        </fieldset>
-
-        <button type="button" id="toggleRS" class="toggle-button" data-title="Click to Hide" data-source="2"
-                data-type="S">
-            <img src="/image/icons/light/fa-checked.png" class="checkbox-icon" alt="Checked Box"/>
-            <img src="/image/icons/light/fa-unchecked.png" class="checkbox-icon hidden" alt="Unchecked Box"/>
-            <img alt="vdt-mobile" src="image/mm_segment_line.png"/> Road Segments
-        </button>
-
-        <!--
-        <button type="button" id="toggleVDT" class="toggle-button" data-title="Click to Hide" data-source="2"
-                data-type="M">
-            <img src="/image/icons/light/fa-checked.png" class="checkbox-icon" alt="Checked Box"/>
-            <img src="/image/icons/light/fa-unchecked.png" class="checkbox-icon hidden" alt="Unchecked Box"/>
-            <img alt="vdt-mobile" src="image/mm_12_brown.png" class="marker-icon"/> VDT Mobile
-        </button>
-        -->
-
-        <button type="button" id="toggleWxDEMbl" class="toggle-button" data-title="Click to Hide" data-source="1"
-                data-type="M">
-            <img src="/image/icons/light/fa-checked.png" class="checkbox-icon" alt="Checked Box"/>
-            <img src="/image/icons/light/fa-unchecked.png" class="checkbox-icon hidden" alt="Unchecked Box"/>
-            <img alt="vdt-mobile" src="image/mm_12_blue.png" class="marker-icon"/> WxDE Mobile
-        </button>
-
-        <button type="button" id="toggleWxDE" class="toggle-button" data-title="Click to Hide" data-source="1"
-                data-type="PT">
-            <img src="/image/icons/light/fa-checked.png" class="checkbox-icon" alt="Checked Box"/>
-            <img src="/image/icons/light/fa-unchecked.png" class="checkbox-icon hidden" alt="Unchecked Box"/>
-            <img alt="vdt-mobile" src="image/mm_12_purple.png" class="marker-icon"/> Nonmobile
-        </button>
-
-    </div>
-
-    <div id="timeUTC"></div>
-
-</div>
-<!-- 	END OF BOTTOM TOOLBAR -->
-<!-- 	/////// -->
 <!-- 	SIDEBAR -->
-<div id="sideBar" class="side-bar">
-    <div id="retainBlock">
-				<span class="close-panel pull-right" id="closeShade" title="Close">
-					<img src="/image/icons/dark/fa-close.png" alt="Close Icon" style="margin-top: -4px;"/>
-				</span>
-
-        <h3>Observations</h3>
-    </div>
-    <p>Click any marker on the map to load data.</p>
-</div>
 <!-- 	END OF SIDEBAR -->
 <!-- 	/////// -->
 <!-- 	MAP CONTAINER -->
 <div id="map-container">
-    <div id="map_canvas"></div>
+   
+<div id="dialog-form" style="display:none;">
+
+  <div id="dialog-form">
+  <table id="obs-data" class="qualityChecks" >
+	<thead class="obs-table-head">  
+		<tr align="center">    
+			<td class="td-title" colspan="6"><div id="platform-details"> </div>
+			</td>   
+			<td rowspan="2" class="td-image no-border-left webkit-td-image-fix"><img alt="Complete" src="image/qch/Complete.png"></td>   
+			<td rowspan="2" class="td-image"><img alt="Manual" src="image/qch/Manual.png"></td>  
+			<td rowspan="2" class="td-image"><img alt="Sensor Range" src="image/qch/SensorRange.png"></td>   
+			<td rowspan="2" class="td-image"><img alt="Climate Range" src="image/qch/ClimateRange.png"></td>   
+			<td rowspan="2" class="td-image"><img alt="Step" src="image/qch/Step.png"></td>   
+			<td rowspan="2" class="td-image"><img alt="Like Instrument" src="image/qch/LikeInstrument.png"></td>  
+			<td rowspan="2" class="td-image"><img alt="Persistence" src="image/qch/Persistence.png"></td>  
+			<td rowspan="2" class="td-image"><img alt="Inter-quartile Range" src="image/qch/IQR.png"></td>    
+			<td rowspan="2" class="td-image"><img alt="Barnes Spatial" src="image/qch/BarnesSpatial.png"></td>    
+			<td rowspan="2" class="td-image"><img alt="Dewpoint" src="image/qch/Dewpoint.png"></td>    
+			<td rowspan="2" class="td-image"><img alt="Sea Level Pressure" src="image/qch/SeaLevelPressure.png"></td>   
+			<td rowspan="2" class="td-image"><img alt="Accumulated Precipitation" src="image/qch/PrecipAccum.png"></td> 
+      <td rowspan="2" class="td-image"><img src="image/qch/ModelAnalysis.png" alt="Model Analysis"></td>    
+      <td class="td-image" rowspan="2"><img src="image/qch/NeighboringVehicle.png" alt="Neighboring Vehicle"></td>    
+      <td class="td-image" rowspan="2"><img src="image/qch/VehicleStdDev.png" alt="Vehicle Standard Deviation"></td>  
+			</tr> 
+		<tr class="last-tr">    
+			<td class="timestamp"><b>Timestamp (UTC)</b></td>    
+			<td class="obsType"><b>Observation Type</b></td>   
+			<td class="td-ind"><b>Ind</b></td>   
+			<td class="td-value"><b>Value</b></td>  
+			<td class="unit"><b>Unit</b></td>  
+			<td class="conf webkit-td-conf-fix"><b>Conf</b></td> 
+			</tr>
+		</thead>
+
+<tbody class="obs-table-body">
+<tr class="first-tr">    
+	<td class="timestamp">2016-04-11 12:00:00</td>    
+	<td class="obsType">essAirTemperature</td>   
+	<td class="td-ind">0</td>    
+	<td class="td-value">44.06</td>    
+	<td class="unit">F</td>   
+	<td class="conf">100%</td>   
+	<td><img src="image/p.png" alt="Icon"></td>   
+	<td><img src="image/nr.png" alt="Icon"></td>  
+	<td><img src="image/p.png" alt="Icon"></td>   
+	<td><img src="image/p.png" alt="Icon"></td>   
+	<td><img src="image/p.png" alt="Icon"></td>  
+	<td><img src="image/b.png" alt="Icon"></td>   
+	<td><img src="image/p.png" alt="Icon"></td>  
+	<td><img src="image/p.png" alt="Icon"></td>  
+	<td><img src="image/nr.png" alt="Icon"></td> 
+	<td><img src="image/b.png" alt="Icon"></td> 
+	<td><img src="image/b.png" alt="Icon"></td> 
+	<td><img src="image/b.png" alt="Icon"></td>
+</tr>
+
+</tbody></table>
+  </div>
+</div>
+  <div id="LayersMenuContainer">
+  <ul id="LayersMenu">
+    <li><label for="chkRwisLayer">RWIS Obs</label><input type="checkbox" id="chkRwisLayer" /></li>
+    <li><label for="chkMobileLayer">Mobile Obs</label><input type="checkbox" id="chkMobileLayer" /></li>
+    <li><label for="chkRoadLayer">Road Obs</label><input type="checkbox" id="chkRoadLayer" /></li>
+    <li><label for="chkMetaDataLayer">Sensors</label><input type="checkbox" id="chkMetaDataLayer" /></li>
+</ul></div>
+    <div id="map_canvas" > </div>
 </div>
 <!-- 	END OF MAP -->
 <!-- 	/////// -->
-<div id="button1">
-    <input id="btn_circle" name="btn_circle" type="button" value="Clear Circle" onclick="ClearCircle()"/>
+<!-- 	/////// -->
+<!-- 	BUTTOM TOOLBAR -->
+<div class="bottom-toolbar-container" id="bottom-tools">
+  
+  <div id="layerControlContainer"> <input id="LayersMenuButton" type="button" value="Layers" /><select  id="obstypes"><option value="0">Select an obs type</option></select>
+    
+    <fieldset id="unitsFieldSet" title="Units">
+          <legend style="display: none;">Units</legend>
+          <input type="radio" name="UNIT" checked="checked" id="englishUnits" />
+          <label  for="englishUnits">English</label>
+          <input type="radio" name="UNIT" id="metricUnits" />
+          <label for="metricUnits">Metric</label>
+        </fieldset>
+    </div>
+  <div id="timeUTC" ><input type="text" value="" id="datetimepicker"/></div>
+  <div id="latlong" >Lat, Lon: <span id="latValue"></span>, <span id="lngValue"></span></div>
+  <div id="stationCode" >Station Code: <span id="stationCodeValue"></span></div>
 </div>
+<!-- 	END OF BOTTOM TOOLBAR -->
 <!--    /////// -->
 <!-- 	FOOTER -->
-<script src="/script/jquery/jquery-ui-1.10.2.custom.js" type="text/javascript"></script>
+
+
+<!--<script src="/script/jquery/jquery-ui-1.10.2.custom.js" type="text/javascript"></script>
+-->
+
+  <script src="script/jquery/jquery-ui-full-1.11.4.js"></script>
+
 <jsp:include page="/inc/mini-system-ui/map-ui-footer.jsp"></jsp:include>
 <!-- 	/////// -->
 <!-- 	POPULATE THE DOM BEFORE EXECUTING BLOCKING SCRIPTS -->
@@ -268,14 +291,23 @@
 <script src="/script/MapAreas.js" type="text/javascript"></script>
 <script src="/script/js/lang/System.js" type="text/javascript"></script>
 <script src="/script/js/util/Collections.js" type="text/javascript"></script>
-<script src="/script/wdemap.js" type="text/javascript"></script>
-<script src="/script/jquery/jquery.validate.js" type="text/javascript"></script>
 
+<script src="/script/jquery/jquery.validate.js" type="text/javascript"></script>
+	<script src="script/jquery/jquery.datetimepicker.full.js"></script>
+
+  
 <script type="text/javascript">
     (function ($) {
+      
+      
+      $.ajax({
+        type: "GET",
+        url: "ResetSession"
+      });
+      
+       $( "#LayersMenu" ).menu();
 
         var totalNavHeights = $('#top-nav').height() +
-                $('#top-tools').height() +
                 $('#menu-nav').height() +
                 $('#bottom-tools').height();
 
@@ -292,109 +324,214 @@
 
         $(window).bind('resize', responsiveMap);
 
-        //make sidebar toggle visibility by sliding. ok
-        //add control by the side as trigger
-        //load data into it.
-        var $sideBar = $('#sideBar'); //cache sideBar once
-        var sbWidth = $sideBar.width() + 20;
 
-        //start $('#sideBar') and children functions
-        $sideBar
-                .css({
-                    'left': -sbWidth,
-                    'display': 'block'
-                })
-                .on('click', function () {
-                    var $this = $(this);
-                    if (parseInt($this.css('left')) !== 0) {
-                        $this.animate({'left': 0}, 400);
-                    }
-                    $this = null;
-                })//chaining event for child .close-panel
-                .on('click', '#closeShade', function () {
-                    resetMouseOver();
-                    resetMarker();
-                    sbWidth = $sideBar.width() + 20;
-                    if (parseInt($sideBar.css('left')) >= 0) {
-                        $sideBar.animate({'left': -sbWidth}, 400);
-                    } else {
-                        $sideBar.animate({'left': 0}, 400);
-                    }
-                }) //chaining event for child #fullScreen(anchor)
-                .on('click', '#fullScreen', function () {
-                    var obsWindow = window.open("", "obsWindow", "width=695 height=780");
-                    obsWindow.document.write('<html><head><title>Print Table!</title><link rel="stylesheet" type="text/css" href="/style/printable-table.css"></head><body>');
-                    obsWindow.document.write(
-                            '<script>' +
-                            '	function printThis() {' +
-                            '		document.getElementById("btnPrint").style.display="none";' +
-                            '		document.getElementById("qualityChecks").print();' +
-                            '}<script/>'
-                    );
-                    obsWindow.document.write('< /script>');
-                    obsWindow.document.write('<button type="button" id="btnPrint" onclick="printThis()">Print</button>');
-                    obsWindow.document.write(observationTable);
-                    obsWindow.document.write('</body></html>');
-                    console.log(observationTable);
-                })//chaining viewStation button event
-                .on('click', '#viewStation', function () {
-                    m_oMap.panTo(currentStation.position);
-                });
 
-        //This is used to toggle between InfoWindow and
-        //The sidebar "Shade"
-        //When the user clicks the #btnShade button
-        //The user opts to use the Shade
-        //The following events will be triggered:
-        $('#btnShade').on('click', function () {
-            var $this = $(this);
-            //When the user select InfoWindow then the ff events will be triggered:
-            if (!($this.hasClass('active'))) {
-                $sideBar.css({
-                    left: 0,
-                    display: 'block'
-                });//Display the Shade
-                m_oInfoWindow.close();//Close the InfoWindow
-                if (currentStation !== null)
-                    markerInfoWindow.open(m_oMap, currentStation);
-                //Display the markerInfoWindow/markerIcon
-                $this.addClass('active');	 //Remove the 'clicked' class from the button
-                $this.children('img.button-icon-alt').toggleClass('hidden');
-                $this.children('img.button-icon').toggleClass('hidden');
-
-                $this.siblings('#btnInfoWindow').removeClass('active');
-                $this.siblings('#btnInfoWindow').children('img.button-icon-alt').toggleClass('hidden');
-                $this.siblings('#btnInfoWindow').children('img.button-icon').toggleClass('hidden');
-            }
-            $this = null;
+$("#LayersMenu").find("input:checkbox").each(function (i) {
+        
+        this.checked = true;
+        this.disabled = true;
+        var thisSet = $(this); 
+        
+        thisSet.parent("li").click(this,function(event)
+        {
+  //        event.handleObj.data.checked = !event.handleObj.data.checked;
+          event.stopPropagation();
         });
-        //When the user clicks the #btnInfoWindow button
-        //The user opts to use the InfoWindow of google maps
-        //The following events will be triggered:
-        $('#btnInfoWindow').on('click', function () {
-            var $this = $(this);
-            if (!($this.hasClass('active'))) {
-                if (markerInfoWindow.map != null)
-                    markerInfoWindow.setMap(null);	//Hide the markerInfoWindow/markerIcon
-                if (m_oSelectedMarker != null)
-                    m_oInfoWindow.open(m_oMap, m_oSelectedMarker);//Open the InfoWindow
-                $sideBar.css('display', 'none');//Hide the Shade
-                $this.addClass('active');		//Add the class 'clicked'
-                $this.siblings('#btnShade').removeClass('active');
+        
+        
+      });
+      document.getElementById('chkMetaDataLayer').checked = false;
+      document.getElementById('englishUnits').checked = true;
 
-                $this.children('img.button-icon-alt').toggleClass('hidden');
-                $this.children('img.button-icon').toggleClass('hidden');
 
-                $this.siblings('#btnShade').removeClass('active');
-                $this.siblings('#btnShade').children('img.button-icon-alt').toggleClass('hidden');
-                $this.siblings('#btnShade').children('img.button-icon').toggleClass('hidden');
-            }
-            $this = null;
-        });
+  
+    $('#LayersMenuButton').click(function() {
+         $('#LayersMenuContainer').slideToggle();
+  });
+  
+  
+    
+  
+    
+    
+  var statesGroup;
+  
+  
+function setStandardStyleProperties(style)
+{
+  style.radius = 4;
+  style.fillColor = style.color;
+  style.color='black';
+  style.weight = 1;
+  style.opacity = 1;
+  style.fillOpacity = 1;
+  return style;
+}
+  
+  
+function setStandardPolylineStyleProperties(style)
+{
+  style.weight = 5;
+  style.opacity = 1;
+  style.fillOpacity = 0.8;
+  return style;
+}
 
-        $('#btnInfoWindow, #btnShade').on('focus', function () {
-            $(this).blur();
-        });
+
+/**
+ * 
+ * Real URL: http://otile{s}.mqcdn.com/tiles/1.0.0/map/{z}/{x}/{y}.png 
+ * Local URL: http://localhost:8080/tiles/cache/{z}/{x}/{y}.png
+ * 
+ */
+
+var tileLayer = L.tileLayer('http://otile{s}.mqcdn.com/tiles/1.0.0/map/{z}/{x}/{y}.png', {
+  maxZoom: 18,
+  subdomains: ['1', '2', '3', '4'] ,
+  attribution: '',
+  id: 'mapbox.streets'
+});
+
+function onEachFeature(feature, layer)
+{
+  layer.on({
+    mouseover: highlightFeature,
+    mouseout: resetHighlight
+  });
+  function highlightFeature(e)
+  {
+    var layer = e.target;
+    layer.setStyle({
+      weight: 5,
+      color: '#666',
+      dashArray: '',
+      fillOpacity: 0.5
+    });
+    if (!L.Browser.ie && !L.Browser.opera)
+    {
+      layer.bringToFront();
+    }
+  }
+
+  function resetHighlight(e)
+  {
+    statesGroup.resetStyle(e.target);
+  }
+}
+
+
+
+var style = {
+    fillColor: 'blue',
+    weight: 2,
+    opacity: 1,
+    color: 'white',
+    dashArray: '3'
+  };
+
+statesGroup = L.geoJson(statesData, {style: style, onEachFeature: onEachFeature});
+
+  var  dialog = $( "#dialog-form" ).dialog({
+      autoOpen: false,
+      modal: true,
+      draggable:false,
+      resizable: false,
+      width:"auto",
+      height:"auto"
+      
+    });
+    
+    $(window).resize(function() {
+    $("#dialog-form").dialog("option", "position", "center");
+});
+
+map = L.wxdeSummaryMap('map_canvas', {
+  center: [43, -97],
+  attributionControl:false,
+  zoom: 4,
+  layers: [tileLayer],
+  statesLayer: statesGroup,
+  stationCodeDiv: document.getElementById('stationCodeValue'),
+  latDiv: document.getElementById('latValue'),
+  lngDiv: document.getElementById('lngValue'),
+  lstObstypes: document.getElementById('obstypes'),
+  platformDetailsWindow:
+  { 
+    dialog:dialog, 
+    platformDetailsDiv:$('#platform-details'),
+    platformObsTable:$('#obs-data')
+  },
+  selectedTimeFunction : function()
+  {
+    return $('#datetimepicker').datetimepicker('getValue').getTime();
+  },
+  useMetricUnitsFunction:function()
+  {
+    return $("#metricUnits").is(':checked');
+  },
+  selectedObsTypeFunction : function()
+  {
+    return $('#obstypes').val();
+  }
+});
+
+  
+var rwisOptions = {checkbox: document.getElementById("chkRwisLayer")};
+map.registerWxdeLayer(L.wxdeLayer('RwisLayer', createCircleMarkers, setStandardStyleProperties({ color: "#d819d8"}), rwisOptions));
+
+var mobileOptions = {checkbox: document.getElementById("chkMobileLayer")};
+map.registerWxdeLayer(L.wxdeLayer('MobileRwisLayer', createCircleMarkers, setStandardStyleProperties({color: "blue"}), mobileOptions));
+
+var metaDataOptions = {hasObs: false, checkbox: document.getElementById("chkMetaDataLayer")};
+var metaDataStyle = setStandardStyleProperties({ color: "grey"});
+
+map.registerWxdeLayer(L.wxdeLayer('MetaDataLayer', createCircleMarkers, metaDataStyle, metaDataOptions));
+
+
+var roadOptions = {checkbox: document.getElementById("chkRoadLayer"), 
+  obsRequestBoundsFunction: function(layer)
+  {
+    return layer.getBounds();
+  }}; 
+map.registerWxdeLayer(L.wxdeLayer('RoadLayer', processPolylineData, setStandardPolylineStyleProperties({ color: "green"}), roadOptions));
+
+
+var minuteInterval = 20;
+var allowTimes = [];
+for(var hour = 0; hour< 24; ++hour)
+{
+  for(var minute = 0; minute <60; minute += minuteInterval)
+  {
+    allowTimes.push(hour + ':' + minute);
+  }
+}
+
+var startDate = new Date();
+startDate.setMinutes(startDate.getMinutes()- startDate.getMinutes() % minuteInterval);
+
+
+$('#datetimepicker').datetimepicker({
+	allowTimes: allowTimes,
+  value: startDate,
+    onClose : function()
+    {
+      //alert('close');
+      map.refreshLayers();
+    }
+});
+
+    $('#obstypes').change(function() {
+      map.refreshLayers();
+    });
+    
+    $('input[name="UNIT"]').change(function(){
+      map.updateObstypeLabels();
+      map.updateObsValueUnits();
+    });
+
+
+    $('#datetimepicker').datetimepicker('setDate', startDate );
+
 
     })(jQuery);
 </script>

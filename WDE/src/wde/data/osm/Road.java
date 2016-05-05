@@ -13,12 +13,15 @@ import java.io.DataInputStream;
 public class Road
 {
 	public final String m_sName;
+	public final int m_nId;
 	public final int m_nXmin;
 	public final int m_nYmin;
 	public final int m_nXmax;
 	public final int m_nYmax;
+	public final int m_nXmid;
+	public final int m_nYmid;
 	public final int m_nSpeed = 27; // 27 m/s is approximately 60 mph
-	private int[] m_oPoints;
+	private int[] m_nPoints;
 
 
 	/**
@@ -27,12 +30,13 @@ public class Road
 	private Road()
 	{
 		// initialize all final member variables
-		m_nXmin = m_nYmin = m_nXmax = m_nYmax = 0;
+		m_nXmin = m_nYmin = m_nXmax = m_nYmax = 
+			m_nXmid = m_nYmid = m_nId = Integer.MIN_VALUE;
 		m_sName = "".intern();
 	}
 
 
-	Road(DataInputStream oOsmBin)
+	Road(int nId, DataInputStream oOsmBin)
 		throws Exception
 	{
 		int nYmax = Integer.MIN_VALUE; // init temp bounds to opposite extremes
@@ -41,8 +45,9 @@ public class Road
 		int nXmin = Integer.MAX_VALUE;
 
 		m_sName = oOsmBin.readUTF().intern(); // intern to conserve memory
-		m_oPoints = new int[oOsmBin.readShort() * 2]; // copy coordinate pairs
-		for (int nIndex = 0; nIndex < m_oPoints.length;)
+		int nSize = oOsmBin.readShort(); // reuse point count
+		m_nPoints = new int[nSize * 2]; // copy coordinate pairs
+		for (int nIndex = 0; nIndex < m_nPoints.length;)
 		{
 			int nLat = oOsmBin.readInt(); // points are read in lat/lon order
 			int nLon = oOsmBin.readInt();
@@ -59,20 +64,51 @@ public class Road
 			if (nLon < nXmin)
 				nXmin = nLon;
 
-			m_oPoints[nIndex++] = nLon; // store point data in xy order
-			m_oPoints[nIndex++] = nLat;
+			m_nPoints[nIndex++] = nLon; // store point data in xy order
+			m_nPoints[nIndex++] = nLat;
 		}
 
 		m_nYmax = nYmax; // save bounding box
 		m_nXmax = nXmax;
 		m_nYmin = nYmin;
 		m_nXmin = nXmin;
+		m_nId = nId; // assign sequential identifier
+
+		double dLen = 0.0; // accumulate total length
+		double[] dLens = new double[--nSize]; // individual segment lengths
+		int[] nSeg = null;
+		int nIndex = 0;
+		SegIterator oSegIt = iterator(); // derive midpoint
+		while (oSegIt.hasNext())
+		{
+			nSeg = oSegIt.next(); // there should always be at least one segment
+			int nDeltaX = nSeg[2] - nSeg[0];
+			int nDeltaY = nSeg[3] - nSeg[1];
+			double dSegLen = Math.sqrt(nDeltaX * nDeltaX + nDeltaY * nDeltaY);
+			dLen += dSegLen;
+			dLens[nIndex++] = dSegLen;
+		}
+
+		double dMidLen = dLen / 2.0; // half the length
+		dLen = 0.0; // reset total length
+		nIndex = 0;
+		while (nIndex < dLens.length && dLen < dMidLen)
+			dLen += dLens[nIndex++]; // find length immediately before the midpoint
+
+		dLen -= dLens[--nIndex]; // rewind one position
+		System.arraycopy(m_nPoints, nIndex * 2, nSeg, 0, nSeg.length);
+		double dRatio = (dMidLen - dLen) / dLens[nIndex];
+
+		int nDeltaX = (int)((nSeg[2] - nSeg[0]) * dRatio);
+		int nDeltaY = (int)((nSeg[3] - nSeg[1]) * dRatio);
+		m_nXmid = nSeg[0] + nDeltaX;
+		m_nYmid = nSeg[1] + nDeltaY;
 	}
 
 
-	public SegIterator iterator()
+	public final SegIterator iterator()
 	{
-		return new SegIterator(m_oPoints); // iterate over read-only points
+		return new SegIterator(m_nPoints); // iterate over read-only points
 	}
 
 

@@ -14,7 +14,7 @@ public class VehStdDev extends Barnes
 {
 	public VehStdDev()
 	{
-		m_cPlatFilter = new char[]{'M'};
+		m_cPlatFilter = new char[]{'P', 'T'};
 	}
 
 

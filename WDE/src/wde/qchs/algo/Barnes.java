@@ -5,7 +5,6 @@
 package wde.qchs.algo;
 
 import wde.dao.PlatformDao;
-import wde.metadata.IPlatform;
 import wde.metadata.ISensor;
 import wde.obs.IObs;
 import wde.qchs.ModObs;
@@ -48,7 +47,7 @@ public class Barnes extends LikeInstrument {
     /**
      * List of allowed platform categories.
      */
-		protected char[] m_cPlatFilter = {'P', 'T'};
+		protected char[] m_cPlatFilter = {'M'};
 
     /**
      * Lockable container of {@code ModObsSet} objects.
@@ -212,15 +211,12 @@ public class Barnes extends LikeInstrument {
     public void check(int nObsTypeId, ISensor iSensor, 
 			IObs iObs, QChResult oResult)
 		{
-				IPlatform iPlatform = m_oPlatformDao.getPlatform(iSensor.getPlatformId());
-				boolean bAllowed = false;
+				char cCat = m_oPlatformDao.getPlatform(iSensor.getPlatformId()).getCategory();
 				for (int nIndex = 0; nIndex < m_cPlatFilter.length; nIndex++)
 				{
-					if (!bAllowed)
-						bAllowed = (m_cPlatFilter[nIndex] == iPlatform.getCategory());
+					if (m_cPlatFilter[nIndex] == cCat)
+						return; // only execute when target obs from allowed categories
 				}
-				if (!bAllowed) // only execute when target obs from allowed categories
-					return;
 
         // retrieve the background field
         int nLat = iObs.getLatitude();

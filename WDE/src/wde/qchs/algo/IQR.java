@@ -116,6 +116,13 @@ public class IQR extends Barnes implements Comparator<ModObs> {
     public void check(int nObsTypeId, ISensor iSensor, 
 			IObs iObs, QChResult oResult)
 		{
+				char cCat = m_oPlatformDao.getPlatform(iSensor.getPlatformId()).getCategory();
+				for (int nIndex = 0; nIndex < m_cPlatFilter.length; nIndex++)
+				{
+					if (m_cPlatFilter[nIndex] == cCat)
+						return; // only execute when target obs from allowed categories
+				}
+
         // retrieve the background field
         int nLat = iObs.getLatitude();
         int nLon = iObs.getLongitude();

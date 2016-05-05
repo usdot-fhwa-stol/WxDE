@@ -1,5 +1,5 @@
 /**
- * @file RTMARange.java
+ * @file RTMA.java
  */
 package wde.qchs.algo;
 
@@ -20,7 +20,7 @@ public class RTMA extends LikeInstrument
 	/**
 	 * Service for requesting RTMA forecast values
 	 */
-	protected wde.qchs.RTMA m_oRTMA = wde.qchs.RTMA.getInstance();
+	protected wde.cs.ext.RTMA m_oRTMA = wde.cs.ext.RTMA.getInstance();
 
 
 	/**
