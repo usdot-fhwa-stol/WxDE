@@ -4,7 +4,6 @@ package wde.cs.ext;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.TimeZone;
-import wde.util.Scheduler;
 
 
 /**
@@ -28,11 +27,11 @@ public final class RTMA extends RemoteGrid
 	 * longitude name mapping, and remote source and local storage directory.
 	 * </p>
 	 */
-	RTMA()
+	private RTMA()
 	{
-		m_nDelay = 300000; // collection five minutes after source file ready
-		m_nRange = 3900000; // RTMA forecast is hourly, from x:50 to x+1:50
-		m_nLimit = 3; // keep up to three RTMA files
+		m_nDelay = -300000; // collection five minutes after source file ready, file read at x-1:55
+		m_nRange = 3900000; // RTMA forecast is hourly, good to use from x:00 to x+1:00
+		m_nLimit = 12; // keep up to twelve RTMA files
 		m_nObsTypes = new int[]{575, 554, 5733, 5101, 56105, 56108, 56104};
 		m_sObsTypes = new String[]
 		{
@@ -43,11 +42,13 @@ public final class RTMA extends RemoteGrid
 		};
 		m_sHrz = "x";
 		m_sVrt = "y";
+		m_sBaseDir = "C:/Users/aaron.cherney/TestFiles/RTMA/";
 		m_sBaseURL = "ftp://ftp.ncep.noaa.gov/pub/data/nccf/com/rtma/prod/";
-
 		m_oSrcFile.setTimeZone(TimeZone.getTimeZone("Etc/UTC"));
-		run();
-		Scheduler.getInstance().schedule(this, 3300, 3600, true);
+		m_nOffset = 3300;
+		m_nPeriod = 3600;
+		m_nSecsBack = 3600;
+		init();
 	}
 
 
@@ -116,6 +117,25 @@ public final class RTMA extends RemoteGrid
 			return dVal - 273.15;
 
 		return dVal; // no conversion necessary for other observation types
+	}
+	
+	
+	/**
+	 * Used to determine the destination filename of the remote data
+	 * 
+	 * @param sScrFile  the source file name
+	 * @param oTime     the desired time for the time
+	 * @return          the destination file name
+	 */
+	@Override
+	protected String getDestFilename(String sScrFile, Calendar oTime)
+	{
+		String sDestFile = m_sBaseDir; // ignore intervening directories in path
+		int nSepIndex = sScrFile.lastIndexOf("/");
+		if (nSepIndex >= 0)
+			return sDestFile + sScrFile.substring(nSepIndex); // extract the file name
+		else
+			return sDestFile + sScrFile; // local file name
 	}
 
 
