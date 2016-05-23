@@ -7,6 +7,7 @@ import java.io.DataInputStream;
 import java.io.FileInputStream;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 
 import wde.util.MathUtil;
 
@@ -19,7 +20,7 @@ import wde.util.MathUtil;
  * @author  bryan.krueger
  * @version 1.0 (October 2, 2015)
  */
-public class Roads
+public class Roads implements Comparator<Road>
 {
 	private static final Roads g_oRoads = new Roads();
 
@@ -51,37 +52,45 @@ public class Roads
 		ArrayList<GridIndex> oGrids = new ArrayList(); // grid/road intersections
 		try
 		{
-			File[] oFiles = new File("/opt/osm").listFiles(); // default osm location
+			File[] oFiles = new File("/opt/osm").listFiles(); // default location
 			for (File oFile : oFiles)
 			{
 				if (oFile.isDirectory() || !oFile.getName().endsWith(".osm.bin"))
 					continue; // skip directories, only need processed OSM binary files
 
-				DataInputStream oOsmBin = new DataInputStream(
-					new BufferedInputStream(new FileInputStream(oFile)));
-				try
+				try (DataInputStream oOsmBin = new DataInputStream(
+					new BufferedInputStream(new FileInputStream(oFile))))
 				{
 					for (;;) // this will execute until end-of-file is thrown
 					{
-						oGrids.clear(); // reuse grid buffer
-						Road oRoad = new Road(++nRoadId, oOsmBin); // load road definition
-						SegIterator oSegIt = oRoad.iterator();
-						while (oSegIt.hasNext())
+						try
 						{
-							int[] oLine = oSegIt.next(); // determine grid cells that 
-							getGrids(oGrids, oLine); // intersect with line segments
-						}
+							oGrids.clear(); // reuse grid buffer
+							Road oRoad = new Road(++nRoadId, oOsmBin); // load road definition
+							SegIterator oSegIt = oRoad.iterator();
+							while (oSegIt.hasNext())
+							{
+								int[] oLine = oSegIt.next(); // determine intersecting segments
+								getGrids(oGrids, oLine[0], oLine[1], oLine[2], oLine[3], 0, 0, true);
+							}
 
-						for (GridIndex oGrid : oGrids) // each grid cell should 
-							if (!oGrid.contains(oRoad)) // only include a road once
-								oGrid.add(oRoad);
+							for (GridIndex oGrid : oGrids)
+							{
+								int nRoadIndex = Collections.binarySearch(oGrid, oRoad, this);
+								if (nRoadIndex < 0) // include a road in each grid cell only once
+									oGrid.add(~nRoadIndex, oRoad);
+							}
+						}
+						catch (Exception oException) // discard exception, continue reading
+						{
+							if (oException instanceof java.io.EOFException)
+								throw oException; // rethrow end-of-file exception
+						}
 					}
 				}
-				catch (Exception oException)
+				catch (Exception oException) // should only be end-of-file
 				{
-					// should only be an end-of-file, which is normal
 				}
-				oOsmBin.close();
 			}
 		}
 		catch (Exception oException)
@@ -95,16 +104,16 @@ public class Roads
 	 *
 	 * @param oGrids	an array that accumulates GridIndex object that 
 	 *								intersect the provided region.
-	 * @param oRegion	a pair of integer coordinates representing the 
-	 *								region used for comparison to a GridIndex.
+	 * @param nXmin		left side of bounding region.
+	 * @param nYmin		bottom side of bounding region.
+	 * @param nXmax		right side of bounding region.
+	 * @param nYmax		top side of bounding region.
+	 * @param nTol		margin of tolerance to include in region.
+	 * @param nLatTol	margin of tolerance corrected for latitude.
 	 */
-	private void getGrids(ArrayList<GridIndex> oGrids, int[] oRegion)
+	private void getGrids(ArrayList<GridIndex> oGrids, int nXmin, int nYmin, 
+		int nXmax, int nYmax, int nTol, int nLatTol, boolean bAdd)
 	{
-		int nXmin = oRegion[0]; // copy parts of array
-		int nYmin = oRegion[1];
-		int nXmax = oRegion[2];
-		int nYmax = oRegion[3];
-	
 		if (nXmin > nXmax) // re-order longitude as needed
 		{
 			nXmin ^= nXmax;
@@ -119,6 +128,11 @@ public class Roads
 			nYmin ^= nYmax;
 		}
 
+		nXmin -= nTol; // adjust for tolerances
+		nYmin -= nLatTol;
+		nXmax += nTol;
+		nYmax += nLatTol;
+
 		if (nXmin < -180000000 || nXmax > 179999999 || nYmin < -84999999 || nYmax > 84999999)
 			return; // locations fall outside the geographic model
 	
@@ -128,25 +142,23 @@ public class Roads
 		int nYbeg = oSearch.getGrid(nYmin);
 		int nYend = oSearch.getGrid(nYmax);
 
-		GridIndex oGrid;
-		for (int nY = nYbeg; nY <= nYend; nY++) // grid cells are inclusive
+		GridIndex oGrid; // <= comparison used to always have at least one grid
+		for (int nY = nYbeg; nY <= nYend; nY++)
 		{
 			for (int nX = nXbeg; nX <= nXend; nX++)
 			{
 				oSearch.setHash(nX, nY);
-				int nGrid = Collections.binarySearch(m_oGridCache, oSearch);
-				if (nGrid < 0) // existing grid cell not found
+				int nCellIndex = Collections.binarySearch(m_oGridCache, oSearch);
+				if (bAdd && nCellIndex < 0) // existing grid cell not found
 				{
 					oGrid = new GridIndex(); // create new grid hash index
 					oGrid.m_nHash = oSearch.m_nHash; // copy current search hash value
-					m_oGridCache.add(~nGrid, oGrid); // add new grid cell to primary cache
+					nCellIndex = ~nCellIndex;
+					m_oGridCache.add(nCellIndex, oGrid); // add grid cell to cache
 				}
-				else
-					oGrid = m_oGridCache.get(nGrid);
 
-				nGrid = Collections.binarySearch(oGrids, oSearch);
-				if (nGrid < 0) // add grid cell reference to output set
-					oGrids.add(~nGrid, oGrid);
+				if (nCellIndex >= 0)
+					oGrids.add(m_oGridCache.get(nCellIndex));
 			}
 		}
 	}
@@ -163,25 +175,20 @@ public class Roads
 	 */
 	public Road getLink(int nTol, int nLon, int nLat)
 	{
-		ArrayList<GridIndex> oGrids = new ArrayList();
-		int nLonTol = (int)(nTol / Math.cos(Math.PI * MathUtil.fromMicro(nLat) / 180.0));
-		getGrids(oGrids, new int[]{nLon - nLonTol, nLat - nTol, nLon + nLonTol, nLat + nTol});
-		if (oGrids.isEmpty()) // no set of links nearby
+		ArrayList<Road> oRoads = new ArrayList();
+		int nLonTol = getLinks(oRoads, nTol, nLon, nLat, nLon, nLat);
+		if (oRoads.isEmpty()) // no set of links nearby
 			return null;
 
 		int nDist = Integer.MAX_VALUE; // track minimum distance
 		Road oLink = null;
-		for (GridIndex oGrid : oGrids)
+		for (Road oRoad : oRoads)
 		{
-			for (Road oRoad : oGrid)
+			int nSqDist = oRoad.snap(nLonTol, nLon, nLat);
+			if (nSqDist >= 0 && nSqDist < nDist)
 			{
-				// use the longitude adjusted tolerance
-				int nSqDist = oRoad.snap(nLonTol, nLon, nLat);
-				if (nSqDist >= 0 && nSqDist < nDist)
-				{
-					oLink = oRoad; // save the polyline data that is the 
-					nDist = nSqDist; // shortest distance from the point
-				}
+				oLink = oRoad; // save the polyline data that is the 
+				nDist = nSqDist; // shortest distance from the point
 			}
 		}
 
@@ -189,6 +196,48 @@ public class Roads
 			return null; // no link found
 	
 		return oLink;
+	}
+
+
+	/**
+	 * Returns a set of links that fall within the specified region.
+	 *
+	 * @param oRoads	list of roads that fall within the specified region.
+	 * @param nTol		max distance where links will be included in the region.
+	 * @param nLon1		the specified region's left side.
+	 * @param nLat1		the specified region's bottom side.
+	 * @param nLon2		the specified region's right side.
+	 * @param nLat2		the specified region's top side.
+	 * 
+	 * @return	the latitude adjusted tolerance.
+	 */
+	public int getLinks(ArrayList<Road> oRoads, int nTol, int nLon1, int nLat1, 
+		int nLon2, int nLat2)
+	{
+		ArrayList<GridIndex> oGrids = new ArrayList();
+		int nLonTol = (int)(nTol / Math.cos(Math.PI * 
+			MathUtil.fromMicro((nLat1 + nLat2) / 2) / 180.0));
+		getGrids(oGrids, nLon1, nLat1, nLon2, nLat2, nTol, nLonTol, false);
+		if (oGrids.isEmpty()) // no set of links nearby
+			return nLonTol;
+
+		for (GridIndex oGrid : oGrids)
+		{
+			for (Road oRoad : oGrid)
+			{
+				int nIndex = Collections.binarySearch(oRoads, oRoad, this);
+				if (nIndex < 0) // include each road only once
+					oRoads.add(~nIndex, oRoad);
+			}
+		}
+		return nLonTol;
+	}
+
+
+	@Override
+	public int compare(Road oLhs, Road oRhs)
+	{
+		return oRhs.m_nId - oLhs.m_nId;
 	}
 
 
