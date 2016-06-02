@@ -5,13 +5,20 @@
  */
 package wde.cs.ext;
 
+import wde.util.Config;
+import wde.util.ConfigSvc;
 
+/**
+ * This class represents the NDFD file that contains data on the wind speed 
+ */
 public class NDFDWspd extends NDFDFile
 {
 	NDFDWspd()
 	{
-		m_sObsTypes = new String[]{"Wind Speed"};
-		m_sBaseDir = "C:/Users/aaron.cherney/TestFiles/NDFD/wspd/";
+		Config oConfig = ConfigSvc.getInstance().getConfig(this);
+		m_nObsTypes = new int[]{56104};
+		m_sObsTypes = new String[]{"Wind_speed_surface"};
+		m_sBaseDir = oConfig.getString("dir", "/run/shm/ndfd/");
 		m_sSrcFile = "ds.wspd.bin";
 		init();
 	}

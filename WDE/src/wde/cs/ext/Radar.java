@@ -4,35 +4,46 @@ import java.io.BufferedInputStream;
 import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import wde.util.Config;
+import wde.util.ConfigSvc;
 import wde.util.Scheduler;
 
 
-
-public class Radar extends RemoteGrid
+/**
+ * This singleton class downloads Radar files every 2 minutes from the 
+ * National Oceanic and Atmospheric Administration
+ */
+public class Radar extends RemoteGrid 
 {
 	private static final Radar g_oRadar = new Radar();
-	SimpleDateFormat m_oNeededFile = new SimpleDateFormat("dd'-'MMM'-'yyyy' 'HH':'mm");
+	SimpleDateFormat m_oNeededFile = new SimpleDateFormat("yyyyMMdd'-'HHmm");
 	
 
 	private Radar()
 	{
+		Config oConfig = ConfigSvc.getInstance().getConfig(this);
+		
 		m_nDelay = 60000; // collection 180 seconds after source file ready, file is good for use for the next 2 minute interval
 		m_nRange = 180000; // radar files are updated every two minutes (ex. file for 3:10 is read at 3:13 and is good for 3:12 - 3:14)
-		m_nLimit = 360; // keep up to three hundred sixty radar files
+		m_nLimit = oConfig.getInt("limit", 360);  // keep up 3 hours of NDFD files
 		m_nObsTypes = new int[]{0};
 		m_sObsTypes = new String[]{"MergedBaseReflectivityQC_altitude_above_msl"};
 		m_sHrz = "lon";
 		m_sVrt = "lat";
-		m_sBaseDir = "C:/Users/aaron.cherney/TestFiles/Radar/";
+		m_sBaseDir = oConfig.getString("dir", "/run/shm/radar/");
 		m_sBaseURL = "http://mrms.ncep.noaa.gov/data/2D/MergedBaseReflectivityQC/";
 		m_nOffset = 60;
 		m_nPeriod = 120;
 		m_oNeededFile.setTimeZone(Scheduler.UTC);
-		m_nSecsBack = 3600 * 3;
+		m_nSecsBack = oConfig.getInt("SecsBack", 3600 * 3);
 		init();
 	}
 
-
+	/**
+	 * Returns a reference to singleton Radar model data cache.
+	 *
+	 * @return reference to Radar data lookup instance.
+	 */
 	public static Radar getInstance()
 	{
 		return g_oRadar;
@@ -60,13 +71,19 @@ public class Radar extends RemoteGrid
 				sIndex.append((char)nByte);
 			oIn.close();
 
-			oNow.add(Calendar.SECOND, -m_nPeriod);
+			oNow.add(Calendar.SECOND, (-(m_nPeriod + m_nOffset)));
 			int nTimeStampIndex = sIndex.indexOf(m_oNeededFile.format(oNow.getTime()));
-			oNow.add(Calendar.SECOND, m_nPeriod);
+			oNow.add(Calendar.SECOND, (m_nPeriod + m_nOffset));
 			if (nTimeStampIndex < 0)
-				 return null;
-			int nFileExtIndex = sIndex.lastIndexOf(".gz", nTimeStampIndex);
-			int nFileIndex = sIndex.lastIndexOf(">", nFileExtIndex);
+			{
+				oNow.add(Calendar.SECOND, (-(m_nPeriod + m_nOffset + 60)));
+				nTimeStampIndex = sIndex.indexOf(m_oNeededFile.format(oNow.getTime()));
+				oNow.add(Calendar.SECOND, (m_nPeriod + m_nOffset + 60));
+				if(nTimeStampIndex < 0)
+					return null;
+			}
+			int nFileExtIndex = sIndex.indexOf(".gz", nTimeStampIndex);
+			int nFileIndex = sIndex.lastIndexOf("\"", nTimeStampIndex);
 			return sIndex.substring(++nFileIndex, nFileExtIndex + ".gz".length());
 		}
 		catch (Exception oException)
@@ -98,6 +115,8 @@ public class Radar extends RemoteGrid
 		throws Exception
 	{
 		Radar oRadar = Radar.getInstance();
-		System.out.println(oRadar.getReading(0, System.currentTimeMillis(), 43000000, -94000000));
+		for(int i = 2281; i < 2285; i++)
+			for(int j = 1010; j < 1020; j++)
+				System.out.println(oRadar.getReading(0, System.currentTimeMillis(), -10000 * i + 54995000, 10000 * j - 129995000));
 	}
 }

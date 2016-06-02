@@ -15,15 +15,14 @@ import java.util.Calendar;
 import java.util.Iterator;
 
 /**
- *
- * @author aaron.cherney
+ * This abstract base class implements common NetCDF patterns for identifying, 
+ * downloading, reading, and retrieving observation values for remote data sets.
  */
 abstract class RemoteData 
 {
 	/**
 	* Lookup arrays map names between model and observation types.
 	*/
-	
 	protected int m_nDelay;
 	protected int m_nRange;
 	protected int m_nLimit;
@@ -31,7 +30,7 @@ abstract class RemoteData
 	protected String m_sHrz;
 	protected String m_sVrt;
 	protected String m_sBaseDir;
-     //   protected String m_sBaseDir = "/dev/shm/";
+   //protected String m_sBaseDir = "/run/shm/";
 	protected String m_sBaseURL;
 	protected String[] m_sObsTypes;
 	protected ArrayDeque<NcfWrapper> m_oGrids = new ArrayDeque();
@@ -103,7 +102,7 @@ abstract class RemoteData
 	{
 		String sFilename = getFilename(oTime);
 		if (sFilename == null)
-			return; // file name could not be resolved or matches previous download
+			return; // file name could not be resolved
 
 		String sDestFile = getDestFilename(sFilename, oTime);
 		System.out.println(sDestFile);
@@ -139,7 +138,14 @@ abstract class RemoteData
 		}
 		catch(Exception oException) // failed to download new data
 		{
+			oException.printStackTrace();
 		}
-	}   
+	} 
+	
+	
+	/**
+	 * Abstract method overridden by child classes to initialize data files when 
+	 * the program is first started.
+	 */
 	protected abstract void init();
 }

@@ -5,15 +5,28 @@
  */
 package wde.cs.ext;
 
+import wde.util.Config;
+import wde.util.ConfigSvc;
 
+/**
+ * This class represents the NDFD file that contains data on the temperature
+ */
 public class NDFDTemp extends NDFDFile
 {	
 	NDFDTemp()
 	{
-		m_sObsTypes = new String[]{"Air Temperature"};
-		m_sBaseDir = "C:/Users/aaron.cherney/TestFiles/NDFD/temp/";
+		Config oConfig = ConfigSvc.getInstance().getConfig(this);
+		m_nObsTypes = new int[]{5733};
+		m_sObsTypes = new String[]{"Temperature_surface"};
+		m_sBaseDir = oConfig.getString("dir", "/run/shm/ndfd/");
 		m_sSrcFile = "ds.temp.bin";
 		init();
+	}
+	
+	@Override
+	public synchronized double getReading(int nObsTypeId, long lTimestamp, int nLat, int nLon)
+	{
+		return super.getReading(nObsTypeId, lTimestamp, nLat, nLon) - 273.15; 
 	}
 
 
