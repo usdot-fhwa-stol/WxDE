@@ -5,13 +5,10 @@
 
 package wde.cs;
 
-import org.apache.log4j.Logger;
-import wde.WDEMgr;
-import wde.util.Config;
-import wde.util.ConfigSvc;
-import wde.util.Scheduler;
-
-import javax.sql.DataSource;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
+import java.net.URLConnection;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -20,6 +17,13 @@ import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.SimpleTimeZone;
 import java.util.TimerTask;
+import javax.sql.DataSource;
+
+import org.apache.log4j.Logger;
+import wde.WDEMgr;
+import wde.util.Config;
+import wde.util.ConfigSvc;
+import wde.util.Scheduler;
 
 /**
  * Manages the list of {@code CollectorSvc} which it creates as it is
@@ -27,12 +31,10 @@ import java.util.TimerTask;
  * of collection services, calling {@see CollectorSvc#retry} which will attempt
  * to collect on that service until the service either runs out of collection
  * attempts, or finishes its collection.
- * <p/>
  * <p>
  * Singleton class whose instance can be accessed by the
  * {@see CsMgr#getInstance} method.
  * </p>
- * <p/>
  * <p>
  * {@code CsMgr} implements {@see java.lang.Runnable} so instances can be the
  * target of Thread instances.
@@ -63,7 +65,10 @@ public class CsMgr implements Runnable {
      * The instance of the manager.
      */
     private static CsMgr g_oInstance = new CsMgr();
-
+    /**
+     * URL used to verify altitude information
+     */
+    private String m_sAltUrl;
     /**
      * Each element is a collector service which is created in the constructor,
      * and who's type is based off database queries.
@@ -100,6 +105,7 @@ public class CsMgr implements Runnable {
 
         try {
             Config oConfig = ConfigSvc.getInstance().getConfig(this);
+						m_sAltUrl = oConfig.getString("url", "http://otile1.data-env.com/elev/");
 
             // set up the retry interval
             RETRY_INTERVAL = oConfig.getInt("retry", RETRY_INTERVAL);
@@ -186,6 +192,48 @@ public class CsMgr implements Runnable {
         for (int nIndex = 0; nIndex < m_oSvcs.size(); nIndex++)
             m_oSvcs.get(nIndex).retry();
     }
+
+
+    /**
+     * Looks up altitude information from a web service if provided altitude 
+		 * is missing.
+     *
+     * @param nLat	the latitude used to check the altitude
+     * @param nLon	the longitude used to check the altitude
+     * @param tElev	the altitude value to check
+		 * 
+     * @return	the altitude for the given location
+     */
+    public short checkElev(int nLat, int nLon, short tElev)
+		{
+			if (tElev == Short.MIN_VALUE)
+			{
+				try // lookup altitude when unknown for provided location
+				{
+					URL oUrl = new URL(m_sAltUrl + nLat + "/" + nLon);
+					URLConnection oUrlConn = oUrl.openConnection();
+					oUrlConn.setConnectTimeout(500); // half second timeout
+
+					oUrlConn.connect();
+					int nLen = oUrlConn.getContentLength();
+					try (InputStream oIn = oUrlConn.getInputStream())
+					{
+						StringBuilder sBuf = new StringBuilder();
+						while (nLen-- > 0)
+							sBuf.append((char)oIn.read());
+
+						double dVal = Double.parseDouble(sBuf.toString());
+						if (!Double.isNaN(dVal))
+							return (short)Math.round(dVal);
+					}
+				}
+				catch (IOException | NumberFormatException oException)
+				{
+				}
+			}
+			return tElev; // altitude is known or lookup failed
+    }
+
 
     /**
      * Creates the date format for the locale of the running JVM.

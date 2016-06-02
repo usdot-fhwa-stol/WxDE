@@ -123,6 +123,10 @@ public class XmlCollector extends DefaultHandler implements ICollector {
      */
     protected ArrayDeque<ValueHolder> m_oValuePool = new ArrayDeque<ValueHolder>();
     /**
+     * Reference to Collector Service Manager for elevation check
+     */
+    protected CsMgr m_oCsMgr;
+    /**
      * Parent Collector Service object.
      */
     protected XmlSvc m_oXmlSvc;
@@ -253,6 +257,7 @@ public class XmlCollector extends DefaultHandler implements ICollector {
 
         m_nContribIds = nContribIds; // save reference to list of contrib ids
         m_oXmlSvc = oXmlSvc;
+				m_oCsMgr = oCsMgr;
 
         PreparedStatement ps = null;
         ResultSet rs = null;
@@ -817,9 +822,11 @@ public class XmlCollector extends DefaultHandler implements ICollector {
                 iObsSet = m_oXmlSvc.getObsSet(nObsTypeId);
 
             // now that we have all three components, save the observation
-            if (iObsSet != null) {
-                // 1 for WxDE
-                iObsSet.addObs(1, iSensor.getId(), m_lTimestamp, now, m_nLat, m_nLon, m_tElev, dValue);
+            if (iObsSet != null)
+						{
+							m_tElev = m_oCsMgr.checkElev(m_nLat, m_nLon, m_tElev);
+              iObsSet.addObs(1, iSensor.getId(), m_lTimestamp, now, 
+								m_nLat, m_nLon, m_tElev, dValue); // source is 1 for WxDE
             } else {
                 int nContribId = -m_oXmlSvc.m_nId; // save the negative value of
                 if (m_nContribIds.length == 1) // the collector service for sets
