@@ -14,6 +14,7 @@ import ucar.nc2.dt.grid.GridDataset;
 import ucar.unidata.geoloc.LatLonPointImpl;
 import ucar.unidata.geoloc.ProjectionImpl;
 import ucar.unidata.geoloc.ProjectionPointImpl;
+import ucar.unidata.geoloc.projection.LambertConformal;
 
 import wde.util.MathUtil;
 import wde.util.IntKeyValue;
@@ -255,10 +256,7 @@ class NcfWrapper
 		int nVrt = getIndex(m_oVrt, oProjPoint.getY());
 
 		if (nHrz < 0 || nVrt < 0)
-		{
-					System.out.println(nVrt + ", " +  nHrz);
-					return Double.NaN; // projected coordinates are outside data ranage
-		}
+			return Double.NaN; // projected coordinates are outside data ranage
 			
 
 		try
@@ -278,5 +276,27 @@ class NcfWrapper
 		}
 
 		return Double.NaN;
+	}
+	
+	public static void main(String[] args)
+	{
+		LambertConformal oLam = new LambertConformal(25, 265, 25, 25);
+		double[][] latlon = new double[2][1];
+		double[][] km = new double[2][1];
+		
+		km[0][0] = -2763.205;
+		km[1][0] = -263.789;
+		latlon = oLam.projToLatLon(km);
+		System.out.println("Top left: " + latlon[0][0] + " " + latlon[1][0]);
+		
+		km[0][0] = 2681.918;
+		km[1][0] = 3230.842;
+		latlon = oLam.projToLatLon(km);
+		System.out.println("Bottom right: " + latlon[0][0] + " " + latlon[1][0]);
+		
+		latlon[0][0] = 20.192;
+		latlon[1][0] = 238.446;
+		km = oLam.latLonToProj(latlon, km, 0, 1);
+		System.out.println("top left: " + km[0][0] + " " + km[1][0]);
 	}
 }

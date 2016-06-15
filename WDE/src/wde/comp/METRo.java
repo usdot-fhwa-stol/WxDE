@@ -14,10 +14,10 @@ import wde.cs.ext.Radar;
  */
 public class METRo
 {
-	static int m_nGridHor = 3500;
-	static int m_nGridVer = 7000;
+	static int m_nGridCol = 2360;
+	static int m_nGridRow = 3100;
 	static int m_nNumOfRadarFiles = 1;
-	static boolean[][] m_bPresenceOfPrecip = new boolean[3500][7000];
+	static boolean[][] m_bPresenceOfPrecip = new boolean[m_nGridRow][m_nGridCol];
 	static SimpleDateFormat oHour = new SimpleDateFormat("HH':'mm");
 	
 	METRo()
@@ -26,20 +26,20 @@ public class METRo
 	
 	private static void getPresenceOfPrecip(long lTimeStamp)
 	{
-		for (int i = 0;i < m_nGridHor;i++)
+		for (int i = 3090;i < m_nGridRow;i++)
 		{
-			for(int j =0; j < m_nGridVer;j++)
+			for(int j =2350; j < m_nGridCol;j++)
 			{
 				for(int h = 0;h < m_nNumOfRadarFiles;h++)
 				{
-					if(Radar.getInstance().getReading(0, lTimeStamp - h * 120000, -10000 * i + 54995000, 10000 * j - 129995000) > 0)
+					if(Radar.getInstance().getReading(0, lTimeStamp - h * 120000, -10000 * j + 54995000, 10000 * i - 129995000) > 0)
 					{
 						m_bPresenceOfPrecip[i][j] = true;
-						System.out.println(Radar.getInstance().getReading(0, lTimeStamp - h, -10000 * i + 54995000, 10000 * j - 129995000));
+						System.out.println(Radar.getInstance().getReading(0, lTimeStamp - h, -10000 * j + 54995000, 10000 * i - 129995000));
 						break;
 					}
 				}
-				System.out.println(Integer.toString(i+1) + " " + Integer.toString(j+1) + " " + m_bPresenceOfPrecip[i][j] + " " + Integer.toString(-10000 * i + 54995000) + " " + Integer.toString(10000 * j - 129995000));
+				System.out.println(Integer.toString(i+1) + " " + Integer.toString(j+1) + " " + m_bPresenceOfPrecip[i][j] + " " + Integer.toString(-10000 * j + 54995000) + " " + Integer.toString(10000 * i - 129995000));
 			}
 		}
 	}

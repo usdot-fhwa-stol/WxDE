@@ -60,8 +60,8 @@ abstract class RemoteGrid extends RemoteData implements Runnable
 	{
 		Calendar iCalendar = Scheduler.getNextPeriod(m_nOffset, m_nPeriod);
 		Scheduler.getInstance().schedule(this, m_nOffset, m_nPeriod, true);
-		iCalendar.add(Calendar.SECOND, -m_nSecsBack);
-		for (int i = 0; i < m_nSecsBack / m_nPeriod; i++)
+		iCalendar.add(Calendar.SECOND, -m_nInitTime);
+		for (int i = 0; i < m_nInitTime / m_nPeriod; i++)
 		{
 		  loadFile(iCalendar);
 		  iCalendar.add(Calendar.SECOND, m_nPeriod); 

@@ -13,9 +13,9 @@ import wde.util.Scheduler;
 import wde.util.IntKeyValue;
 
 /**
- * This class controls the scheduling of downloading the NDFD files including
- * sky(cloud coverage), td(dew point), temp(air temperature), and wspd(wind
- * speed).
+ * National Digital Forecast Database. This class controls the scheduling of 
+ * downloading the NDFD files including sky(cloud coverage), td(dew point), 
+ * temp(air temperature), and wspd(wind speed).
  */
 public class NDFD extends RemoteGrid
 {

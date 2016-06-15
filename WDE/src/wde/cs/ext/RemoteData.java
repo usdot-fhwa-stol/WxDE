@@ -36,7 +36,7 @@ abstract class RemoteData
 	protected ArrayDeque<NcfWrapper> m_oGrids = new ArrayDeque();
 	protected int m_nOffset;
 	protected int m_nPeriod;
-	protected int m_nSecsBack;
+	protected int m_nInitTime;
 	
 	RemoteData()
 	{

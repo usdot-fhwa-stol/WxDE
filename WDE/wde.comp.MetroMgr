@@ -1,0 +1,13 @@
+#define region like latTop, lonLeft, latBot, lonRight
+#region=MI
+region=MN
+#region=NV
+MI=48.3,-90.416667,41.683333,-82.116667
+MN=49.383333,-97.233333,43.5,-89.483333
+NV=42.0,-120,35.0,-114.033333
+fhours=3
+ohours=2
+dir=C:/Users/aaron.cherney/TestFiles/XML/
+
+
+

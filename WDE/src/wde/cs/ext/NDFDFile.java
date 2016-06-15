@@ -25,7 +25,7 @@ abstract class NDFDFile extends RemoteData
 	{
 		Config oConfig = ConfigSvc.getInstance().getConfig(this);
 		m_nDelay = -300000; // collection five minutes after source file ready, file read at x-1:55
-		m_nRange = 3900000; // NDFD forecast is hourly, good to use from x:00 to x+1:00
+		m_nRange = 11100000; // NDFD forecast is produced hourly but good for 3 hours, good to use from x:00 to x+3:00
 		m_nLimit = oConfig.getInt("limit", 12);  // keep up 12 hours of NDFD files
 		m_sHrz = "x";
 		m_sVrt = "y";
@@ -33,7 +33,7 @@ abstract class NDFDFile extends RemoteData
 		m_nOffset = 3300;
 		m_nPeriod = 3600;
 		m_oDateForFile.setTimeZone(Scheduler.UTC);
-		m_nSecsBack = oConfig.getInt("SecsBack", 3600);
+		m_nInitTime = oConfig.getInt("time", 3600);
 	}
 	
 	/**
@@ -44,8 +44,8 @@ abstract class NDFDFile extends RemoteData
 	protected final void init()
 	{
 		Calendar iCalendar = Scheduler.getNextPeriod(m_nOffset, m_nPeriod);
-		iCalendar.add(Calendar.SECOND, -m_nSecsBack);
-		for (int i = 0; i < m_nSecsBack / m_nPeriod; i++)
+		iCalendar.add(Calendar.SECOND, -m_nInitTime);
+		for (int i = 0; i < m_nInitTime / m_nPeriod; i++)
 		{
 		  loadFile(iCalendar);
 		  iCalendar.add(Calendar.SECOND, m_nPeriod); 

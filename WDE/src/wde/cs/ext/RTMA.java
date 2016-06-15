@@ -54,7 +54,7 @@ public final class RTMA extends RemoteGrid
 		m_oSrcFile.setTimeZone(TimeZone.getTimeZone("Etc/UTC"));
 		m_nOffset = 3300;
 		m_nPeriod = 3600;
-		m_nSecsBack = oConfig.getInt("SecsBack", 3600 * 3);
+		m_nInitTime = oConfig.getInt("time", 3600 * 3);
 		init();
 	}
 
@@ -130,19 +130,19 @@ public final class RTMA extends RemoteGrid
 	/**
 	 * Used to determine the destination filename of the remote data
 	 * 
-	 * @param sScrFile  the source file name
+	 * @param sSrcFile  the source file name
 	 * @param oTime     the desired time for the time
 	 * @return          the destination file name
 	 */
 	@Override
-	protected String getDestFilename(String sScrFile, Calendar oTime)
+	protected String getDestFilename(String sSrcFile, Calendar oTime)
 	{
 		String sDestFile = m_sBaseDir; // ignore intervening directories in path
-		int nSepIndex = sScrFile.lastIndexOf("/");
+		int nSepIndex = sSrcFile.lastIndexOf("/");
 		if (nSepIndex >= 0)
-			return sDestFile + sScrFile.substring(nSepIndex); // extract the file name
+			return sDestFile + sSrcFile.substring(nSepIndex); // extract the file name
 		else
-			return sDestFile + sScrFile; // local file name
+			return sDestFile + sSrcFile; // local file name
 	}
 
 
