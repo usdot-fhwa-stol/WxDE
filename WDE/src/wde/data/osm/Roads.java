@@ -52,8 +52,7 @@ public class Roads implements Comparator<Road>
 		ArrayList<GridIndex> oGrids = new ArrayList(); // grid/road intersections
 		try
 		{
-			//File[] oFiles = new File("/opt/osm").listFiles(); // default location
-			File[] oFiles = new File("C:/Users/aaron.cherney/osm").listFiles(); // default location
+			File[] oFiles = new File("/opt/osm").listFiles(); // default location
 			for (File oFile : oFiles)
 			{
 				if (oFile.isDirectory() || !oFile.getName().endsWith(".osm.bin"))
@@ -239,40 +238,6 @@ public class Roads implements Comparator<Road>
 	public int compare(Road oLhs, Road oRhs)
 	{
 		return oRhs.m_nId - oLhs.m_nId;
-	}
-
-
-	class Node implements Comparable<Node>
-	{
-		public long m_lId;
-		public int m_nLat;
-		public int m_nLon;
-
-
-		Node()
-		{
-		}
-
-
-		Node(String sId, String sLat, String sLon)
-		{
-			m_lId = Long.parseLong(sId);
-			m_nLat = MathUtil.toMicro(Double.parseDouble(sLat));
-			m_nLon = MathUtil.toMicro(Double.parseDouble(sLon));
-		}
-
-	
-		@Override
-		public int compareTo(Node oNode)
-		{
-			if (m_lId < oNode.m_lId)
-				return -1;
-
-			if (m_lId > oNode.m_lId)
-				return 1;
-
-			return 0;
-		}
 	}
 
 
