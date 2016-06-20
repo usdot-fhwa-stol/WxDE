@@ -1,6 +1,9 @@
 package wde.cs.ext;
 
 
+import java.io.File;
+import java.util.ArrayList;
+
 import ucar.ma2.Array;
 import ucar.ma2.Index;
 import ucar.nc2.NetcdfFile;
@@ -9,12 +12,12 @@ import ucar.nc2.dataset.VariableDS;
 import ucar.nc2.dt.GridDatatype;
 import ucar.nc2.dt.grid.GridDataset;
 import ucar.unidata.geoloc.LatLonPointImpl;
+import ucar.unidata.geoloc.ProjectionImpl;
 import ucar.unidata.geoloc.ProjectionPointImpl;
-import wde.util.MathUtil;
 
-import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
+import wde.util.MathUtil;
+import wde.util.IntKeyValue;
+
 
 
 /**
@@ -25,16 +28,18 @@ import java.util.List;
 class NcfWrapper
 {
 	protected int[] m_nObsTypes;
-	protected int[] m_nGridMap;
+	protected ArrayList<IntKeyValue<DataStructure>> m_oArrayMap;
 	long m_lStartTime;
 	long m_lEndTime;
 	protected String m_sHrz;
 	protected String m_sVrt;
+	protected String m_sTime;
 	protected String[] m_sObsTypes;
 	protected ArrayList<Double> m_oHrz = new ArrayList();
 	protected ArrayList<Double> m_oVrt = new ArrayList();
-	protected List<GridDatatype> m_oGrids;
+	protected ArrayList<Double> m_oTime = new ArrayList();
 	protected NetcdfFile m_oNcFile;
+
 
 
 	/**
@@ -56,12 +61,13 @@ class NcfWrapper
 	 * @param sHrz			name of the horizontal NetCDF index variable.
 	 * @param sVrt			name of the vertical NetCDF index variable.
 	 */
-	NcfWrapper(int[] nObsTypes, String[] sObsTypes, String sHrz, String sVrt)
+	NcfWrapper(int[] nObsTypes, String[] sObsTypes, String sHrz, String sVrt, String sTime)
 	{
 		m_nObsTypes = nObsTypes;
 		m_sObsTypes = sObsTypes;
 		m_sHrz = sHrz;
 		m_sVrt = sVrt;
+		m_sTime = sTime;
 	}
 
 
@@ -79,18 +85,51 @@ class NcfWrapper
 	{
 		double dBasis;
 		double dDist;
+		
+		//for the time arrays, if there is only one time return index 0
+		if (oValues.size() == 1)    
+			return 0;
+		
+		double nDifference = 180;
+		if (oValues.size() < 50)    //this branch will be taken for NDFD files' time array. need a better way to determine this
+		{
+			if (oValues.get(0) == 1.0) //check if units are in hours
+			{
+				oValue = oValue / 1000 / 60 / 60 + 1;  //convert from milliseconds to hours, add one to be at the first hour in the array
+				//find forecasts that are an hour apart
+				while (nDifference > 1) 
+				{
+					nDifference = oValues.get(oValues.size() - 1) - oValues.get(oValues.size() -2);
+					//if the forecasts are more than an hour apart remove them
+					if (nDifference > 1)
+						oValues.remove(oValues.size() - 1);
+				}
+			}
+			else if (oValues.get(0) == 30.0)  //check if units are in minutes
+			{
+				oValue = oValue / 1000 / 60 + 30;  //convert from milliseconds to hours, add 30 to be at the first hour in the array
+				//find forecasts that are an hour apart
+				while (nDifference > 60) 
+				{
+					nDifference = oValues.get(oValues.size() - 1) - oValues.get(oValues.size() -2);
+					//if the forecasts are more than an hour apart remove them
+					if (nDifference > 60)
+						oValues.remove(oValues.size() - 1);
+				}			
+			}
+		}
 		double dLeft = oValues.get(0); // test for value in range
 		double dRight = oValues.get(oValues.size() - 1);
 		if (dRight < dLeft) // handle reversed endpoints
 		{
-			if (oValue < dRight || oValue > dLeft)
+			if (oValue + .005 < dRight || oValue > dLeft + .001)
 				return -1; // outside of range
 			dBasis = dLeft - dRight;
 			dDist = dLeft - oValue; // tricksy
 		}
 		else
 		{
-			if (oValue < dLeft || oValue > dRight)
+			if (oValue < dLeft || oValue > dRight + .005)
 				return -1; // outside of range
 			dBasis = dRight - dLeft;
 			dDist = oValue - dLeft;
@@ -130,17 +169,16 @@ class NcfWrapper
 	 * 
 	 * @return the grid data for the variable specified by observation type.
 	 */
-	protected GridDatatype getGridByObs(int nObsTypeId)
+	protected DataStructure getDataStructByObsId(int nObsTypeId)
 	{
-		boolean bFound = false;
-		int nIndex = m_nObsTypes.length;
-		while (!bFound && nIndex-- > 0)
-			bFound = (m_nObsTypes[nIndex] == nObsTypeId);
-
-		if (!bFound || m_nGridMap[nIndex] < 0) // requested obstype not available
-			return null;
-
-		return m_oGrids.get(m_nGridMap[nIndex]); // grid by obstypeid
+		IntKeyValue<DataStructure> oSearch = new IntKeyValue(nObsTypeId, null);
+		int nIndex = m_oArrayMap.size();
+		while (nIndex-- > 0)
+		{
+			if (m_oArrayMap.get(nIndex).compareTo(oSearch) == 0)
+				return m_oArrayMap.get(nIndex).value();
+		}
+		return null; // requested obstype not available
 	}
 
 
@@ -156,23 +194,22 @@ class NcfWrapper
 		NetcdfFile oNcFile = NetcdfFile.open(sFilename); // stored on RAM disk
 		ArrayList<Double> oHrz = fromArray(oNcFile, m_sHrz); // sort order varies
 		ArrayList<Double> oVrt = fromArray(oNcFile, m_sVrt);
-
-		int[] nGridMap = new int[m_nObsTypes.length]; // create obstype grid index map
-		List<GridDatatype> oGrids = new GridDataset(new NetcdfDataset(oNcFile)).getGrids();
-		for (int nOuter = 0; nOuter < nGridMap.length; nOuter++)
+		ArrayList<Double> oTime = fromArray(oNcFile, m_sTime);
+		// create obstype array mapping
+		ArrayList<IntKeyValue<DataStructure>> oArrayMap = new ArrayList(m_nObsTypes.length);
+		for (GridDatatype oGrid : new GridDataset(new NetcdfDataset(oNcFile)).getGrids())
 		{
-			nGridMap[nOuter] = -1; // default to invalid index
-			for (int nInner = 0; nInner < oGrids.size(); nInner++)
-			{
-				if (m_sObsTypes[nOuter].contains(oGrids.get(nInner).getName()))
-					nGridMap[nOuter] = nInner; // save name mapping				
+			for (int nObsTypeIndex = 0; nObsTypeIndex < m_sObsTypes.length; nObsTypeIndex++)
+			{ // save obs type id to grid name mapping
+				if (m_sObsTypes[nObsTypeIndex].contains(oGrid.getName()))
+					oArrayMap.add(new IntKeyValue(m_nObsTypes[nObsTypeIndex], new DataStructure(m_nObsTypes[nObsTypeIndex], oGrid.getProjection(), oGrid.getVariable(), oGrid.getVariable().read())));
 			}
 		}
 
 		m_oHrz = oHrz;// update state variables when everything succeeds
 		m_oVrt = oVrt;
-		m_oGrids = oGrids;
-		m_nGridMap = nGridMap;
+		m_oTime = oTime;
+		m_oArrayMap = oArrayMap;
 		m_oNcFile = oNcFile;
 		m_lStartTime = lStartTime;
 		m_lEndTime = lEndTime;
@@ -233,26 +270,29 @@ class NcfWrapper
 		LatLonPointImpl oLatLon = new LatLonPointImpl(MathUtil.fromMicro(nLat), 
 			MathUtil.fromMicro(nLon));
 		ProjectionPointImpl oProjPoint = new ProjectionPointImpl();
-		GridDatatype oGrid = getGridByObs(nObsTypeId);
-		if (oGrid == null)
+		DataStructure oDataStruct = getDataStructByObsId(nObsTypeId);
+		if (oDataStruct == null)
 			return Double.NaN; // requested observation type not supported
 			
-		oGrid.getProjection().latLonToProj(oLatLon, oProjPoint);
+		oDataStruct.m_oProj.latLonToProj(oLatLon, oProjPoint);
 		int nHrz = getIndex(m_oHrz, oProjPoint.getX());
 		int nVrt = getIndex(m_oVrt, oProjPoint.getY());
-		if (nHrz < 0 || nVrt < 0)
+		double dTimeSince = lTimestamp - m_lStartTime;
+		int nTime = getIndex(m_oTime, dTimeSince);
+
+		if (nHrz < 0 || nVrt < 0 || nTime < 0)
 			return Double.NaN; // projected coordinates are outside data ranage
+			
 
 		try
 		{
-			VariableDS oVar = oGrid.getVariable();
-			Array oArray = oVar.read();
-			Index oIndex = oArray.getIndex();
-			oIndex.setDim(oVar.findDimensionIndex(m_sHrz), nHrz);
-			oIndex.setDim(oVar.findDimensionIndex(m_sVrt), nVrt);
-	
-			double dVal = oArray.getDouble(oIndex);
-			if (oVar.isFillValue(dVal) || oVar.isInvalidData(dVal) || oVar.isMissing(dVal))
+			Index oIndex = oDataStruct.m_oArray.getIndex();
+			oIndex.setDim(oDataStruct.m_oVar.findDimensionIndex(m_sHrz), nHrz);
+			oIndex.setDim(oDataStruct.m_oVar.findDimensionIndex(m_sVrt), nVrt);
+			oIndex.setDim(oDataStruct.m_oVar.findDimensionIndex(m_sTime), nTime);
+			
+			double dVal = oDataStruct.m_oArray.getDouble(oIndex);
+			if (oDataStruct.m_oVar.isFillValue(dVal) || oDataStruct.m_oVar.isInvalidData(dVal) || oDataStruct.m_oVar.isMissing(dVal))
 				return Double.NaN; // no valid data for specified location
 
 			return dVal;
@@ -262,5 +302,21 @@ class NcfWrapper
 		}
 
 		return Double.NaN;
+	}
+	
+	class DataStructure
+	{
+		public int m_nObsTypeId;
+		public ProjectionImpl m_oProj;
+		public VariableDS m_oVar;
+		public Array m_oArray;
+		
+		DataStructure(int nObsTypeId, ProjectionImpl oProj,VariableDS oVar, Array oArray)
+		{
+			m_nObsTypeId = nObsTypeId;
+			m_oProj = oProj;
+			m_oVar = oVar;
+			m_oArray = oArray;
+		}
 	}
 }

@@ -86,10 +86,10 @@ public class InferObs extends AsyncQ<IObsSet>
 			m_nObsTypes[nIndex] = Integer.parseInt(sObsTypes[nIndex]);	
 
 		// input observation types
-		m_nAirTemp = Integer.parseInt(oConfig.getString("essPrecipSituation", "5733"));;
-		m_nDewTemp = Integer.parseInt(oConfig.getString("essPrecipSituation", "?"));;
+		m_nAirTemp = Integer.parseInt(oConfig.getString("essAirTemperature", "5733"));;
+		m_nDewTemp = Integer.parseInt(oConfig.getString("essDewpointTemp", "575"));;
 		m_nRh = Integer.parseInt(oConfig.getString("essPrecipSituation", "?"));;
-		m_nWindSpd = Integer.parseInt(oConfig.getString("essPrecipSituation", "?"));;
+		m_nWindSpd = Integer.parseInt(oConfig.getString("windSensorAvgSpeed", "56104"));;
 		// output observation types
 		m_nPrecipSit = Integer.parseInt(oConfig.getString("essPrecipSituation", "589"));
 		m_nVisibilitySit = Integer.parseInt(oConfig.getString("essVisibilitySituation", "5102"));
@@ -142,7 +142,18 @@ public class InferObs extends AsyncQ<IObsSet>
 
 			for (RoadObs oRoadObs : oRoads)
 			{
-				
+				if (m_nAirTemp > 2)
+				{
+					
+				}
+				else if (m_nAirTemp < -2)
+				{
+					
+				}
+				else
+				{
+					
+				}
 			}
 			// request inferred observation sets
 			// queue inferred observation sets to next stage

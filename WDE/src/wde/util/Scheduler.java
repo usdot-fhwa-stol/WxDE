@@ -36,7 +36,7 @@ public class Scheduler {
     /**
      * Default timezone.
      */
-    private SimpleTimeZone m_oUTC = new SimpleTimeZone(0, "");
+    public static final SimpleTimeZone UTC = new SimpleTimeZone(0, "");
 
 
     /**
@@ -59,17 +59,18 @@ public class Scheduler {
         return g_oInstance;
     }
 
+    
     /**
-     * Schedules the provided executable to run on a fixed cycle based off the
-     * provided offset from midnight on the interval of the provided period.
+     * Determines the next period to execute based off of the offset from midnight and 
+     * the period of execution
      *
-     * @param iRunnable executable object to be scheduled.
      * @param nOffset   schedule offset from midnight.
      * @param nPeriod   period of execution.
-     * @return newly created scheduled task.
+     * @return Calendar object of the next period .
      */
-    public TimerTask schedule(Runnable iRunnable, int nOffset, int nPeriod, boolean useThreadPool) {
-        Calendar iCalendar = new GregorianCalendar(m_oUTC);
+    public static Calendar getNextPeriod(int nOffset, int nPeriod)
+    {
+        Calendar iCalendar = new GregorianCalendar(UTC);
 
         // set the current time to midnight UTC and add the schedule offset
         iCalendar.set(Calendar.HOUR_OF_DAY, 0);
@@ -80,41 +81,32 @@ public class Scheduler {
         // adjust the period from seconds to milliseconds
         nPeriod *= 1000;
         // determine the timestamp of the next period
-        long lOffsetTime = iCalendar.getTime().getTime();
+        long lOffsetTime = iCalendar.getTimeInMillis();
         long lDeltaTime = System.currentTimeMillis() - lOffsetTime;
         long lPeriods = lDeltaTime / nPeriod;
         if (lDeltaTime % nPeriod > 0)
             ++lPeriods;
-
         iCalendar.setTimeInMillis(lOffsetTime + lPeriods * nPeriod);
-
-        if (useThreadPool) {
-            // create the scheduled task
-            Sched oTask = new Sched(iRunnable);
-            m_oTimer.scheduleAtFixedRate(oTask, iCalendar.getTime(), nPeriod);
-            return oTask;
-        }
-
-        // Certain tasks, e.g., PlatformMonitor and ContribMonitor, should be given special treatment
-        // so they won't be impacted by the lack of threads from the pool if a collector misbehaves
-        Sched2 oTask2 = new Sched2(iRunnable);
-        m_oTimer.scheduleAtFixedRate(oTask2, iCalendar.getTime(), nPeriod);
-        return oTask2;
+        return iCalendar;
     }
-
-
+    
+    
     /**
-     * Schedules the provided runnable interface on a fixed cycle starting
-     * after the specified delay with each execution separated by the period.
+     * Schedules the provided executable to run on a fixed cycle based off the
+     * provided offset from midnight on the interval of the provided period.
      *
      * @param iRunnable executable object to be scheduled.
-     * @param lDelay    milliseconds to wait before beginning initial execution.
-     * @param lPeriod   milliseconds between execution cycles.
+     * @param nOffset   schedule offset from midnight.
+     * @param nPeriod   period of execution.
      * @return newly created scheduled task.
      */
-    public TimerTask schedule(Runnable iRunnable, long lDelay, long lPeriod) {
-        Sched oTask = new Sched(iRunnable);
-        m_oTimer.scheduleAtFixedRate(oTask, lDelay, lPeriod);
+    public TimerTask schedule(Runnable iRunnable, int nOffset, int nPeriod, 
+       boolean bUseThreadPool) 
+    {
+        Calendar iCalendar = getNextPeriod(nOffset, nPeriod);
+        // create the scheduled task
+        Sched oTask = new Sched(iRunnable, bUseThreadPool);
+        m_oTimer.scheduleAtFixedRate(oTask, iCalendar.getTime(), nPeriod * 1000);
         return oTask;
     }
 
@@ -131,6 +123,7 @@ public class Scheduler {
          * Object of scheduled execution.
          */
         private Runnable m_iRunnable;
+        private boolean m_bUseThreadPool;
 
 
         /**
@@ -139,7 +132,8 @@ public class Scheduler {
          * Creates new instances of {@code Sched}
          * </p>
          */
-        private Sched() {
+        private Sched() 
+        {
         }
 
 
@@ -151,8 +145,10 @@ public class Scheduler {
          *
          * @param iRunnable object to be scheduled to run.
          */
-        private Sched(Runnable iRunnable) {
+        private Sched(Runnable iRunnable, boolean bUseThreadPool) 
+        {
             m_iRunnable = iRunnable;
+            m_bUseThreadPool = bUseThreadPool;
         }
 
 
@@ -161,57 +157,13 @@ public class Scheduler {
          * thread pool.
          */
         @Override
-        public void run() {
+        public void run() 
+        {
             // queue the work to be performed by another thread
-            if (m_iExecutor != null)
+            if (m_bUseThreadPool && m_iExecutor != null)
                 m_iExecutor.execute(m_iRunnable);
-        }
-    }
-
-    /**
-     * Allows scheduled execution of processes using thread outside of the thread pool.
-     * <p>
-     * Extends {@code TimerTask} to allow scheduling for one-time or repeated
-     * execution by a Timer.
-     * </p>
-     */
-    private class Sched2 extends TimerTask {
-        /**
-         * Object of scheduled execution.
-         */
-        private Runnable m_iRunnable;
-
-
-        /**
-         * <b> Default Constructor </b>
-         * <p>
-         * Creates new instances of {@code Sched2}
-         * </p>
-         */
-        private Sched2() {
-        }
-
-
-        /**
-         * <b> Constructor </b>
-         * <p>
-         * Initializes the runnable object to the provided value.
-         * </p>
-         *
-         * @param iRunnable object to be scheduled to run.
-         */
-        private Sched2(Runnable iRunnable) {
-            m_iRunnable = iRunnable;
-        }
-
-
-        /**
-         * Queues the runnable object to be executed by a thread outside the
-         * thread pool.
-         */
-        @Override
-        public void run() {
-            m_iRunnable.run();
+            else
+                m_iRunnable.run();
         }
     }
 }

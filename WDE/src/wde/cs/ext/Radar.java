@@ -2,35 +2,49 @@ package wde.cs.ext;
 
 import java.io.BufferedInputStream;
 import java.net.URL;
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import wde.util.Config;
+import wde.util.ConfigSvc;
 import wde.util.Scheduler;
 
 
-public class Radar extends RemoteGrid
+/**
+ * This singleton class downloads Radar files every 2 minutes from the 
+ * National Oceanic and Atmospheric Administration
+ */
+public class Radar extends RemoteGrid 
 {
 	private static final Radar g_oRadar = new Radar();
-
-	private final Matcher m_oMatcher = Pattern.compile(
-		"(MRMS_MergedBaseReflectivityQC_00\\.00_[0-9]{8}-[0-9]{6}\\.grib2\\.gz)")
-		.matcher("");
+	SimpleDateFormat m_oNeededFile = new SimpleDateFormat("yyyyMMdd'-'HHmm");
+	
 
 	private Radar()
 	{
-		m_nDelay = 90000; // collection 90 seconds after source file ready
-		m_nRange = 120000; // radar files are updated every two minutes
-		m_nLimit = 3; // keep up to thirty radar files
+		Config oConfig = ConfigSvc.getInstance().getConfig(this);
+		
+		m_nDelay = 60000; // collection 180 seconds after source file ready, file is good for use for the next 2 minute interval
+		m_nRange = 180000; // radar files are updated every two minutes (ex. file for 3:10 is read at 3:13 and is good for 3:12 - 3:14)
+		m_nLimit = oConfig.getInt("limit", 360);  // keep up 3 hours of NDFD files
 		m_nObsTypes = new int[]{0};
 		m_sObsTypes = new String[]{"MergedBaseReflectivityQC_altitude_above_msl"};
 		m_sHrz = "lon";
 		m_sVrt = "lat";
+		m_sTime = "time";
+		m_sBaseDir = oConfig.getString("dir", "/run/shm/radar/");
 		m_sBaseURL = "http://mrms.ncep.noaa.gov/data/2D/MergedBaseReflectivityQC/";
-
-		Scheduler.getInstance().schedule(this, 90, 120, true);
+		m_nOffset = 60;
+		m_nPeriod = 120;
+		m_oNeededFile.setTimeZone(Scheduler.UTC);
+		m_nInitTime = oConfig.getInt("time", 3600 * 3);
+		init();
 	}
 
-
+	/**
+	 * Returns a reference to singleton Radar model data cache.
+	 *
+	 * @return reference to Radar data lookup instance.
+	 */
 	public static Radar getInstance()
 	{
 		return g_oRadar;
@@ -48,7 +62,6 @@ public class Radar extends RemoteGrid
 	@Override
 	protected String getFilename(Calendar oNow)
 	{
-		String sFilename = null;
 		StringBuilder sIndex = new StringBuilder();
 		try
 		{
@@ -59,23 +72,52 @@ public class Radar extends RemoteGrid
 				sIndex.append((char)nByte);
 			oIn.close();
 
-			m_oMatcher.reset(sIndex);
-			while (m_oMatcher.find()) // desired file name should be last match
-				sFilename = m_oMatcher.group(1);
+			oNow.add(Calendar.SECOND, (-(m_nPeriod + m_nOffset)));
+			int nTimeStampIndex = sIndex.indexOf(m_oNeededFile.format(oNow.getTime()));
+			oNow.add(Calendar.SECOND, (m_nPeriod + m_nOffset));
+			if (nTimeStampIndex < 0)
+			{
+				oNow.add(Calendar.SECOND, (-(m_nPeriod + m_nOffset + 60)));
+				nTimeStampIndex = sIndex.indexOf(m_oNeededFile.format(oNow.getTime()));
+				oNow.add(Calendar.SECOND, (m_nPeriod + m_nOffset + 60));
+				if(nTimeStampIndex < 0)
+					return null;
+			}
+			int nFileExtIndex = sIndex.indexOf(".gz", nTimeStampIndex);
+			int nFileIndex = sIndex.lastIndexOf("\"", nTimeStampIndex);
+			return sIndex.substring(++nFileIndex, nFileExtIndex + ".gz".length());
 		}
 		catch (Exception oException)
 		{
 		}
-
-		return sFilename;
+		return null;
 	}
 
-
+	/**
+	 * Used to determine the destination filename of the remote data
+	 * 
+	 * @param sSrcFile  the source file name
+	 * @param oTime     the desired time for the time
+	 * @return          the destination file name
+	 */
+	@Override
+	protected String getDestFilename(String sSrcFile, Calendar oTime)
+	{
+		String sDestFile = m_sBaseDir; // ignore intervening directories in path
+		int nSepIndex = sSrcFile.lastIndexOf("/");
+		if (nSepIndex >= 0)
+			return sDestFile + sSrcFile.substring(nSepIndex); // extract the file name
+		else
+			return sDestFile + sSrcFile; // local file name
+	}
+	
+	
 	public static void main(String[] sArgs)
 		throws Exception
 	{
 		Radar oRadar = Radar.getInstance();
-		Thread.sleep(600000);
-		System.out.println(oRadar.getReading(0, System.currentTimeMillis(), 43000000, -94000000));
+		for(int i = 1460; i < 1470; i++)
+			for(int j = 5365; j < 5370; j++)
+				System.out.println(oRadar.getReading(0, System.currentTimeMillis(), -10000 * i + 54995000, 10000 * j - 129995000));
 	}
 }

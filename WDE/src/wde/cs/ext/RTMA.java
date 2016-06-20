@@ -4,7 +4,9 @@ package wde.cs.ext;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.TimeZone;
-import wde.util.Scheduler;
+
+import wde.util.Config;
+import wde.util.ConfigSvc;
 
 
 /**
@@ -28,11 +30,14 @@ public final class RTMA extends RemoteGrid
 	 * longitude name mapping, and remote source and local storage directory.
 	 * </p>
 	 */
-	RTMA()
+	private RTMA()
 	{
-		m_nDelay = 300000; // collection five minutes after source file ready
-		m_nRange = 3900000; // RTMA forecast is hourly, from x:50 to x+1:50
-		m_nLimit = 3; // keep up to three RTMA files
+		
+		Config oConfig = ConfigSvc.getInstance().getConfig(this);
+		
+		m_nDelay = -300000; // collection five minutes after source file ready, file read at x-1:55
+		m_nRange = 3900000; // RTMA forecast is hourly, good to use from x:00 to x+1:00
+		m_nLimit = oConfig.getInt("limit", 12);  // keep up 12 hours of RTMA files
 		m_nObsTypes = new int[]{575, 554, 5733, 5101, 56105, 56108, 56104};
 		m_sObsTypes = new String[]
 		{
@@ -43,11 +48,15 @@ public final class RTMA extends RemoteGrid
 		};
 		m_sHrz = "x";
 		m_sVrt = "y";
+		m_sTime = "time";
+		//m_sBaseDir = "C:/Users/aaron.cherney/TestFiles/RTMA/";
+		m_sBaseDir = oConfig.getString("dir", "/run/shm/rtma");
 		m_sBaseURL = "ftp://ftp.ncep.noaa.gov/pub/data/nccf/com/rtma/prod/";
-
 		m_oSrcFile.setTimeZone(TimeZone.getTimeZone("Etc/UTC"));
-		run();
-		Scheduler.getInstance().schedule(this, 3300, 3600, true);
+		m_nOffset = 3300;
+		m_nPeriod = 3600;
+		m_nInitTime = oConfig.getInt("time", 3600 * 3);
+		init();
 	}
 
 
@@ -112,10 +121,32 @@ public final class RTMA extends RemoteGrid
 		if (nObsTypeId == 554) // convert pressure Pa to mbar
 			return dVal / 100.0;
 
-		if (nObsTypeId == 5733) // convert temperature K to C
+		if (nObsTypeId == 5733 || nObsTypeId == 575) // convert temperature K to C
 			return dVal - 273.15;
+		
+		if (nObsTypeId == 593) // convert cloud coverage from percent to METRo "octal"
+			return Math.round(dVal/12.5);
 
 		return dVal; // no conversion necessary for other observation types
+	}
+	
+	
+	/**
+	 * Used to determine the destination filename of the remote data
+	 * 
+	 * @param sSrcFile  the source file name
+	 * @param oTime     the desired time for the time
+	 * @return          the destination file name
+	 */
+	@Override
+	protected String getDestFilename(String sSrcFile, Calendar oTime)
+	{
+		String sDestFile = m_sBaseDir; // ignore intervening directories in path
+		int nSepIndex = sSrcFile.lastIndexOf("/");
+		if (nSepIndex >= 0)
+			return sDestFile + sSrcFile.substring(nSepIndex); // extract the file name
+		else
+			return sDestFile + sSrcFile; // local file name
 	}
 
 
@@ -123,6 +154,18 @@ public final class RTMA extends RemoteGrid
 		throws Exception
 	{
 		RTMA oRTMA = RTMA.getInstance();
-		System.out.println(oRTMA.getReading(5733, System.currentTimeMillis(), 43000000, -94000000));
+		long lTime = System.currentTimeMillis();
+		for (int i = 0; i < 1; i++)
+		{
+			System.out.println(oRTMA.getReading(575, lTime - i * 3600000, 43000000, -94000000));
+			System.out.println(oRTMA.getReading(554, lTime - i * 3600000, 43000000, -94000000));
+			System.out.println(oRTMA.getReading(5733, lTime - i * 3600000, 43000000, -94000000));
+			System.out.println(oRTMA.getReading(5101, lTime - i * 3600000, 43000000, -94000000));
+			System.out.println(oRTMA.getReading(56105, lTime - i * 3600000, 43000000, -94000000));
+			System.out.println(oRTMA.getReading(56108, lTime - i * 3600000, 43000000, -94000000));
+			System.out.println(oRTMA.getReading(56104, lTime - i * 3600000, 43000000, -94000000));
+		}
+	//	System.out.println(oRTMA.getReading(5733, System.currentTimeMillis(), 43000000, -94000000));
+	System.exit(0);
 	}
 }
