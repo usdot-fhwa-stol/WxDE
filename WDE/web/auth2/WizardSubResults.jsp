@@ -302,8 +302,7 @@
 		        <b>Description: </b><%= oSubscription.getDescription() %><br/>
 				<b>Subscription Identifier: </b><%= nSubId %><br/>
 	            <b>Expires On: </b><%= oDateFormat.format(oDate) %><br/>
-		        <b>URL: </b><a href="<%= sUrl %>"><%= request.getScheme() + "://" + request.getServerName() + ":" + request.getServerPort() + "/auth/" + sUrl %></a><br/>
-	            <b>UUID: </b><%= uuid %><br/>
+		        <b>Direct URL: </b><%= request.getScheme() + "://" + request.getServerName() + ":" + request.getServerPort() + "/downloadSubscription?uuid=" + uuid + "&amp;file=&lt;filename&gt;" %><br/>
 			</div>
 		</div>
 		
@@ -320,12 +319,15 @@
 			that it may take up to one interval before your first 
 			set of observations is available. 
 			<br><br>
-			You can save the provided URL as a browser favorite 
-			link to make it easy to retrieve your subscription files.  
-			The universally unique identifier (UUID) can also be used during 
-			automated download of subscription result using
+			The direct access URL can be used by automated processes you create 
+			to regularly download your subscription results. The &lt;filename&gt; 
+			needs to be replaced with a file name following a yyyyMMdd_HHmm.ext 
+			pattern. Substitute your selected subscription time and format 
+			parameters in the placeholder positions. For example, 20160511_1935.csv. 
+			The minute position before the file type extension should match your 
+			subscription interval, i.e. 05, 10, 15, 20, etc. for a five-minute 
+			interval; 10, 20, 30, 40, etc. for a 10-minute interval, and so forth.
 			<br> 
-			<b>http://<%= request.getServerName() + ":" + request.getServerPort() %>/downloadSubscription?uuid=<%= uuid %>&amp;file=&lt;filename&gt</b>
 	    </div>
 	    
 		<div class='clearfix'></div>

@@ -26,11 +26,11 @@ public class RwisLayerServlet extends PointLayerServletBase
           + "WHERE\n"
           + "p.contribid<>4\n"
           + "AND p.category IN ('P', 'T')\n"
-          + "AND s.distgroup = 2\n"
           + "AND p.locbaselat >= ?\n"
           + "AND p.locbaselat <= ?\n"
           + "AND p.locbaselong >= ?\n"
           + "AND p.locbaselong <= ?\n"
+          + "AND s.distgroup IN (" + DISTGROUP_LIST_PLACEHOLDER + ")\n"
           + "AND o.obstime >= ?\n"
           + "AND o.obstime <= ?\n";
 
@@ -44,7 +44,8 @@ public class RwisLayerServlet extends PointLayerServletBase
           = m_sBaseSelect
           + ",o.value\n"
           + m_sBaseFromWhere
-          + "AND o.obstypeid = ?";
+          + "AND o.obstypeid = ?\n"
+          + "ORDER BY platformid, obstime desc";
 
   public RwisLayerServlet() throws NamingException
   {
