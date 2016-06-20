@@ -10,6 +10,7 @@ public class ObsRequest
   private LatLngBounds m_sRequestBounds;
   private long m_lRequestTimestamp;
   private int[] m_nlatformIds;
+  private int[] m_nDistributionGroups;
 
   public LatLngBounds getRequestBounds()
   {
@@ -39,5 +40,15 @@ public class ObsRequest
   public void setPlatformIds(int... nPlatformIds)
   {
     this.m_nlatformIds = nPlatformIds;
+  }
+
+  public int[] getDistributionGroups()
+  {
+    return m_nDistributionGroups;
+  }
+
+  public void setDistributionGroups(int... nDistributionGroups)
+  {
+    this.m_nDistributionGroups = nDistributionGroups;
   }
 }

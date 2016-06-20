@@ -20,7 +20,7 @@ import wde.metadata.ObsType;
  */
 @WebServlet(name = "ObsTypeServlet", urlPatterns =
 {
-  "/ObsType/*"
+  "/ObsType/list"
 })
 public class ObsTypeServlet extends HttpServlet
 {
@@ -56,8 +56,6 @@ public class ObsTypeServlet extends HttpServlet
 
   private void listAll(HttpServletResponse response) throws IOException
   {
-    //issue the version of jackson we are using (JACKSON-462) leads to buffer overflow if we don't manually flush ocassionaly
-    int nCount = 0;
 
     try (JsonGenerator oJsonGenerator = m_oJsonFactory.createJsonGenerator(response.getOutputStream(), JsonEncoding.UTF8))
     {
@@ -66,14 +64,15 @@ public class ObsTypeServlet extends HttpServlet
       {
         if (!oObsType.isActive())
           continue;
+        if (Integer.parseInt(oObsType.getId()) < 20) // is it an alert obstype
+          continue;
+
         oJsonGenerator.writeStartObject();
         oJsonGenerator.writeStringField("id", oObsType.getId());
         oJsonGenerator.writeStringField("name", oObsType.getObsType());
         oJsonGenerator.writeStringField("englishUnits", oObsType.getObsEnglishUnit());
         oJsonGenerator.writeStringField("internalUnits", oObsType.getObsInternalUnit());
         oJsonGenerator.writeEndObject();
-        if (++nCount % 50 == 0)
-          oJsonGenerator.flush();
       }
       oJsonGenerator.writeEndArray();
     }

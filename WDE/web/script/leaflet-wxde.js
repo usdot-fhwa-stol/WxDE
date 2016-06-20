@@ -3,18 +3,72 @@ var graySquareIcon = L.icon({
   iconUrl: 'images/square-gray-icon.png',
   iconSize: [10, 10]
 });
-var processPointData = function (groupData, groupStyle, hasObs, constructor)
+
+function StaticLayerStyler(style)
+{
+  this.style = style;
+}
+
+StaticLayerStyler.prototype.styleLayer = function (layer)
+{
+  if (layer.setStyle)
+    layer.setStyle(this.style);
+};
+
+function RoadStatusStyler(statusStyles, map, highlighter)
+{
+  this.statusStyles = statusStyles;
+  this.highlighter = highlighter;
+  this.map = map;
+}
+
+RoadStatusStyler.prototype.styleLayer = function (layer)
+{
+  var highlightLines = this.highlighter.getHighlightLines();
+  var lineIndex = highlightLines.length;
+  while (--lineIndex >= 0)
+  {
+    var line = highlightLines.pop();
+    this.map.removeLayer(line);
+  }
+
+  if (layer.setStyle)
+    layer.setStyle(this.statusStyles[layer.options.status]);
+};
+
+function RoadHighlighter(highlightStyle, map)
+{
+  this.style = highlightStyle;
+  this.map = map;
+  this.highlightLines = [];
+}
+
+
+RoadHighlighter.prototype.styleLayer = function (layer)
+{
+  var highlightLine = L.polyline(layer.getLatLngs(), this.style).addTo(this.map);
+  highlightLine.bringToBack();
+  this.highlightLines.push(highlightLine);
+};
+
+RoadHighlighter.prototype.getHighlightLines = function ()
+{
+  return this.highlightLines;
+};
+
+
+var processPointData = function (groupData, hasObs, constructor)
 {
   var rowIndex = 0;
   var rowSize = 4 + (hasObs ? 2 : 0);
   var platformFeatureGroup = [];
-  while (rowIndex + rowSize < groupData.length)
+  while (rowIndex + rowSize <= groupData.length)
   {
     var id = groupData[rowIndex + 0];
     var code = groupData[rowIndex + 1];
     var lat = groupData[rowIndex + 2];
     var lng = groupData[rowIndex + 3];
-    var marker = constructor(id, lat, lng, groupStyle, code);
+    var marker = constructor(id, lat, lng, code);
 
     if (hasObs)
     {
@@ -29,32 +83,34 @@ var processPointData = function (groupData, groupStyle, hasObs, constructor)
   return platformFeatureGroup;
 };
 
-var createCircleMarkers = function (groupData, groupStyle, hasObs)
+var createCircleMarkers = function (groupData, hasObs)
 {
-  return processPointData(groupData, groupStyle, hasObs, L.wxdeCircleMarker);
+  return processPointData(groupData, hasObs, L.wxdeCircleMarker);
 };
 
-var createSquareMarkers = function (groupData, groupStyle, hasObs)
+var createSquareMarkers = function (groupData, hasObs)
 {
-  return processPointData(groupData, groupStyle, hasObs, L.wxdeSquareMarker);
+  return processPointData(groupData, hasObs, L.wxdeSquareMarker);
 };
 
-var processPolylineData = function (groupData, groupStyle)
+var processPolylineData = function (groupData)
 {
   var rowIndex = 0;
-  var rowSize = 7;
+  var rowSize = 8;
   var platformFeatureGroup = [];
-  while (rowIndex + rowSize < groupData.length)
+  while (rowIndex + rowSize <= groupData.length)
   {
 
     var id = groupData[rowIndex + 0];
     var code = groupData[rowIndex + 1];
     var lat = groupData[rowIndex + 2];
     var lng = groupData[rowIndex + 3];
-    var metricValue = groupData[rowIndex + 4];
-    var englishValue = groupData[rowIndex + 5];
-    var points = groupData[rowIndex + 6];
-    var marker = L.wxdePolyline(id, points, new L.LatLng(lat, lng), groupStyle, code);
+    var status = groupData[rowIndex + 4];
+    var metricValue = groupData[rowIndex + 5];
+    var englishValue = groupData[rowIndex + 6];
+    var points = groupData[rowIndex + 7];
+
+    var marker = L.wxdePolyline(id, points, new L.LatLng(lat, lng), code, {status: status});
 
     marker.englishValue = englishValue;
     marker.metricValue = metricValue;
@@ -95,21 +151,42 @@ L.WxdeSummaryMap = L.Map.extend({
     this._minLayerZoom = 18;
     if (this.options.statesLayer)
     {
-      var thisMap = this;
-      this.addLayer(this.options.statesLayer);
+      this.setStatesLayer(this.options.statesLayer);
 
-      this.options.statesLayer.eachLayer(
-              function (layer)
-              {
-                layer.on('click',
-                        function (e)
-                        {
-
-                          thisMap.setView(e.target.getBounds().getCenter(), thisMap.getMinLayerZoom());
-                          //thisMap.removeLayer(statesGroup);
-                        });
-              });
     }
+
+
+    $("#road-legend-form").dialog({
+      autoOpen: false,
+      modal: true,
+      draggable: false,
+      resizable: false,
+      width: "400",
+      height: "auto",
+      position: {my: "center", at: "center"}
+    });
+
+
+    $("#details-form").dialog({
+      autoOpen: false,
+      modal: true,
+      draggable: false,
+      resizable: false,
+      width: "400",
+      height: "auto",
+      position: {my: "center", at: "center"}
+    });
+
+    $("#summary-legend-form").dialog({
+      autoOpen: false,
+      modal: true,
+      draggable: false,
+      resizable: false,
+      width: "400",
+      height: "auto",
+      position: {my: "center", at: "center"}
+    });
+
 
     if (this.options.lstObstypes)
     {
@@ -132,10 +209,60 @@ L.WxdeSummaryMap = L.Map.extend({
               this.obstypeName = obstype.name;
             });
           }
+
+          $('<option value="StationCode"></option>').appendTo(thisObstypeList).each(function ()
+          {
+            this.englishUnits = '';
+            this.internalUnits = '';
+            this.obstypeName = 'Station Code';
+          });
+
           thisMap.updateObstypeLabels();
         },
         timeout: 3000
       });
+    }
+  },
+  showDialog: function (alwaysShow)
+  {
+    var zoom = this.getZoom();
+
+    var firstLayerZoom = this.getMinLayerZoom();
+    var roadLayerZoom = 11;
+    if (zoom >= roadLayerZoom)
+    {
+      if (!this.roadDialogShown || alwaysShow)
+      {
+        $("#details-form").dialog("close");
+        $("#summary-legend-form").dialog("close");
+
+        this.roadDialogShown = true;
+        $("#road-legend-form").dialog("open");
+      }
+
+    }
+    else if (zoom >= firstLayerZoom)
+    {
+      if (!this.detailDialogShown || alwaysShow)
+      {
+        $("#road-legend-form").dialog("close");
+        $("#summary-legend-form").dialog("close");
+
+        this.detailDialogShown = true;
+        $("#details-form").dialog("open");
+      }
+    }
+    else
+    {
+      if (!this.summaryDialogShown || alwaysShow)
+      {
+        $("#road-legend-form").dialog("close");
+        $("#details-form").dialog("close");
+
+        this.summaryDialogShown = true;
+
+        $("#summary-legend-form").dialog("open");
+      }
     }
   },
   updateObstypeLabels: function ()
@@ -176,15 +303,75 @@ L.WxdeSummaryMap = L.Map.extend({
       }, this._wxdeLayers[layerIndex]);
     }
   },
+  showStationCodeLabels: function ()
+  {
+    this.hasStationCodeLabels = true;
+    this.eachWxdeLayer(function (wxdeLayer)
+    {
+      if (wxdeLayer.showObsLabels())
+      {
+        wxdeLayer.eachZoomLayer(function (zoomLayer)
+        {
+          zoomLayer.eachLayer(function (layer)
+          {
+            if (layer.obsMarker)
+            {
+              layer.obsMarker.setText(layer.getStationCode());
+              if (!zoomLayer.hasLayer(layer.obsMarker))
+                zoomLayer.addLayer(layer.obsMarker);
+            }
+            else
+            {
+              var obsMarker = L.wxdeObsMarker(layer.getLatLng(), layer.getStationCode());
+              layer.obsMarker = obsMarker;
+              zoomLayer.addLayer(obsMarker);
+            }
+          });
+        });
+      }
+    });
+  },
+  hideLayerDivs: function ()
+  {
+    this.hasStationCodeLabels = false;
+    this.eachWxdeLayer(function (wxdeLayer)
+    {
+      wxdeLayer.eachZoomLayer(function (zoomLayer)
+      {
+        zoomLayer.eachLayer(function (layer)
+        {
+          if (layer.obsMarker)
+          {
+            zoomLayer.hasLayer(layer.obsMarker);
+            zoomLayer.removeLayer(layer.obsMarker);
+          }
+        });
+      });
+    });
+  },
+  eachWxdeLayer: function (method, context)
+  {
+    if (!this._wxdeLayers)
+      return this;
+    var layerCount = this._wxdeLayers.length;
+    for (var layerIndex = 0; layerIndex < layerCount; ++layerIndex)
+    {
+      method.call(context, this._wxdeLayers[layerIndex]);
+    }
+    return this;
+  }
+  ,
   registerWxdeLayer: function (layer)
   {
     this._wxdeLayers.push(layer);
     layer.setMap(this);
-  },
-  getWxdeLayers: function ()
+  }
+  ,
+  getsummary: function ()
   {
     return this._wxdeLayers;
-  },
+  }
+  ,
   refreshLayers: function ()
   {
     var layerCount = this._wxdeLayers.length;
@@ -193,7 +380,8 @@ L.WxdeSummaryMap = L.Map.extend({
       this._wxdeLayers[layerIndex].refreshData();
     }
     //thisLayer.refreshData();
-  },
+  }
+  ,
   reorderLayerElements: function ()
   {
     var layerCount = this._wxdeLayers.length;
@@ -201,26 +389,84 @@ L.WxdeSummaryMap = L.Map.extend({
     {
       if (this.hasLayer(this._wxdeLayers[layerIndex]))
       {
-        this._wxdeLayers[layerIndex].eachLayer(function (layer)
-        {
-          if (layer.bringToBack)
-            layer.bringToBack();
-        }, this._wxdeLayers[layerIndex]);
+        this._wxdeLayers[layerIndex].bringToBack();
       }
     }
-  },
+  }
+  ,
   getMinLayerZoom: function ()
   {
     return this._minLayerZoom;
-  },
+  }
+  ,
+  setStatesLayer: function (statesLayer)
+  {
+    var thisMap = this;
+    this.statesLayer = statesLayer;
+    this.addLayer(statesLayer);
+
+
+
+    this.on('zoomend', function (event)
+    {
+      var zoom = thisMap.getZoom();
+      var breakpointZoom = thisMap.getMinLayerZoom() - 1;
+      var onMap = thisMap.hasLayer(statesLayer);
+
+      thisMap.showDialog();
+
+      if (zoom > breakpointZoom && onMap)
+      {
+        thisMap.removeLayer(statesLayer);
+      }
+      else if (zoom <= breakpointZoom && !onMap)
+      {
+        thisMap.addLayer(statesLayer);
+      }
+
+      var disabled = zoom > breakpointZoom ? false : true;
+
+      $('.disableOnSummary').each(function (idx, el)
+      {
+        el.disabled = disabled;
+        if (disabled)
+          $(el).addClass('DisabledElement');
+        else
+          $(el).removeClass('DisabledElement');
+      });
+
+
+    });
+
+
+    statesLayer.eachLayer(
+            function (layer)
+            {
+              layer.on('click',
+                      function (e)
+                      {
+
+                        thisMap.setView(e.target.getBounds().getCenter(), thisMap.getMinLayerZoom());
+                        //thisMap.removeLayer(statesGroup);
+                      });
+            });
+  }
+  ,
+  getStatesLayer: function ()
+  {
+    return this.statesLayer;
+  }
+  ,
   getSelectedTime: function ()
   {
     return this.options.selectedTimeFunction();
-  },
+  }
+  ,
   useMetricValue: function ()
   {
     return this.options.useMetricUnitsFunction();
-  },
+  }
+  ,
   getSelectedObsType: function ()
   {
     return this.options.selectedObsTypeFunction();
@@ -234,8 +480,8 @@ L.wxdeSummaryMap = function (id, options)
 L.WxdeLayer = L.LayerGroup.extend({
   options: {
     checkbox: null, // checkbox input used to enable/disable layer
-    highlightFillColor: "yellow",
     hasObs: true,
+    showObsLabels: true,
     platformDetailsFunction: function (marker)
     {
       var details = [];
@@ -253,15 +499,16 @@ L.WxdeLayer = L.LayerGroup.extend({
       return marker.requestBounds;
     }
   },
-  initialize: function (baseUrl, layerParser, layerMarkerStyle, options)
+  initialize: function (baseUrl, layerParser, layerStyler, options)
   {
     L.LayerGroup.prototype.initialize.call(this, null);
     L.setOptions(this, options);
     this._baseUrl = baseUrl;
     this._layerParser = layerParser;
-    this._layerMarkerStyle = layerMarkerStyle;
+    this.layerStyler = layerStyler;
     this._zoomLayers = [];
     this._zoomRequests = [];
+    this._highlighter = this.options.highlighter;
     if (this.options.checkbox)
     {
       this._checkbox = this.options.checkbox;
@@ -273,32 +520,39 @@ L.WxdeLayer = L.LayerGroup.extend({
         else if (this.checked)
         {
           thisLayer._wxdeMap.addLayer(thisLayer);
-          if (thisLayer.isEnabled(thisLayer._wxdeMap.getZoom()))
+          if (thisLayer.isEnabled(thisLayer._wxdeMap.getZoom(), thisLayer._wxdeMap.getSelectedTime()))
             thisLayer.refreshData(true);
         }
       });
     }
 
-    if (this.options.highlightFillColor)
+  },
+  showObsLabels: function ()
+  {
+    return this.options.showObsLabels;
+  },
+  bringToBack: function ()
+  {
+    this.eachLayer(function (layer)
     {
-      var highlightStyle = {};
-      for (var styleAttr in layerMarkerStyle)
-      {
-        if (layerMarkerStyle.hasOwnProperty(styleAttr))
-          highlightStyle[styleAttr] = layerMarkerStyle[styleAttr];
-      }
-      highlightStyle.color = this.options.highlightFillColor;
-      this._highlightStyle = highlightStyle;
-    }
-
+      if (layer.bringToBack)
+        layer.bringToBack();
+    }, this);
   },
   getPlatformDetails: function (marker)
   {
     return this.options.platformDetailsFunction(marker);
   },
-  isEnabled: function (zoom)
+  isEnabled: function (zoom, requestTime)
   {
-    return zoom >= this._minZoom;
+    var enabled = zoom >= this._minZoom;
+
+    if (enabled && requestTime && (this.options.enabledForTime))
+    {
+      return this.options.enabledForTime(requestTime);
+    }
+
+    return enabled;
   },
   isUserSelected: function ()
   {
@@ -337,6 +591,16 @@ L.WxdeLayer = L.LayerGroup.extend({
     }
     return this;
   },
+  eachZoomLayer: function (method, context)
+  {
+    if (!this._zoomLevels)
+      return this;
+    for (var zoomIndex = 0; zoomIndex < this._zoomLevels.length; ++zoomIndex)
+    {
+      method.call(context, this._getZoomLayer(this._zoomLevels[zoomIndex]));
+    }
+    return this;
+  },
   setMap: function (map)
   {
     this._wxdeMap = map;
@@ -347,57 +611,21 @@ L.WxdeLayer = L.LayerGroup.extend({
     });
     this._wxdeMap.on('zoomend', function (event)
     {
-      if (map.options.statesLayer)
-      {
-        var statesLayer = map.options.statesLayer;
-        var zoom = map.getZoom();
-        var breakpointZoom = map.getMinLayerZoom() - 1;
-        var onMap = map.hasLayer(statesLayer);
-        if (zoom > breakpointZoom && onMap)
-        {
-          map.removeLayer(statesLayer);
-        }
-        else if (zoom <= breakpointZoom && !onMap)
-        {
-          map.addLayer(statesLayer);
-        }
-      }
-
-      if (thisLayer.isEnabled(this.getZoom()))
-      {
-        if (thisLayer._checkbox)
-          thisLayer._checkbox.disabled = false;
-        if (thisLayer.isUserSelected())
-        {
-          if (!this.hasLayer(thisLayer))
-            this.addLayer(thisLayer);
-          thisLayer.refreshData();
-        }
-      }
-      else
-      {
-        if (this.hasLayer(thisLayer))
-          this.removeLayer(thisLayer);
-        if (thisLayer._checkbox)
-          thisLayer._checkbox.disabled = true;
-      }
-
+      thisLayer.refreshData();
     });
-    if (map.options.stationCodeDiv || this._highlightStyle)
+    if (map.options.stationCodeDiv || this._highlighter)
     {
       var stationDiv = map.options.stationCodeDiv;
-      var highlightStyle = this._highlightStyle;
-      var originalStyle = this._layerMarkerStyle;
       this._markerMouseOver = function (event)
       {
-        if (highlightStyle && this.setStyle)
-          this.setStyle(highlightStyle);
+        if (thisLayer._highlighter)
+          thisLayer._highlighter.styleLayer(this);
         stationDiv.innerHTML = this.getStationCode();
       };
       this._markerMouseOut = function (event)
       {
-        if (highlightStyle && this.setStyle)
-          this.setStyle(originalStyle);
+        if (thisLayer._highlighter)
+          thisLayer.layerStyler.styleLayer(this);
         stationDiv.innerHTML = '';
       };
     }
@@ -410,29 +638,76 @@ L.WxdeLayer = L.LayerGroup.extend({
         var obsTable = $(thisDetailsWindow.platformObsTable);
         //mae table visible or invisible based on _hasobs
         var QCH_MAX = 15;
-        var colCount = QCH_MAX + 6;
+        var obsThead =
+                '\n<tr align="center">\n' +
+                '<td class="td-title" colspan="6"><div id="platform-details"> </div>\n' +
+                '</td>\n' +
+                '<td rowspan="2" class="td-image no-border-left webkit-td-image-fix"><img alt="Complete" src="image/qch/Complete.png"></td>\n' +
+                '<td rowspan="2" class="td-image"><img alt="Manual" src="image/qch/Manual.png"></td>\n' +
+                '<td rowspan="2" class="td-image"><img alt="Sensor Range" src="image/qch/SensorRange.png"></td>\n' +
+                '<td rowspan="2" class="td-image"><img alt="Climate Range" src="image/qch/ClimateRange.png"></td>\n' +
+                '<td rowspan="2" class="td-image"><img alt="Step" src="image/qch/Step.png"></td>\n' +
+                '<td rowspan="2" class="td-image"><img alt="Like Instrument" src="image/qch/LikeInstrument.png"></td>\n' +
+                '<td rowspan="2" class="td-image"><img alt="Persistence" src="image/qch/Persistence.png"></td>\n' +
+                '<td rowspan="2" class="td-image"><img alt="Inter-quartile Range" src="image/qch/IQR.png"></td>\n' +
+                '<td rowspan="2" class="td-image"><img alt="Barnes Spatial" src="image/qch/BarnesSpatial.png"></td>\n' +
+                '<td rowspan="2" class="td-image"><img alt="Dewpoint" src="image/qch/Dewpoint.png"></td>\n' +
+                '<td rowspan="2" class="td-image"><img alt="Sea Level Pressure" src="image/qch/SeaLevelPressure.png"></td>\n' +
+                '<td rowspan="2" class="td-image"><img alt="Accumulated Precipitation" src="image/qch/PrecipAccum.png"></td>\n' +
+                '<td rowspan="2" class="td-image"><img src="image/qch/ModelAnalysis.png" alt="Model Analysis"></td>\n' +
+                '<td class="td-image" rowspan="2"><img src="image/qch/NeighboringVehicle.png" alt="Neighboring Vehicle"></td>\n' +
+                '<td class="td-image" rowspan="2"><img src="image/qch/VehicleStdDev.png" alt="Vehicle Standard Deviation"></td>\n' +
+                '</tr>\n' +
+                '<tr class="last-tr">\n' +
+                '<td class="timestamp"><b>Timestamp</b></td>\n' +
+                '<td class="obsType"><b>Observation Type</b></td>\n' +
+                '<td class="td-ind"><b>Ind</b></td>\n' +
+                '<td class="td-value"><b>Value</b></td>\n' +
+                '<td class="unit"><b>Unit</b></td>\n' +
+                '<td class="conf webkit-td-conf-fix"><b>Conf</b></td>\n' +
+                '</tr>';
+        var sensorThead =
+                '\n<tr align="center">\n' +
+                '<td class="td-title" colspan="2"><div id="platform-details"> </div>\n' +
+                '</td>\n' +
+                '</tr>\n' +
+                '<tr class="last-tr">\n' +
+                '<td class="obsType"><b>Observation Type</b></td>\n' +
+                '<td class="sensorIndex"><b>Index</b></td>\n' +
+                '<td class="sensorMake"><b>Make</b></td>\n' +
+                '<td class="sensorModel"><b>Model</b></td>\n' +
+                '</tr>';
+        obsTable.find('thead > tr').remove();
+        var colCount;
+        if (thisLayer._hasObs())
+        {
+          obsTable.find('thead').append(obsThead);
+          colCount = QCH_MAX + 6;
+        }
+        else
+        {
+          obsTable.find('thead').append(sensorThead);
+          colCount = 2;
+        }
 
+        var closeDetailsFn = function ()
+        {
+          thisDetailsWindow.dialog.dialog("close");
+        };
 
         var platformDetails = thisLayer.getPlatformDetails(this);
-
-        var detailsDiv = thisDetailsWindow.platformDetailsDiv;
-
-        var detailsContent = '';
-
+        var detailsDiv = obsTable.find('#platform-details');
+        var buttonElement = '<button type="button" class="ui-button ui-widget ui-state-default ui-corner-all ui-button-icon-only no-title-form ui-dialog-titlebar-close" role="button" title="Close"><span class="ui-button-icon-primary ui-icon ui-icon-closethick"></span><span class="ui-button-text">Close</span></button>';
+        var detailsContent = buttonElement + '<br />';
         detailsContent += platformDetails.sc + '<br />';
-
         detailsContent += 'Lat, Lon: ' + platformDetails.lat;
         detailsContent += ', ' + platformDetails.lng + '<br />';
-
         detailsDiv.html(detailsContent);
-
+        detailsDiv.find('.ui-dialog-titlebar-close').click(closeDetailsFn);
         var bounds = thisLayer._getMarkerObsRequestBounds(this);
         obsTable.show();
         obsTable.find('tbody > tr').remove();
         obsTable.find('tbody:last-child').append('<tr><td colspan="' + colCount + '">Loading data...</td></tr>');
-
-
-
         $.ajax({
           type: "GET",
           url: thisLayer._baseUrl + "/platformObs/" + this.getPlatformId() + "/" + thisLayer._wxdeMap.getSelectedTime() + "/" + bounds.getNorth() + "/" + bounds.getWest() + "/" + bounds.getSouth() + "/" + bounds.getEast(),
@@ -445,97 +720,105 @@ L.WxdeLayer = L.LayerGroup.extend({
               return;
             }
             var additionalDetails = $.parseJSON(data.responseText);
-
-            detailsContent = '';
-
+            detailsContent = buttonElement + '<br />';
             detailsContent += platformDetails.sc + '<br />';
-
             if (additionalDetails.tnm)
               detailsContent += additionalDetails.tnm + '<br />';
-
             detailsContent += 'Lat, Lon: ' + platformDetails.lat;
             detailsContent += ', ' + platformDetails.lng + '<br />';
             if (additionalDetails.tel)
               detailsContent += 'Elevation: ' + additionalDetails.tel;
-
             detailsDiv.html(detailsContent);
-
-
-            var obsList = additionalDetails.obs;
-
+            detailsDiv.find('.ui-dialog-titlebar-close').click(closeDetailsFn);
             obsTable.find('tbody > tr').remove();
-
-            if (!obsList || obsList.length === 0)
+            if (thisLayer._hasObs())
             {
-              obsTable.find('tbody:last-child').append('<tr><td colspan="' + colCount + '">No data</td></tr>');
+              var obsList = additionalDetails.obs;
+              if (!obsList || obsList.length === 0)
+              {
+                obsTable.find('tbody:last-child').append('<tr><td colspan="' + colCount + '">No data</td></tr>');
+              }
+              else
+              {
+
+
+                var m_oQCh =
+                        [
+                          [{im: "b", tx: ""}, {im: "nr", tx: "not run"}],
+                          [{im: "n", tx: "not passed"}, {im: "p", tx: "passed"}]
+                        ];
+                var newRows = '';
+                for (var rowIndex = 0; rowIndex < obsList.length; ++rowIndex)
+                {
+                  var iObs = obsList[rowIndex];
+                  newRows += '<tr>';
+                  newRows += "<td class=\"timestamp\">" + iObs.ts + "</td>\n";
+                  newRows += "<td class=\"obsType\">" + iObs.ot + "</td>\n";
+                  newRows += "<td class=\"td-ind\">" + iObs.si + "</td>\n";
+                  newRows += "<td class=\"td-value\">";
+                  if (thisLayer._wxdeMap.useMetricValue())
+                    newRows += iObs.mv;
+                  else
+                    newRows += iObs.ev;
+                  newRows += "</td>\n";
+                  newRows += "<td class=\"unit\">";
+                  var unit;
+                  if (thisLayer._wxdeMap.useMetricValue())
+                    unit = iObs.mu;
+                  else
+                    unit = iObs.eu;
+                  if (unit)
+                    newRows += unit;
+                  newRows += "</td>\n";
+                  newRows += "<td class=\"conf\">" + iObs.cv + "%</td>\n";
+                  var sRun = Number(iObs.rf).toString(2);
+                  while (sRun.length < QCH_MAX)
+                    sRun = "0" + sRun;
+                  var sPass = Number(iObs.pf).toString(2);
+                  while (sPass.length < QCH_MAX)
+                    sPass = "0" + sPass;
+                  var nIndex = QCH_MAX;
+                  while (--nIndex >= 0)
+                  {
+                    var nRow = Number(sRun.charAt(nIndex));
+                    var nCol = Number(sPass.charAt(nIndex));
+                    var oFlag = m_oQCh[nRow][nCol];
+                    newRows += "    <td><img alt='Icon' src=\"image/";
+                    newRows += oFlag.im;
+                    newRows += ".png\" alt=\"";
+                    newRows += oFlag.tx;
+                    newRows += "\"/></td>\n";
+                  }
+
+                  newRows += '</tr>';
+                }
+
+                obsTable.find('tbody:last-child').append(newRows);
+              }
             }
             else
             {
-
-
-              var m_oQCh =
-                      [
-                        [{im: "b", tx: ""}, {im: "nr", tx: "not run"}],
-                        [{im: "n", tx: "not passed"}, {im: "p", tx: "passed"}]
-                      ];
-
-
-              var newRows = '';
-              for (var rowIndex = 0; rowIndex < obsList.length; ++rowIndex)
+              var sensorList = additionalDetails.sl;
+              if (!sensorList || sensorList.length === 0)
               {
-                var iObs = obsList[rowIndex];
-                newRows += '<tr>';
-                newRows += "<td class=\"timestamp\">" + iObs.ts + "</td>\n";
-                newRows += "<td class=\"obsType\">" + iObs.ot + "</td>\n";
-                newRows += "<td class=\"td-ind\">" + iObs.si + "</td>\n";
-
-                newRows += "<td class=\"td-value\">";
-                if (thisLayer._wxdeMap.useMetricValue())
-                  newRows += iObs.mv;
-                else
-                  newRows += iObs.ev;
-                newRows += "</td>\n";
-
-                newRows += "<td class=\"unit\">";
-                var unit;
-                if (thisLayer._wxdeMap.useMetricValue())
-                  unit = iObs.mu;
-                else
-                  unit = iObs.eu;
-
-                if (unit)
-                  newRows += unit;
-                newRows += "</td>\n";
-
-
-                newRows += "<td class=\"conf\">" + 100.00 * iObs.cv + "%</td>\n";
-
-                var sRun = Number(iObs.rf).toString(2);
-                while (sRun.length < QCH_MAX)
-                  sRun = "0" + sRun;
-
-                var sPass = Number(iObs.pf).toString(2);
-                while (sPass.length < QCH_MAX)
-                  sPass = "0" + sPass;
-
-                var nIndex = QCH_MAX;
-                while (--nIndex >= 0)
-                {
-                  var nRow = Number(sRun.charAt(nIndex));
-                  var nCol = Number(sPass.charAt(nIndex));
-                  var oFlag = m_oQCh[nRow][nCol];
-
-                  newRows += "    <td><img alt='Icon' src=\"image/";
-                  newRows += oFlag.im;
-                  newRows += ".png\" alt=\"";
-                  newRows += oFlag.tx;
-                  newRows += "\"/></td>\n";
-                }
-
-                newRows += '</tr>';
+                obsTable.find('tbody:last-child').append('<tr><td colspan="' + colCount + '">No data</td></tr>');
               }
+              else
+              {
+                var newRows = '';
+                for (var rowIndex = 0; rowIndex < sensorList.length; ++rowIndex)
+                {
 
-              obsTable.find('tbody:last-child').append(newRows);
+                  var iSensor = sensorList[rowIndex];
+                  newRows += '<tr>\n';
+                  newRows += '<td class="obsType">' + iSensor.ot + '</td>\n';
+                  newRows += '<td class="sensorIndex">' + iSensor.idx + '</td>\n';
+                  newRows += '<td class="sensorMake">' + iSensor.mfr + '</td>\n';
+                  newRows += '<td class="sensorModel">' + iSensor.model + '</td>\n';
+                  newRows += '</tr>\n';
+                }
+                obsTable.find('tbody:last-child').append(newRows);
+              }
             }
 
 
@@ -551,7 +834,6 @@ L.WxdeLayer = L.LayerGroup.extend({
           },
           timeout: 10000
         });
-
         //     if (!thisLayer._hasObs())
         {
           thisDetailsWindow.dialog.dialog("open");
@@ -604,11 +886,35 @@ L.WxdeLayer = L.LayerGroup.extend({
       var selectedObsType = this._wxdeMap.getSelectedObsType();
       var bounds = this._wxdeMap.getBounds().pad(.5);
       var currentZoom = this._wxdeMap.getZoom();
+      var currentTime = this._wxdeMap.getSelectedTime();
       var requestData = false;
       var highestValidZoomIndex = -1;
 
-      if (!this.isEnabled(currentZoom) || !this.isUserSelected())
+      //check if this layer is enabled/selected and make sure that the
+      //layer is added to or removed from the map based on whether the
+      //layer is enabled at the current zoom/time selection
+      if (this.isEnabled(currentZoom, currentTime))
+      {
+        if (this._checkbox)
+          this._checkbox.disabled = false;
+        if (this.isUserSelected())
+        {
+          if (!this._wxdeMap.hasLayer(this))
+            this._wxdeMap.addLayer(this);
+        }
+        else
+          return;
+      }
+      else
+      {
+        if (this._wxdeMap.hasLayer(this))
+          this._wxdeMap.removeLayer(this);
+        if (this._checkbox)
+          this._checkbox.disabled = true;
+
         return;
+      }
+
 
       for (var zoomIndex = 0; zoomIndex < this._zoomLevels.length; ++zoomIndex)
       {
@@ -633,7 +939,6 @@ L.WxdeLayer = L.LayerGroup.extend({
           //make sure the layer is currently on the map
           if (!this.hasLayer(zoomLayer))
             this.addLayer(zoomLayer);
-
           //if this layer doesn't have obs the time and obstype don't affect what layer elements are returned
           //if it does have obs changing the type or time will clear the cached elements
           if (this._hasObs() && (zoomLevelRequest.obsType !== selectedObsType || zoomLevelRequest.timestamp !== selectedTime))
@@ -643,12 +948,10 @@ L.WxdeLayer = L.LayerGroup.extend({
           }
           else if (zoomLevelRequest.latLngBounds.contains(bounds))
             continue;
-
           requestData = true;
           zoomLevelRequest.setBoundaryValues(bounds);
           zoomLevelRequest.timestamp = selectedTime;
           zoomLevelRequest.obsType = selectedObsType;
-
           var zoomLayer = this._getZoomLayer(zoomLevel);
           zoomLayer.eachLayer(function (layer)
           {
@@ -688,21 +991,32 @@ L.WxdeLayer = L.LayerGroup.extend({
             {
               if (!zoomLayers.hasOwnProperty(zoomLevel))
                 continue;
-              var newLayers = thisLayer._layerParser(zoomLayers[zoomLevel], thisLayer._layerMarkerStyle, thisLayer._hasObs());
+              var newLayers = thisLayer._layerParser(zoomLayers[zoomLevel], thisLayer._hasObs());
               var zoomLayer = thisLayer._getZoomLayer(zoomLevel);
               for (var layerIndex = 0; layerIndex < newLayers.length; ++layerIndex)
               {
                 var layer = newLayers[layerIndex];
 
-                var value = thisLayer._wxdeMap.useMetricValue() ? layer.metricValue : layer.englishValue;
+                thisLayer.layerStyler.styleLayer(layer);
                 zoomLayer.addLayer(layer);
                 layer.requestBounds = bounds;
-                if (value)
+                if (thisLayer.showObsLabels())
                 {
-                  var obsMarker = L.wxdeObsMarker(layer.getLatLng(), value);
-                  layer.obsMarker = obsMarker;
-                  zoomLayer.addLayer(obsMarker);
+                  var value;
+                  if (thisLayer._wxdeMap.hasStationCodeLabels)
+                    value = layer.getStationCode();
+                  else if (thisLayer._wxdeMap.useMetricValue())
+                    value = layer.metricValue;
+                  else
+                    value = layer.englishValue;
+                  if (value)
+                  {
+                    var obsMarker = L.wxdeObsMarker(layer.getLatLng(), value);
+                    layer.obsMarker = obsMarker;
+                    zoomLayer.addLayer(obsMarker);
+                  }
                 }
+
                 if (hasMarkerMouseOverEvents)
                 {
                   layer.on('mouseover', thisLayer._markerMouseOver);
@@ -724,9 +1038,9 @@ L.WxdeLayer = L.LayerGroup.extend({
     }
   }
 });
-L.wxdeLayer = function (baseUrl, minZoom, layerParser, layerMarkerStyle, options)
+L.wxdeLayer = function (baseUrl, minZoom, layerParser, layerStyler, options)
 {
-  return new L.WxdeLayer(baseUrl, minZoom, layerParser, layerMarkerStyle, options);
+  return new L.WxdeLayer(baseUrl, minZoom, layerParser, layerStyler, options);
 };
 L.PlatformRequest = L.LayerGroup.extend({
   initialize: function (timestamp, obsType, latLngBounds)
@@ -757,15 +1071,14 @@ L.platformRequest = function (zoom, timestamp, latLngBounds)
 {
   return new L.PlatformRequest(zoom, timestamp, latLngBounds);
 };
-
 L.WxdeCircleMarker = L.CircleMarker.extend({
   options: {
     latlngDiv: null,
     stationCodeDiv: null
   },
-  initialize: function (id, lat, lng, style, stationCode, options)
+  initialize: function (id, lat, lng, stationCode, options)
   {
-    L.CircleMarker.prototype.initialize.call(this, new L.LatLng(lat, lng), style, options);
+    L.CircleMarker.prototype.initialize.call(this, new L.LatLng(lat, lng), options);
     this._stationCode = stationCode;
     this._platformId = id;
   },
@@ -782,12 +1095,10 @@ L.WxdeCircleMarker = L.CircleMarker.extend({
     return bounds.contains(this.getLatLng());
   }
 });
-L.wxdeCircleMarker = function (id, lat, lng, style, stationCode, options)
+L.wxdeCircleMarker = function (id, lat, lng, stationCode, options)
 {
-  return new L.WxdeCircleMarker(id, lat, lng, style, stationCode, options);
+  return new L.WxdeCircleMarker(id, lat, lng, stationCode, options);
 };
-
-
 L.WxdeSquareMarker = L.Marker.extend({
   options: {
     latlngDiv: null,
@@ -812,14 +1123,11 @@ L.WxdeSquareMarker = L.Marker.extend({
     return bounds.contains(this.getLatLng());
   }
 });
-L.wxdeSquareMarker = function (id, lat, lng, style, stationCode, options)
+L.wxdeSquareMarker = function (id, lat, lng, stationCode, options)
 {
-  if (!options)
-    options = [];
   options.icon = graySquareIcon;
   return new L.WxdeSquareMarker(id, lat, lng, stationCode, options);
 };
-
 L.WxdeObsMarker = L.Marker.extend({
   initialize: function (platformLatlng, value, options)
   {
@@ -842,24 +1150,17 @@ L.wxdeObsMarker = function (platformLatlng, value, options)
 {
   return new L.WxdeObsMarker(platformLatlng, value, options);
 };
-
-
 L.WxdePolyline = L.Polyline.extend({
   options: {
     latlngDiv: null,
-    stationCodeDiv: null
+    stationCodeDiv: null,
+    status: "0"
   },
-  initialize: function (id, latlngs, midLatLng, style, stationCode, options)
+  initialize: function (id, latlngs, midLatLng, stationCode, options)
   {
 
     this.midLatLng = midLatLng;
-    if (!options)
-      options = {};
-    for (var styleProperty in style)
-    {
-      if (style.hasOwnProperty(styleProperty))
-        options[styleProperty] = style[styleProperty];
-    }
+
     L.Polyline.prototype.initialize.call(this, latlngs, options);
     this._stationCode = stationCode;
     this._platformId = id;
@@ -881,9 +1182,9 @@ L.WxdePolyline = L.Polyline.extend({
     return this.midLatLng;
   }
 });
-L.wxdePolyline = function (id, latlngs, midLatLng, style, stationCode, options)
+L.wxdePolyline = function (id, latlngs, midLatLng, stationCode, options)
 {
-  return new L.WxdePolyline(id, latlngs, midLatLng, style, stationCode, options);
+  return new L.WxdePolyline(id, latlngs, midLatLng, stationCode, options);
 };
 
 

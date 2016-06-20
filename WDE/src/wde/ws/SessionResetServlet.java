@@ -44,6 +44,8 @@ public class SessionResetServlet extends HttpServlet
       if (sAttributeName.endsWith("LastRequestBounds"))
         oSession.removeAttribute(sAttributeName);
     }
+
+    oSession.setAttribute(RoadSegmentServlet.SHOW_ALL_ROADS, oRequest.getParameter(RoadSegmentServlet.SHOW_ALL_ROADS));
   }
 
   // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">

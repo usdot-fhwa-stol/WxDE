@@ -16,19 +16,19 @@ public class RwisMetadataServlet extends PointLayerServletBase
           + "p.id\n"
           + ",p.category\n"
           + ",p.platformcode\n"
-          + ",s.description\n"
           + ",p.locbaselat AS latitude\n"
           + ",p.locbaselong AS longitude\n"
           + "FROM\n"
-          + "meta.platform p, meta.site s\n"
+          + "meta.platform p\n"
+          + "INNER JOIN meta.sensor s ON p.id = s.platformid\n"
           + "WHERE p.totime IS NULL\n"
           + "AND p.category IN ('P', 'T')\n"
           + "AND p.contribid <> 4\n"
-          + "AND p.siteId = s.id\n"
           + "AND p.locbaselat >= ?\n"
           + "AND p.locbaselat <= ?\n"
           + "AND p.locbaselong >= ?\n"
           + "AND p.locbaselong <= ?\n"
+          + "AND s.distgroup IN (" + DISTGROUP_LIST_PLACEHOLDER + ")\n"
           + "ORDER BY p.id;";
 
   public RwisMetadataServlet() throws NamingException
@@ -46,6 +46,12 @@ public class RwisMetadataServlet extends PointLayerServletBase
   protected String getQueryWithoutObstype()
   {
     return m_sQueryTemplate;
+  }
+
+  @Override
+  protected boolean includeSensorsInDetails()
+  {
+    return true;
   }
 
 }

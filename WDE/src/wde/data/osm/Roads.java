@@ -241,40 +241,6 @@ public class Roads implements Comparator<Road>
 	}
 
 
-	class Node implements Comparable<Node>
-	{
-		public long m_lId;
-		public int m_nLat;
-		public int m_nLon;
-
-
-		Node()
-		{
-		}
-
-
-		Node(String sId, String sLat, String sLon)
-		{
-			m_lId = Long.parseLong(sId);
-			m_nLat = MathUtil.toMicro(Double.parseDouble(sLat));
-			m_nLon = MathUtil.toMicro(Double.parseDouble(sLon));
-		}
-
-	
-		@Override
-		public int compareTo(Node oNode)
-		{
-			if (m_lId < oNode.m_lId)
-				return -1;
-
-			if (m_lId > oNode.m_lId)
-				return 1;
-
-			return 0;
-		}
-	}
-
-
 	private class GridIndex extends ArrayList<Road> implements Comparable<GridIndex>
 	{
 		private static final int GRID_SPACING = 50000; // ~3.5 miles
@@ -295,7 +261,7 @@ public class Roads implements Comparator<Road>
 	
 		public void setHash(int nX, int nY)
 		{
-			m_nHash = nX << 16 + nY; // 16-bit hash index by lat/lon
+			m_nHash = (nX << 16) + nY; // 16-bit hash index by lat/lon
 		}
 
 

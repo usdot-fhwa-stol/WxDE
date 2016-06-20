@@ -32,6 +32,7 @@ public class MobilePlatformServlet extends PointLayerServletBase
           + "AND o.latitude <= ?\n"
           + "AND o.longitude >= ?\n"
           + "AND o.longitude <= ?\n"
+          + "AND s.distgroup IN (" + DISTGROUP_LIST_PLACEHOLDER + ")\n"
           + "AND o.obstime >= ?\n"
           + "AND o.obstime <= ?\n";
 

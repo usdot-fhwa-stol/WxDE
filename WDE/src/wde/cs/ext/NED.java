@@ -3,11 +3,8 @@ package wde.cs.ext;
 import java.awt.geom.Point2D;
 import java.io.RandomAccessFile;
 import java.io.File;
-import java.io.InputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.net.URL;
-import java.net.URLConnection;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import javax.servlet.ServletConfig;
@@ -15,6 +12,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
 
 /**
  * This National Elevation Database (NED) class is a HTTP servlet that receives 
