@@ -82,9 +82,9 @@ public class Road
 		while (oSegIt.hasNext())
 		{
 			nSeg = oSegIt.next(); // there should always be at least one segment
-			int nDeltaX = nSeg[2] - nSeg[0];
-			int nDeltaY = nSeg[3] - nSeg[1];
-			double dSegLen = Math.sqrt(nDeltaX * nDeltaX + nDeltaY * nDeltaY);
+			double dDeltaX = nSeg[2] - nSeg[0];
+			double dDeltaY = nSeg[3] - nSeg[1];
+			double dSegLen = Math.sqrt(dDeltaX * dDeltaX + dDeltaY * dDeltaY);
 			dLen += dSegLen;
 			dLens[nIndex++] = dSegLen;
 		}

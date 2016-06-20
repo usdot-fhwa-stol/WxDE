@@ -14,7 +14,6 @@ import ucar.nc2.dt.grid.GridDataset;
 import ucar.unidata.geoloc.LatLonPointImpl;
 import ucar.unidata.geoloc.ProjectionImpl;
 import ucar.unidata.geoloc.ProjectionPointImpl;
-import ucar.unidata.geoloc.projection.LambertConformal;
 
 import wde.util.MathUtil;
 import wde.util.IntKeyValue;
@@ -34,26 +33,14 @@ class NcfWrapper
 	long m_lEndTime;
 	protected String m_sHrz;
 	protected String m_sVrt;
+	protected String m_sTime;
 	protected String[] m_sObsTypes;
 	protected ArrayList<Double> m_oHrz = new ArrayList();
 	protected ArrayList<Double> m_oVrt = new ArrayList();
+	protected ArrayList<Double> m_oTime = new ArrayList();
 	protected NetcdfFile m_oNcFile;
 
-	class DataStructure
-	{
-		public int m_nObsTypeId;
-		public ProjectionImpl m_oProj;
-		public VariableDS m_oVar;
-		public Array m_oArray;
-		
-		DataStructure(int nObsTypeId, ProjectionImpl oProj,VariableDS oVar, Array oArray)
-		{
-			m_nObsTypeId = nObsTypeId;
-			m_oProj = oProj;
-			m_oVar = oVar;
-			m_oArray = oArray;
-		}
-	}
+
 
 	/**
 	 * Default private constructor. The default constructor should not be needed 
@@ -74,12 +61,13 @@ class NcfWrapper
 	 * @param sHrz			name of the horizontal NetCDF index variable.
 	 * @param sVrt			name of the vertical NetCDF index variable.
 	 */
-	NcfWrapper(int[] nObsTypes, String[] sObsTypes, String sHrz, String sVrt)
+	NcfWrapper(int[] nObsTypes, String[] sObsTypes, String sHrz, String sVrt, String sTime)
 	{
 		m_nObsTypes = nObsTypes;
 		m_sObsTypes = sObsTypes;
 		m_sHrz = sHrz;
 		m_sVrt = sVrt;
+		m_sTime = sTime;
 	}
 
 
@@ -97,6 +85,39 @@ class NcfWrapper
 	{
 		double dBasis;
 		double dDist;
+		
+		//for the time arrays, if there is only one time return index 0
+		if (oValues.size() == 1)    
+			return 0;
+		
+		double nDifference = 180;
+		if (oValues.size() < 50)    //this branch will be taken for NDFD files' time array. need a better way to determine this
+		{
+			if (oValues.get(0) == 1.0) //check if units are in hours
+			{
+				oValue = oValue / 1000 / 60 / 60 + 1;  //convert from milliseconds to hours, add one to be at the first hour in the array
+				//find forecasts that are an hour apart
+				while (nDifference > 1) 
+				{
+					nDifference = oValues.get(oValues.size() - 1) - oValues.get(oValues.size() -2);
+					//if the forecasts are more than an hour apart remove them
+					if (nDifference > 1)
+						oValues.remove(oValues.size() - 1);
+				}
+			}
+			else if (oValues.get(0) == 30.0)  //check if units are in minutes
+			{
+				oValue = oValue / 1000 / 60 + 30;  //convert from milliseconds to hours, add 30 to be at the first hour in the array
+				//find forecasts that are an hour apart
+				while (nDifference > 60) 
+				{
+					nDifference = oValues.get(oValues.size() - 1) - oValues.get(oValues.size() -2);
+					//if the forecasts are more than an hour apart remove them
+					if (nDifference > 60)
+						oValues.remove(oValues.size() - 1);
+				}			
+			}
+		}
 		double dLeft = oValues.get(0); // test for value in range
 		double dRight = oValues.get(oValues.size() - 1);
 		if (dRight < dLeft) // handle reversed endpoints
@@ -173,6 +194,7 @@ class NcfWrapper
 		NetcdfFile oNcFile = NetcdfFile.open(sFilename); // stored on RAM disk
 		ArrayList<Double> oHrz = fromArray(oNcFile, m_sHrz); // sort order varies
 		ArrayList<Double> oVrt = fromArray(oNcFile, m_sVrt);
+		ArrayList<Double> oTime = fromArray(oNcFile, m_sTime);
 		// create obstype array mapping
 		ArrayList<IntKeyValue<DataStructure>> oArrayMap = new ArrayList(m_nObsTypes.length);
 		for (GridDatatype oGrid : new GridDataset(new NetcdfDataset(oNcFile)).getGrids())
@@ -186,6 +208,7 @@ class NcfWrapper
 
 		m_oHrz = oHrz;// update state variables when everything succeeds
 		m_oVrt = oVrt;
+		m_oTime = oTime;
 		m_oArrayMap = oArrayMap;
 		m_oNcFile = oNcFile;
 		m_lStartTime = lStartTime;
@@ -254,8 +277,10 @@ class NcfWrapper
 		oDataStruct.m_oProj.latLonToProj(oLatLon, oProjPoint);
 		int nHrz = getIndex(m_oHrz, oProjPoint.getX());
 		int nVrt = getIndex(m_oVrt, oProjPoint.getY());
+		double dTimeSince = lTimestamp - m_lStartTime;
+		int nTime = getIndex(m_oTime, dTimeSince);
 
-		if (nHrz < 0 || nVrt < 0)
+		if (nHrz < 0 || nVrt < 0 || nTime < 0)
 			return Double.NaN; // projected coordinates are outside data ranage
 			
 
@@ -264,6 +289,7 @@ class NcfWrapper
 			Index oIndex = oDataStruct.m_oArray.getIndex();
 			oIndex.setDim(oDataStruct.m_oVar.findDimensionIndex(m_sHrz), nHrz);
 			oIndex.setDim(oDataStruct.m_oVar.findDimensionIndex(m_sVrt), nVrt);
+			oIndex.setDim(oDataStruct.m_oVar.findDimensionIndex(m_sTime), nTime);
 			
 			double dVal = oDataStruct.m_oArray.getDouble(oIndex);
 			if (oDataStruct.m_oVar.isFillValue(dVal) || oDataStruct.m_oVar.isInvalidData(dVal) || oDataStruct.m_oVar.isMissing(dVal))
@@ -278,25 +304,19 @@ class NcfWrapper
 		return Double.NaN;
 	}
 	
-	public static void main(String[] args)
+	class DataStructure
 	{
-		LambertConformal oLam = new LambertConformal(25, 265, 25, 25);
-		double[][] latlon = new double[2][1];
-		double[][] km = new double[2][1];
+		public int m_nObsTypeId;
+		public ProjectionImpl m_oProj;
+		public VariableDS m_oVar;
+		public Array m_oArray;
 		
-		km[0][0] = -2763.205;
-		km[1][0] = -263.789;
-		latlon = oLam.projToLatLon(km);
-		System.out.println("Top left: " + latlon[0][0] + " " + latlon[1][0]);
-		
-		km[0][0] = 2681.918;
-		km[1][0] = 3230.842;
-		latlon = oLam.projToLatLon(km);
-		System.out.println("Bottom right: " + latlon[0][0] + " " + latlon[1][0]);
-		
-		latlon[0][0] = 20.192;
-		latlon[1][0] = 238.446;
-		km = oLam.latLonToProj(latlon, km, 0, 1);
-		System.out.println("top left: " + km[0][0] + " " + km[1][0]);
+		DataStructure(int nObsTypeId, ProjectionImpl oProj,VariableDS oVar, Array oArray)
+		{
+			m_nObsTypeId = nObsTypeId;
+			m_oProj = oProj;
+			m_oVar = oVar;
+			m_oArray = oArray;
+		}
 	}
 }

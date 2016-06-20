@@ -29,6 +29,7 @@ abstract class RemoteData
 	protected int[] m_nObsTypes;
 	protected String m_sHrz;
 	protected String m_sVrt;
+	protected String m_sTime;
 	protected String m_sBaseDir;
    //protected String m_sBaseDir = "/run/shm/";
 	protected String m_sBaseURL;
@@ -122,7 +123,7 @@ abstract class RemoteData
 				oOut.close();
 			}
 
-			NcfWrapper oNc = new NcfWrapper(m_nObsTypes, m_sObsTypes, m_sHrz, m_sVrt);
+			NcfWrapper oNc = new NcfWrapper(m_nObsTypes, m_sObsTypes, m_sHrz, m_sVrt, m_sTime);
 			oNc.load(oTime.getTimeInMillis() - m_nDelay, 
 				oTime.getTimeInMillis() + m_nRange, sDestFile);
 

@@ -16,8 +16,10 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.OutputKeys;
@@ -28,7 +30,6 @@ import javax.xml.transform.stream.StreamResult;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import wde.comp.RoadcastDataFactory.RoadcastData;
 
 
 import wde.cs.ext.NDFD;
@@ -40,6 +41,7 @@ import wde.data.osm.Roads;
 import wde.util.Config;
 import wde.util.ConfigSvc;
 import wde.util.MathUtil;
+import wde.util.Scheduler;
 
 /**
  * A singleton class that manages the use of METRo including writing input files, 
@@ -47,43 +49,42 @@ import wde.util.MathUtil;
  * 
  * @author aaron.cherney
  */
-public class MetroMgr implements Runnable, Comparator<Alert>
+public class MetroMgr extends HttpServlet implements Runnable, Comparator<RoadAlert>
 {
 	private static final MetroMgr g_oMetroMgr = new MetroMgr();
 	private RoadcastDataFactory m_oRoadcastDataFactory = RoadcastDataFactory.getInstance();
 	private String m_sBaseDir;
-	private ArrayList<MapCell> m_oRoadMapCells;
-	private ArrayList<MapCell> m_oBounds;
-	private ArrayList<Alert> m_oAlerts = new ArrayList();
+	private ArrayList<MapCell> m_oRoadMapCells;  //stores all of the MapCells that contain roads
+	private ArrayList<MapCell> m_oBounds;        //stores the bounds of all of the regions the program is ran on
+	private ArrayList<RoadAlert> m_oAlerts = new ArrayList();
 	private final SimpleDateFormat m_oTimestamp = new SimpleDateFormat("yyyy'-'MM'-'dd'T'HH':'mm'Z'");
 	private final int m_nForecastHours;
 	private final int m_nObservationHours;
+	private final int m_nThreads;
+	private final int m_nOffset;
+	private final int m_nPeriod;
 	private double m_dLatTop;
 	private double m_dLonLeft;
 	private double m_dLatBot;
 	private double m_dLonRight;
-	private final int m_nColumns = 2145;               //lon
-	private final int m_nRows = 1377;                  //lat
-	private final double m_dColLeftLimit = -2763.2046;  //lon
-	private final double m_dColRightLimit = 2681.9185;
-	private final double m_dRowLeftLimit = -263.78943;   //lat
-	private final double m_dRowRightLimit = 3230.8418;
 	private final double m_dStepX = 2.5385189277;
 	private final double m_dStepY = 2.5378585548;
-	private double m_dReflectivityAverage[][] = new double[m_nColumns][m_nRows];
-	private double m_dOldestReflectivity[][] = new double[m_nColumns][m_nRows];
 	private long m_lNow;
 	private AtomicInteger m_nRunning = new AtomicInteger();
-	private ExecutorService m_oThreadPool = Executors.newFixedThreadPool(2);
+	private ExecutorService m_oThreadPool;
 	
 
 
 	private MetroMgr()
 	{
 		Config oConfig = ConfigSvc.getInstance().getConfig(this);
+		m_nThreads = oConfig.getInt("threads", 1);
+		m_oThreadPool = Executors.newFixedThreadPool(m_nThreads);
 		m_nForecastHours = oConfig.getInt("fhours", 3);
 		m_nObservationHours = oConfig.getInt("ohours", 12);
 		m_sBaseDir = oConfig.getString("dir", "/run/shm/");
+		m_nOffset = oConfig.getInt("offset", 0);
+		m_nPeriod = oConfig.getInt("period", 3600);
 		String[] sRegionArray = oConfig.getStringArray("region");
 		m_oBounds = new ArrayList(sRegionArray.length);
 		//initialize all of the regions bounding boxes
@@ -95,10 +96,10 @@ public class MetroMgr implements Runnable, Comparator<Alert>
 			m_dLonLeft = Double.parseDouble(sBounds[1]);
 			m_dLatBot = Double.parseDouble(sBounds[2]);
 			m_dLonRight = Double.parseDouble(sBounds[3]);
-			m_oBounds.add(new MapCell(0, 0, m_dLatTop, m_dLonLeft, m_dLatBot, m_dLonRight, sRegion));
+			m_oBounds.add(new MapCell(m_dLatTop, m_dLonLeft, m_dLatBot, m_dLonRight, sRegion));
 		}		
-		getMapCells();
-		initAveragePrecip();
+		getMapCells(); //initialize list of MapCells that contain roads
+		Scheduler.getInstance().schedule(this, m_nOffset, m_nPeriod, true);
 	}
 
 	
@@ -139,7 +140,6 @@ public class MetroMgr implements Runnable, Comparator<Alert>
 		catch (Exception e)
 		{
 		}
-		
 	}
 	
 	
@@ -151,14 +151,19 @@ public class MetroMgr implements Runnable, Comparator<Alert>
 	 */
 	public void createObsXML(MapCell oCell)
 	{	
+		//set the lat and lon in micro degrees of the middle of the cell
 		int nMicroLat = MathUtil.toMicro((oCell.m_dLatBot + oCell.m_dLatTop) / 2);
 		int nMicroLon = MathUtil.toMicro((oCell.m_dLonRight + oCell.m_dLonRight) / 2 );
+		
 		Calendar oTime = new GregorianCalendar();
 		oTime.setTimeInMillis(m_lNow);
+		RTMA oRTMA = RTMA.getInstance();
 		
+		//set the time so that the last observation is for the current hour
 		oTime.add(Calendar.HOUR_OF_DAY, -m_nObservationHours + 1);
 		try
 		{
+			//create the structure of the XML file
 			DocumentBuilderFactory oDocFactory = DocumentBuilderFactory.newInstance();
 			DocumentBuilder oDocBuilder = oDocFactory.newDocumentBuilder();
 
@@ -181,6 +186,7 @@ public class MetroMgr implements Runnable, Comparator<Alert>
 			Element oMeasureList = oDoc.createElement("measure-list");
 			oObservation.appendChild(oMeasureList);
 
+			//create the measure clause in the XML file for each observation hour
 			for (int i = 0; i < m_nObservationHours; i++)
 			{
 				Element oMeasure = oDoc.createElement("measure");
@@ -190,22 +196,22 @@ public class MetroMgr implements Runnable, Comparator<Alert>
 				oObservationTime.appendChild(oDoc.createTextNode(m_oTimestamp.format(oTime.getTime())));
 				oMeasure.appendChild(oObservationTime);
 
-				double dAirTemp = RTMA.getInstance().getReading(5733, oTime.getTimeInMillis(), nMicroLat, nMicroLon);
+				double dAirTemp = oRTMA.getReading(5733, oTime.getTimeInMillis(), nMicroLat, nMicroLon);
 				Element oAirTemp = oDoc.createElement("at");
 				oAirTemp.appendChild(oDoc.createTextNode(Double.toString(dAirTemp)));
 				oMeasure.appendChild(oAirTemp);
 
 				Element oDewPoint = oDoc.createElement("td");
-				oDewPoint.appendChild(oDoc.createTextNode(Double.toString(RTMA.getInstance().getReading(575, oTime.getTimeInMillis(), nMicroLat, nMicroLon))));
+				oDewPoint.appendChild(oDoc.createTextNode(Double.toString(oRTMA.getReading(575, oTime.getTimeInMillis(), nMicroLat, nMicroLon))));
 				oMeasure.appendChild(oDewPoint);
 
-				int nPresenceOfPrecip = getPresenceOfPrecip(oCell);
+				int nPresenceOfPrecip = getPresenceOfPrecip(nMicroLat, nMicroLon, oTime.getTimeInMillis());
 				Element oPresenceOfPrecip = oDoc.createElement("pi");
 				oPresenceOfPrecip.appendChild(oDoc.createTextNode(Integer.toString(nPresenceOfPrecip)));
 				oMeasure.appendChild(oPresenceOfPrecip);
 
 				Element oWindSpeed = oDoc.createElement("ws");
-				oWindSpeed.appendChild(oDoc.createTextNode(Double.toString(RTMA.getInstance().getReading(56104, oTime.getTimeInMillis(), nMicroLat, nMicroLon))));
+				oWindSpeed.appendChild(oDoc.createTextNode(Double.toString(oRTMA.getReading(56104, oTime.getTimeInMillis(), nMicroLat, nMicroLon))));
 				oMeasure.appendChild(oWindSpeed);
 
 				Element oRoadCondition = oDoc.createElement("rc");
@@ -213,55 +219,44 @@ public class MetroMgr implements Runnable, Comparator<Alert>
 				Element oRoadSubSurfaceTemp = oDoc.createElement("sst");
 
 				
-				RoadcastData oRoadcastData = m_oRoadcastDataFactory.getRoadcastData(oTime.getTimeInMillis(), "rc");
-				if (Double.isNaN(oRoadcastData.m_dValueArray[oCell.m_nRowIndex][oCell.m_nColIndex]))
+				//if there is no RoadcastData initialize road condition based off of presence of precipitation and air temp
+				if (Double.isNaN(m_oRoadcastDataFactory.getReading(51137, oTime.getTimeInMillis(), nMicroLat, nMicroLon)))
 				{
-					if (nPresenceOfPrecip > 0)
+					if (nPresenceOfPrecip > 0)  //check if there is precipitation
 					{
-						if (dAirTemp > 2)
-						{
-							oRoadcastData.m_dValueArray[oCell.m_nRowIndex][oCell.m_nColIndex] = 2;  //wet road
-							oRoadCondition.appendChild(oDoc.createTextNode("2")); 
-						}
-						else if (dAirTemp < -2)
-						{
-							oRoadcastData.m_dValueArray[oCell.m_nRowIndex][oCell.m_nColIndex] = 3;  //ice/snow on the road
-							oRoadCondition.appendChild(oDoc.createTextNode("3")); 
-						}
-						else
-						{
-							oRoadcastData.m_dValueArray[oCell.m_nRowIndex][oCell.m_nColIndex] = 4;  //mix water/snow on the road
-						}
+						if (dAirTemp > 2)  //temp greater than 2 C means rain
+							m_oRoadcastDataFactory.setValue(51137, oTime.getTimeInMillis(), nMicroLat, nMicroLon, 2); //wet road
+						else if (dAirTemp < -2) //temp less than -2 C means snow/ice
+							m_oRoadcastDataFactory.setValue(51137, oTime.getTimeInMillis(), nMicroLat, nMicroLon, 3);  //ice/snow on the road
+						else //temp between -2 C and 2 C means mix
+							m_oRoadcastDataFactory.setValue(51137, oTime.getTimeInMillis(), nMicroLat, nMicroLon, 4);  //mix water/snow on the road
 					}
-					else
-						oRoadcastData.m_dValueArray[oCell.m_nRowIndex][oCell.m_nColIndex] = 1;  //dry road
+					else  //no precipitation so dry road
+						m_oRoadcastDataFactory.setValue(51137, oTime.getTimeInMillis(), nMicroLat, nMicroLon, 1);  //dry road
 				}
 				
-				oRoadCondition.appendChild(oDoc.createTextNode(Double.toString(oRoadcastData.m_dValueArray[oCell.m_nRowIndex][oCell.m_nColIndex])));
+				oRoadCondition.appendChild(oDoc.createTextNode(Double.toString(m_oRoadcastDataFactory.getReading(51137, oTime.getTimeInMillis(), nMicroLat, nMicroLon))));
 				oMeasure.appendChild(oRoadCondition);
 				
-				oRoadcastData = m_oRoadcastDataFactory.getRoadcastData(oTime.getTimeInMillis(), "st");
-				if (Double.isNaN(oRoadcastData.m_dValueArray[oCell.m_nRowIndex][oCell.m_nColIndex]))
-				{
-					oRoadcastData.m_dValueArray[oCell.m_nRowIndex][oCell.m_nColIndex] = RTMA.getInstance().getReading(5733, oTime.getTimeInMillis(), nMicroLat, nMicroLon);	
-				}
+
+				//if there is no roadcast data initialize surface temp as the air temp from RTMA
+				if (Double.isNaN(m_oRoadcastDataFactory.getReading(51138, oTime.getTimeInMillis(), nMicroLat, nMicroLon)))
+					m_oRoadcastDataFactory.setValue(51138, oTime.getTimeInMillis(), nMicroLat, nMicroLon, oRTMA.getReading(5733, oTime.getTimeInMillis(), nMicroLat, nMicroLon));
 				
-				oRoadSurfaceTemp.appendChild(oDoc.createTextNode(Double.toString(oRoadcastData.m_dValueArray[oCell.m_nRowIndex][oCell.m_nColIndex])));
+				oRoadSurfaceTemp.appendChild(oDoc.createTextNode(Double.toString(m_oRoadcastDataFactory.getReading(51138, oTime.getTimeInMillis(), nMicroLat, nMicroLon))));
 				oMeasure.appendChild(oRoadSurfaceTemp);
 				
-				oRoadcastData = m_oRoadcastDataFactory.getRoadcastData(oTime.getTimeInMillis(), "sst");
-				if (Double.isNaN(oRoadcastData.m_dValueArray[oCell.m_nRowIndex][oCell.m_nColIndex]))
-				{
-					oRoadcastData.m_dValueArray[oCell.m_nRowIndex][oCell.m_nColIndex] = RTMA.getInstance().getReading(5733, oTime.getTimeInMillis(), nMicroLat, nMicroLon);
-				}
+				//if there is no roadcast data initialize sub surface temp as the air temp from RTMA
+				if (Double.isNaN(m_oRoadcastDataFactory.getReading(51165, oTime.getTimeInMillis(), nMicroLat, nMicroLon)))
+					m_oRoadcastDataFactory.setValue(51165, oTime.getTimeInMillis(), nMicroLat, nMicroLon, oRTMA.getReading(5733, oTime.getTimeInMillis(), nMicroLat, nMicroLon));
 				
-				oRoadSubSurfaceTemp.appendChild(oDoc.createTextNode(Double.toString(oRoadcastData.m_dValueArray[oCell.m_nRowIndex][oCell.m_nColIndex])));
+				oRoadSubSurfaceTemp.appendChild(oDoc.createTextNode(Double.toString(m_oRoadcastDataFactory.getReading(51165, oTime.getTimeInMillis(), nMicroLat, nMicroLon))));
 				oMeasure.appendChild(oRoadSubSurfaceTemp);
 				
 				oTime.add(Calendar.HOUR_OF_DAY, 1);
 			}
 			 
-			transformToXML(oDoc, m_sBaseDir + "observation" + Thread.currentThread().getId() + ".xml");
+			transformToXML(oDoc, m_sBaseDir + "observation" + Thread.currentThread().getId() + ".xml"); //create and save XML file
 		}
 		catch(Exception e)
 		{
@@ -279,9 +274,11 @@ public class MetroMgr implements Runnable, Comparator<Alert>
 	{
 		try
 		{
+			//set the lat and lon in micro degrees of the middle of the cell
 			int nMicroLat = MathUtil.toMicro((oCell.m_dLatBot + oCell.m_dLatTop) / 2);
 			int nMicroLon = MathUtil.toMicro((oCell.m_dLonRight + oCell.m_dLonLeft) / 2 );
 			
+			//create the structure for the XML file
 			DocumentBuilderFactory oDocFactory = DocumentBuilderFactory.newInstance();
 			DocumentBuilder oDocBuilder = oDocFactory.newDocumentBuilder();
 
@@ -317,11 +314,11 @@ public class MetroMgr implements Runnable, Comparator<Alert>
 			oHeader.appendChild(oCooridnate);
 			
 			Element oLatitude = oDoc.createElement("latitude");
-			oLatitude.appendChild(oDoc.createTextNode(Double.toString(MathUtil.fromMicro(nMicroLat))));
+			oLatitude.appendChild(oDoc.createTextNode(Double.toString(MathUtil.fromMicro(nMicroLat)))); //use decimal degrees for Lat
 			oCooridnate.appendChild(oLatitude);
 			
 			Element oLongitude = oDoc.createElement("longitude");
-			oLongitude.appendChild(oDoc.createTextNode(Double.toString(MathUtil.fromMicro(nMicroLon))));
+			oLongitude.appendChild(oDoc.createTextNode(Double.toString(MathUtil.fromMicro(nMicroLon)))); //use decimal degrees for Lon
 			oCooridnate.appendChild(oLongitude);
 			
 			Element oStationType = oDoc.createElement("station-type");
@@ -343,11 +340,11 @@ public class MetroMgr implements Runnable, Comparator<Alert>
 			oRoadLayer.appendChild(oType);
 
 			Element oThickness = oDoc.createElement("thickness");
-			oThickness.appendChild(oDoc.createTextNode("0.5"));
+			oThickness.appendChild(oDoc.createTextNode("0.5"));  //thickness in meters
 			oRoadLayer.appendChild(oThickness);
 
 		  
-			transformToXML(oDoc, m_sBaseDir + "station" + Thread.currentThread().getId() + ".xml");
+			transformToXML(oDoc, m_sBaseDir + "station" + Thread.currentThread().getId() + ".xml");  //createa and save XML file
 		}
 		catch(Exception e)
 		{
@@ -365,10 +362,17 @@ public class MetroMgr implements Runnable, Comparator<Alert>
 	{
 		try
 		{
+			//set the lat and lon in micro degrees of the middle of the cell
 			int nMicroLat = MathUtil.toMicro((oCell.m_dLatBot + oCell.m_dLatTop) / 2);
 			int nMicroLon = MathUtil.toMicro((oCell.m_dLonRight + oCell.m_dLonRight) / 2 );
 			Calendar oTime = new GregorianCalendar();
 			oTime.setTimeInMillis(m_lNow);
+
+			NDFD oNDFD = NDFD.getInstance();
+			RTMA oRTMA = RTMA.getInstance();
+			RAP oRAP = RAP.getInstance();
+			
+			//create structure of the XML file
 			DocumentBuilderFactory oDocFactory = DocumentBuilderFactory.newInstance();
 			DocumentBuilder oDocBuilder = oDocFactory.newDocumentBuilder();
 
@@ -381,7 +385,7 @@ public class MetroMgr implements Runnable, Comparator<Alert>
 			oForecast.appendChild(oHeader);
 
 			Element oVersion = oDoc.createElement("version");
-			oVersion.appendChild(oDoc.createTextNode("1.1"));
+			oVersion.appendChild(oDoc.createTextNode("1.1"));  //wouldn't run as v1.0
 			oHeader.appendChild(oVersion);
 
 			Element oProductionDate = oDoc.createElement("production-date");
@@ -394,7 +398,8 @@ public class MetroMgr implements Runnable, Comparator<Alert>
 
 			Element oPredictionList = oDoc.createElement("prediction-list");
 			oForecast.appendChild(oPredictionList);
-
+			
+			//create the forecast clause in the XML for each hour of forecasts
 			for (int i = 0;i < m_nForecastHours; i++)
 			{
 				Element oPrediction = oDoc.createElement("prediction");
@@ -404,51 +409,64 @@ public class MetroMgr implements Runnable, Comparator<Alert>
 				oForecastTime.appendChild(oDoc.createTextNode(m_oTimestamp.format(oTime.getTime())));
 				oPrediction.appendChild(oForecastTime);
 
-				double dAirTemp = NDFD.getInstance().getReading(5733, oTime.getTimeInMillis(), nMicroLat, nMicroLon);
-				Element oAirTemp = oDoc.createElement("at");
-				oAirTemp.appendChild(oDoc.createTextNode(Double.toString(dAirTemp)));
-				oPrediction.appendChild(oAirTemp);
-
+				double dAirTemp;
 				Element oDewPoint = oDoc.createElement("td");
-				oDewPoint.appendChild(oDoc.createTextNode(Double.toString(NDFD.getInstance().getReading(575, oTime.getTimeInMillis(), nMicroLat, nMicroLon))));
-				oPrediction.appendChild(oDewPoint);
-
-				double dPrecip = RAP.getInstance().getReading(587, oTime.getTimeInMillis(), nMicroLat, nMicroLon);
-				Element oRainPrecipQuant = oDoc.createElement("ra");
-				Element oSnowPrecipQuant = oDoc.createElement("sn");
-				if (dAirTemp > 2)
+				Element oWindSpeed = oDoc.createElement("ws");
+				Element oCloudCoverage = oDoc.createElement("cc");
+				//for the first hour use RTMA for the forecast, for all others use NDFD
+				if (i == 0)
 				{
-					oRainPrecipQuant.appendChild(oDoc.createTextNode(Double.toString(3600 * dPrecip)));
-					oSnowPrecipQuant.appendChild(oDoc.createTextNode("0"));
-				}
-				else if (dAirTemp < -2)
-				{
-					oRainPrecipQuant.appendChild(oDoc.createTextNode("0"));
-					oSnowPrecipQuant.appendChild(oDoc.createTextNode(Double.toString(360 * dPrecip)));
+					dAirTemp = oRTMA.getReading(5733, oTime.getTimeInMillis(), nMicroLat, nMicroLon);
+					oDewPoint.appendChild(oDoc.createTextNode(Double.toString(oRTMA.getReading(575, oTime.getTimeInMillis(), nMicroLat, nMicroLon))));
+					oWindSpeed.appendChild(oDoc.createTextNode(Double.toString(oRTMA.getReading(56104, oTime.getTimeInMillis(), nMicroLat, nMicroLon))));
+					oCloudCoverage.appendChild(oDoc.createTextNode(Integer.toString((int) oRTMA.getReading(593, oTime.getTimeInMillis(), nMicroLat, nMicroLon))));  //cloud coverage has to be an int
 				}
 				else
 				{
-					oRainPrecipQuant.appendChild(oDoc.createTextNode(Double.toString(1800 * dPrecip)));
-					oSnowPrecipQuant.appendChild(oDoc.createTextNode(Double.toString(180 * dPrecip)));
+					dAirTemp = oNDFD.getReading(5733, oTime.getTimeInMillis(), nMicroLat, nMicroLon);
+					oDewPoint.appendChild(oDoc.createTextNode(Double.toString(oNDFD.getReading(575, oTime.getTimeInMillis(), nMicroLat, nMicroLon))));
+					oWindSpeed.appendChild(oDoc.createTextNode(Double.toString(oNDFD.getReading(56104, oTime.getTimeInMillis(), nMicroLat, nMicroLon))));
+					oCloudCoverage.appendChild(oDoc.createTextNode(Integer.toString((int) oNDFD.getReading(593, oTime.getTimeInMillis(), nMicroLat, nMicroLon))));   //cloud coverage has to be an int for METRo
+				}
+				Element oAirTemp = oDoc.createElement("at");
+				oAirTemp.appendChild(oDoc.createTextNode(Double.toString(dAirTemp)));
+				oPrediction.appendChild(oAirTemp);					
+				oPrediction.appendChild(oDewPoint);
+
+				double dPrecip = oRAP.getReading(587, oTime.getTimeInMillis(), nMicroLat, nMicroLon);
+				Element oRainPrecipQuant = oDoc.createElement("ra");
+				Element oSnowPrecipQuant = oDoc.createElement("sn");
+				//if air temp is greater than 2 C all precip is rain
+				if (dAirTemp > 2)
+				{
+					oRainPrecipQuant.appendChild(oDoc.createTextNode(Double.toString(3600 * dPrecip)));   //quantity of precip is given in mm/sec, multiply by secs in an hour to get total
+					oSnowPrecipQuant.appendChild(oDoc.createTextNode("0"));
+				}
+				//if air temp is less than -2 C all precip is snow/ice
+				else if (dAirTemp < -2)
+				{
+					oRainPrecipQuant.appendChild(oDoc.createTextNode("0"));
+					oSnowPrecipQuant.appendChild(oDoc.createTextNode(Double.toString(360 * dPrecip)));   //for snow the we need the input in cm instead of mm
+				}
+				//if air temp is between -2 C and 2 C precip is a mix of rain and snow
+				else
+				{
+					oRainPrecipQuant.appendChild(oDoc.createTextNode(Double.toString(1800 * dPrecip)));  //half is rain
+					oSnowPrecipQuant.appendChild(oDoc.createTextNode(Double.toString(180 * dPrecip)));   //half is snow
 				}
 				oPrediction.appendChild(oRainPrecipQuant);
 				oPrediction.appendChild(oSnowPrecipQuant);
-				
-				Element oWindSpeed = oDoc.createElement("ws");
-				oWindSpeed.appendChild(oDoc.createTextNode(Double.toString(NDFD.getInstance().getReading(56104, oTime.getTimeInMillis(), nMicroLat, nMicroLon))));
 				oPrediction.appendChild(oWindSpeed);
 
 				Element oSurfacePressure = oDoc.createElement("ap");
-				oSurfacePressure.appendChild(oDoc.createTextNode(Double.toString(RAP.getInstance().getReading(554, oTime.getTimeInMillis(), nMicroLat, nMicroLon))));
+				oSurfacePressure.appendChild(oDoc.createTextNode(Double.toString(oRAP.getReading(554, oTime.getTimeInMillis(), nMicroLat, nMicroLon))));
 				oPrediction.appendChild(oSurfacePressure);
 
-				Element oCloudCoverage = oDoc.createElement("cc");
-				oCloudCoverage.appendChild(oDoc.createTextNode(Integer.toString((int) NDFD.getInstance().getReading(593, oTime.getTimeInMillis(), nMicroLat, nMicroLon))));
 				oPrediction.appendChild(oCloudCoverage);
 				
 				oTime.add(Calendar.HOUR_OF_DAY, 1);
 			}
-			transformToXML(oDoc, m_sBaseDir + "forecast" + Thread.currentThread().getId() + ".xml");
+			transformToXML(oDoc, m_sBaseDir + "forecast" + Thread.currentThread().getId() + ".xml");  //create and save XML file
 		}
 		catch(Exception e)
 		{
@@ -462,12 +480,13 @@ public class MetroMgr implements Runnable, Comparator<Alert>
 	 * 
 	 * @param sFilename the name of the Roadcast XML file
 	 */
-	public void readRoadcastFile(String sFilename)
+	public void readRoadcastFile(String sFilename, MapCell oCell)
 	{
 		StringBuilder sStringBuilder = new StringBuilder();
 		Calendar oTime = new GregorianCalendar();
 		oTime.setTimeInMillis(m_lNow);
-		
+		double dLat = (oCell.m_dLatBot + oCell.m_dLatTop) / 2;
+		double dLon = (oCell.m_dLonRight + oCell.m_dLonLeft) /2;
 		
 		try
 		{
@@ -480,16 +499,6 @@ public class MetroMgr implements Runnable, Comparator<Alert>
 			while ((nByte = oIn.read()) >= 0)
 				sStringBuilder.append((char)nByte);
 			oIn.close();
-			
-			//get latitude from file
-			int nIndexBegin = sStringBuilder.indexOf("<latitude>") + "<latitude>".length();
-			int nIndexEnd = sStringBuilder.indexOf("</latitude>", nIndexBegin);
-			double dLat =  Double.parseDouble(sStringBuilder.substring(nIndexBegin, nIndexEnd));
-			
-			//get longitude from file
-			nIndexBegin = sStringBuilder.indexOf("<longitude>") + "<longitude>".length();
-			nIndexEnd = sStringBuilder.indexOf("</longitude>", nIndexBegin);
-			double dLon = Double.parseDouble(sStringBuilder.substring(nIndexBegin, nIndexEnd));
 			
 			//get the time of the first roadcast and set the Calendar
 			int nFirstRoadcastIndex = sStringBuilder.indexOf("<first-roadcast>");
@@ -515,25 +524,24 @@ public class MetroMgr implements Runnable, Comparator<Alert>
 				long lTimestamp = oTime.getTimeInMillis();
 				
 				//get and set the Road Condition
-				nIndexBegin = sStringBuilder.indexOf("<rc>", nPredictionIndex) + "<rc>".length();
-				nIndexEnd = sStringBuilder.indexOf("</rc>", nIndexBegin);
-				m_oRoadcastDataFactory.setValue(lTimestamp, "rc", dLat, dLon, Double.parseDouble(sStringBuilder.substring(nIndexBegin, nIndexEnd))); 
+				int nIndexBegin = sStringBuilder.indexOf("<rc>", nPredictionIndex) + "<rc>".length();
+				int nIndexEnd = sStringBuilder.indexOf("</rc>", nIndexBegin);
+				m_oRoadcastDataFactory.setValue(51137, lTimestamp, dLat, dLon, Double.parseDouble(sStringBuilder.substring(nIndexBegin, nIndexEnd))); 
 				
 				//get and set the Road Surface Temperature
 				nIndexBegin = sStringBuilder.indexOf("<st>", nPredictionIndex) + "<st>".length();
 				nIndexEnd = sStringBuilder.indexOf("</st>", nIndexBegin);
-				m_oRoadcastDataFactory.setValue(lTimestamp, "st", dLat, dLon, Double.parseDouble(sStringBuilder.substring(nIndexBegin, nIndexEnd))); 
+				m_oRoadcastDataFactory.setValue(51138, lTimestamp, dLat, dLon, Double.parseDouble(sStringBuilder.substring(nIndexBegin, nIndexEnd))); 
 				
 				//get and set the Road Sub Surface Temperature
 				nIndexBegin = sStringBuilder.indexOf("<sst>", nPredictionIndex) + "<sst>".length();
 				nIndexEnd = sStringBuilder.indexOf("</sst>", nIndexBegin);
-				m_oRoadcastDataFactory.setValue(lTimestamp, "sst", dLat, dLon, Double.parseDouble(sStringBuilder.substring(nIndexBegin, nIndexEnd))); 
+				m_oRoadcastDataFactory.setValue(51165, lTimestamp, dLat, dLon, Double.parseDouble(sStringBuilder.substring(nIndexBegin, nIndexEnd))); 
 						
 				//skip two predictions to get to the next hour's prediction
 				nPredictionIndex = sStringBuilder.indexOf("<prediction>", nPredictionIndex + 1);  
 				nPredictionIndex = sStringBuilder.indexOf("<prediction>", nPredictionIndex + 1);
 				nPredictionIndex = sStringBuilder.indexOf("<prediction>", nPredictionIndex + 1);
-
 			}
 		}
 		catch (Exception e)
@@ -550,31 +558,36 @@ public class MetroMgr implements Runnable, Comparator<Alert>
 	{
 		ArrayList<Road> oRoadList = new ArrayList();
 		Roads oRoads = Roads.getInstance();
-		double[][] dLatLonTR;
-		double[][] dLatLonBL;
-		double[][] dProjTR;
-		double[][] dProjBL;
+		double[][] dLatLonTR;   //[0][0] is lat
+		double[][] dLatLonBL;   //[1][0] is lon
+		double[][] dProjTR;     //[0][0] is x
+		double[][] dProjBL;     //[1][0] is y
 		m_oRoadMapCells = new ArrayList();
 
+		//for each region defined in the configuration file
 		for (MapCell oRegion : m_oBounds)
 		{
-			dProjTR = RoadcastDataFactory.latLonToLambert(oRegion.m_dLatTop, oRegion.m_dLonRight);
-			dProjBL = RoadcastDataFactory.latLonToLambert(oRegion.m_dLatBot, oRegion.m_dLonLeft);	
+			//convert lat and lon to lambert conformal projection x and y
+			dProjTR = RoadcastDataFactory.latLonToLambert(oRegion.m_dLatTop, oRegion.m_dLonRight); //top right
+			dProjBL = RoadcastDataFactory.latLonToLambert(oRegion.m_dLatBot, oRegion.m_dLonLeft);	//bottom left
 			for (double x = dProjBL[0][0]; x < dProjTR[0][0]; x += m_dStepX)
 			{
 				for (double y = dProjBL[1][0]; y < dProjTR[1][0]; y += m_dStepY)
 				{
-
+					//convert projection back to lat lon
 					dLatLonBL = RoadcastDataFactory.lambertToLatLon(x, y);
 					dLatLonTR = RoadcastDataFactory.lambertToLatLon(x + m_dStepX, y + m_dStepY);
+					//reset the road list
 					oRoadList.clear();
+					//find roads in the bounding box
 					oRoads.getLinks(oRoadList, 1, MathUtil.toMicro(dLatLonBL[1][0]), MathUtil.toMicro(dLatLonBL[0][0]), 
 						MathUtil.toMicro(dLatLonTR[1][0]), MathUtil.toMicro(dLatLonTR[0][0]));
+					//if there are roads in the list, add the MapCell to the list of cells with roads
 					if (!oRoadList.isEmpty())
 					{
-						m_oRoadMapCells.add(new MapCell(RoadcastDataFactory.getIndex(x, m_dColLeftLimit, m_dColRightLimit, m_nColumns),
-							RoadcastDataFactory.getIndex(y, m_dRowLeftLimit, m_dRowRightLimit, m_nRows), dLatLonTR[0][0], dLatLonBL[1][0],
+						m_oRoadMapCells.add(new MapCell(dLatLonTR[0][0], dLatLonBL[1][0],
 							dLatLonBL[0][0], dLatLonTR[1][0], oRegion.m_sRegion));
+						//add the road IDs to the MapCell's array of roads
 						for (Road oRoad : oRoadList)
 						{
 							m_oRoadMapCells.get(m_oRoadMapCells.size() - 1).m_oRoads.add(oRoad.m_nId);
@@ -587,70 +600,49 @@ public class MetroMgr implements Runnable, Comparator<Alert>
 	
 	
 	/**
-	 * This method calculates if there has been any precipitation at the given lat,lon.
-	 * It does this by checking the reflectivity of all the cached Radar files for 
-	 * the given coordinates
+	 * This method returns whether or not there is a presence of precipitation
+	 * in the last hour for the given coordinates and time. 1 means there is 
+	 * precipitation, 0 means there is no precipitation
 	 * 
+	 * @param nLat         latitude in micro degrees
+	 * @param nLon         longitude in micro degrees
+	 * @param lTimestamp   time to look an hour back from
+	 * @return   1 if there is precipitation. 0 if there is no precipitation
 	 */
-	public final void initAveragePrecip()
+	public int getPresenceOfPrecip(int nLat, int nLon, long lTimestamp)
 	{
-		Radar oRadar = Radar.getInstance();
-		long lTime = System.currentTimeMillis();
-		for (MapCell oCell : m_oRoadMapCells)
+		//check radar files every 2 minutes for the last hour. if reflectivity is greater than 0, there is precipitation
+		for (int i = 0; i < 30 ; i++)
 		{
-			for (int i = 0; i < m_nObservationHours * 30; i++)
-			{
-				double dReflectivity = oRadar.getReading(0, lTime - i * 120000, MathUtil.toMicro((oCell.m_dLatBot + oCell.m_dLatTop) / 2), MathUtil.toMicro((oCell.m_dLonRight + oCell.m_dLonLeft) / 2));
-				if (dReflectivity > 0)
-					m_dReflectivityAverage[oCell.m_nRowIndex][oCell.m_nColIndex] += dReflectivity;
-				if (i == m_nObservationHours * 30 - 1)
-					m_dOldestReflectivity[oCell.m_nRowIndex][oCell.m_nColIndex] = dReflectivity;
-			}
-			m_dReflectivityAverage[oCell.m_nRowIndex][oCell.m_nColIndex] /= (m_nObservationHours * 30);
+			if (Radar.getInstance().getReading(0, lTimestamp - i * 120000, nLat, nLon) > 0)
+				return 1;
 		}
-	}
-	
-	
-	public void updateAveragePrecip()
-	{
-		for (MapCell oCell : m_oRoadMapCells)
-		{
-			m_dReflectivityAverage[oCell.m_nRowIndex][oCell.m_nColIndex] *= (m_nObservationHours * 30);
-			m_dReflectivityAverage[oCell.m_nRowIndex][oCell.m_nColIndex] -= m_dOldestReflectivity[oCell.m_nRowIndex][oCell.m_nColIndex];
-			m_dReflectivityAverage[oCell.m_nRowIndex][oCell.m_nColIndex] += Radar.getInstance().getReading(0, System.currentTimeMillis(), MathUtil.toMicro((oCell.m_dLatBot + oCell.m_dLatTop) / 2), MathUtil.toMicro((oCell.m_dLonRight + oCell.m_dLonLeft) / 2));
-			m_dReflectivityAverage[oCell.m_nRowIndex][oCell.m_nColIndex] /= (m_nObservationHours * 30);
-			m_dOldestReflectivity[oCell.m_nRowIndex][oCell.m_nColIndex] = Radar.getInstance().getReading(0, System.currentTimeMillis() - m_nObservationHours * 30 * 120000, MathUtil.toMicro((oCell.m_dLatBot + oCell.m_dLatTop) / 2), MathUtil.toMicro((oCell.m_dLonRight + oCell.m_dLonLeft) / 2));
-		}
-		System.out.println("updated");
-	}
-	
-	
-	public int getPresenceOfPrecip(MapCell oCell)
-	{
-		if (m_dReflectivityAverage[oCell.m_nRowIndex][oCell.m_nColIndex] > 0)
-			return 1;
-		else
-			return 0;
+		
+		return 0;
 	}
 	
 	
 	/**
-	 * This method creates the 3 input files for METRo, runs METRo, reads the 
-	 * resulting Roadcast Files, and creates Alerts for all map cells that 
-	 * contain roads.
+	 * This method is ran every hour to set up and execute the process to run 
+	 * METRo for every MapCell that contains a road.
 	 */
 	@Override
 	public void run()
 	{
-		//if (m_nRunning.compareAndSet(0, m_oRoadMapCells.size()))
-		if (m_nRunning.compareAndSet(0, 500))
+		//check if the previous process is still running, if it is skip the next one
+		if (m_nRunning.compareAndSet(0, m_oRoadMapCells.size()))
 		{
+			//reset Alerts
+			m_oAlerts.clear();
+			//set the time for the process
 			m_lNow = System.currentTimeMillis();
+			
+			//initialize/update the RoadcastDataList
 			m_oRoadcastDataFactory.initArrayList(m_lNow, m_nObservationHours, m_nForecastHours);
-//			for (MapCell oCell : m_oRoadMapCells)
-			for (int i = 0; i < 500; i++)
+			
+			//queue all of the MapCells into the work queue for the ThreadPool
+			for (MapCell oCell : m_oRoadMapCells)
 			{
-				MapCell oCell = m_oRoadMapCells.get(i);
 				m_oThreadPool.execute(oCell);
 			}
 		}
@@ -665,45 +657,43 @@ public class MetroMgr implements Runnable, Comparator<Alert>
 	 */
 	public void createAlerts(MapCell oMapCell)
 	{
-		boolean bFirstTime = true;
 		Calendar oTime = new GregorianCalendar();
 		oTime.setTimeInMillis(m_lNow);
-		for (int i = 0; i < (m_nForecastHours - 1) * 3; i++)
+		
+		//create alerts/warnings for each hour of roadcasts
+		for (int i = 0; i < m_nForecastHours - 1; i++)  //number of roadcast hours is 1 less than forecast hours input
 		{
-			int nRoadCondition = (int) m_oRoadcastDataFactory.getValue(oTime.getTimeInMillis(), "rc", (oMapCell.m_dLatBot + oMapCell.m_dLatTop) / 2, (oMapCell.m_dLonLeft + oMapCell.m_dLonRight) / 2);
-			if (nRoadCondition > 1) //Road Condition 1 is a dry road, do not need an alert for it
+			//read the road condition from the RoadcastData
+			int nRoadCondition = (int) m_oRoadcastDataFactory.getReading(51137, oTime.getTimeInMillis(), (oMapCell.m_dLatBot + oMapCell.m_dLatTop) / 2, (oMapCell.m_dLonLeft + oMapCell.m_dLonRight) / 2);
+			//convert METRo road conditions into 1204 ess standard numbers
+			switch (nRoadCondition)
 			{
-				//the first time roadcast creates an alert
-				if (bFirstTime)
+				case 2:	
+					nRoadCondition = 13; //pavement wet alert
+					break;
+				case 3:
+					nRoadCondition = 14; //pavement snow alert
+					break;
+				case 4:
+					nRoadCondition = 15; //pavement slick alert
+					break;
+				case 8:
+					nRoadCondition = 17; //pavement ice alert
+				default:
+					nRoadCondition = 1;  //no alert
+
+			}
+			if (nRoadCondition > 1)
+			{
+
+				for (int nRoadID : oMapCell.m_oRoads)
 				{
-					for (int nRoadID : oMapCell.m_oRoads)
-					{
-						//check to see if an alert/warning for the road exists
-						Alert oAlert = new Alert(nRoadID, nRoadCondition);
-						int nAlertIndex = Collections.binarySearch(m_oAlerts, oAlert, this);
-						if (nAlertIndex < 0)
-							m_oAlerts.add(~nAlertIndex, oAlert);
-						else
-						{
-							//if the road already has a warning, replace it with the alert
-							if (m_oAlerts.get(nAlertIndex).m_nAlertID > 8)
-							{
-								m_oAlerts.remove(nAlertIndex);
-								m_oAlerts.add(nAlertIndex, oAlert);
-							}
-						}
-					}
-				}
-				//all other future roadcast times create warnings
-				else
-				{
-					for (int nRoadID : oMapCell.m_oRoads)
-					{
-						Alert oAlert = new Alert(nRoadID, nRoadCondition + 10);
-						int nAlertIndex = Collections.binarySearch(m_oAlerts, oAlert, this);
-						if (nAlertIndex < 0)
-							m_oAlerts.add(~nAlertIndex, oAlert);
-					}
+					//check to see if an alert for the road exists
+					RoadAlert oAlert = new RoadAlert(nRoadID, nRoadCondition);
+					int nAlertIndex = Collections.binarySearch(m_oAlerts, oAlert, this);
+					//if the road does not have an existing alert, add the alert to the list
+					if (nAlertIndex < 0)
+						m_oAlerts.add(~nAlertIndex, oAlert);
 				}
 			}
 			oTime.add(Calendar.HOUR_OF_DAY, 1);
@@ -711,6 +701,37 @@ public class MetroMgr implements Runnable, Comparator<Alert>
 	}
 	
 	
+	/**
+	 * 
+	 */
+	public void printAlerts()
+	{
+		if (m_oAlerts.isEmpty())
+			System.out.println("No alerts");
+		else
+			for (RoadAlert oAlert : m_oAlerts)
+				System.out.println(oAlert.getRoadAlertMessage());
+	}
+	
+	
+	/**
+	 * This method returns the RoadAlert message for the given road.
+	 * @param oRoad  the desired road to get an alert for
+	 * @return the alert message for that road
+	 */
+	public String getRoadAlert(Road oRoad)
+	{
+		for (RoadAlert oAlert : m_oAlerts)
+			if (oRoad.m_nId == oAlert.m_nRoadID)
+				return oAlert.getRoadAlertMessage();
+		
+		return "No alert";
+	}
+	
+	
+	/**
+	 * This method deletes old METRo XML to manage space
+	 */
 	public void cleanupFiles()
 	{
 		File oForecast = new File(m_sBaseDir + "forecast" + Thread.currentThread().getId() + ".xml");
@@ -727,15 +748,29 @@ public class MetroMgr implements Runnable, Comparator<Alert>
 	
 	
 /**
- * Allows Alert objects to be compared by their RoadID
+ * Allows RoadAlert objects to be compared by their RoadID
  * @param oLhs  left hand side
  * @param oRhs  right hand side
  * @return 
  */
 	@Override
-	public int compare(Alert oLhs, Alert oRhs)
+	public int compare(RoadAlert oLhs, RoadAlert oRhs)
 	{
 		return oLhs.m_nRoadID - oRhs.m_nRoadID;
+	}
+	
+	
+	@Override
+	protected void doGet(HttpServletRequest oReq, HttpServletResponse oResp)
+	{
+		
+	}
+	
+	
+	@Override
+	protected void doPost(HttpServletRequest oReq, HttpServletResponse oResp)
+	{
+		
 	}
 	
 	
@@ -746,8 +781,6 @@ public class MetroMgr implements Runnable, Comparator<Alert>
 	 */
 	public class MapCell implements Runnable
 	{
-		private final int m_nColIndex;
-		private final int m_nRowIndex;
 		private final double m_dLatTop;
 		private final double m_dLonLeft;
 		private final double m_dLatBot;
@@ -755,10 +788,9 @@ public class MetroMgr implements Runnable, Comparator<Alert>
 		private final String m_sRegion;
 		private ArrayList<Integer> m_oRoads = new ArrayList();
 		
-		MapCell(int nColIndex, int nRowIndex, double dLatTop, double dLonLeft, double dLatBot, double dLonRight, String sRegion)
+		
+		MapCell(double dLatTop, double dLonLeft, double dLatBot, double dLonRight, String sRegion)
 		{
-			m_nColIndex = nColIndex;
-			m_nRowIndex = nRowIndex;
 			m_dLatTop = dLatTop;
 			m_dLonLeft = dLonLeft;
 			m_dLatBot = dLatBot;
@@ -766,12 +798,20 @@ public class MetroMgr implements Runnable, Comparator<Alert>
 			m_sRegion = sRegion;
 		}
 		
+		
+		/**
+		 * This method creates the 3 input files for METRo, runs METRo, reads the 
+		 * resulting Roadcast Files, and creates Alerts for all map cells that 
+		 * contain roads.
+		 */
 		@Override
 		public void run()
 		{
+			//create the 3 input XML files
 			createForecastXML(this);
 			createStationXML(this);
 			createObsXML(this);
+			//run METRo
 			try
 			{
 				Process oProcess = Runtime.getRuntime().exec("python /usr/local/metro/usr/bin/metro"
@@ -784,13 +824,19 @@ public class MetroMgr implements Runnable, Comparator<Alert>
 			catch(Exception e)
 			{
 			}
-			readRoadcastFile(m_sBaseDir + "roadcast" + Thread.currentThread().getId() + ".xml");
+			//read and save data from the output Roadcast File
+			readRoadcastFile(m_sBaseDir + "roadcast" + Thread.currentThread().getId() + ".xml", this);
+			System.out.print(m_nRunning.decrementAndGet() + " " + m_oRoadcastDataFactory.getReading(51138, m_lNow + 3600000, (m_dLatTop + m_dLatBot) / 2, (m_dLonRight + m_dLonLeft) / 2));
+			System.out.println(" " + m_oRoadcastDataFactory.getReading(51165, m_lNow + 3600000, (m_dLatTop + m_dLatBot) / 2, (m_dLonRight + m_dLonLeft) / 2) + " " + m_oRoadcastDataFactory.getReading(51137, m_lNow + 3600000, (m_dLatTop + m_dLatBot) / 2, (m_dLonRight + m_dLonLeft) / 2));
+			//delete old XML files
 			cleanupFiles();
+			//create alerts for all the roads in the MapCell
 			createAlerts(this);
-			System.out.println(m_nRunning.decrementAndGet() + " " + this.m_nRowIndex + " " + this.m_nColIndex + " " + m_oRoadcastDataFactory.getRoadcastData(m_lNow + 3600000, "st").m_dValueArray[this.m_nRowIndex][this.m_nColIndex]);
+			if (m_nRunning.get() == 0)
+				printAlerts();
 		}
 	}
-	
+
 	
 	public static void main(String[] args)
 	{
@@ -798,4 +844,3 @@ public class MetroMgr implements Runnable, Comparator<Alert>
 		oMetroMgr.run();
 	}
 }
-

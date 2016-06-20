@@ -121,9 +121,8 @@ public class NDFD extends RemoteGrid
 	public static void main(String sArgs[])
 	{
 		NDFD oNDFD = NDFD.getInstance();
-		System.out.println(oNDFD.getReading(593, System.currentTimeMillis(), 43000000, -94000000));
-		System.out.println(oNDFD.getReading(575, System.currentTimeMillis(), 43000000, -94000000));
-		System.out.println(oNDFD.getReading(5733, System.currentTimeMillis(), 43000000, -94000000));
-		System.out.println(oNDFD.getReading(56104, System.currentTimeMillis(), 43000000, -94000000));
+		System.out.println(oNDFD.getReading(56104, System.currentTimeMillis() + 3600000, 43000000, -94000000));
+		System.out.println(oNDFD.getReading(56104, System.currentTimeMillis() + 3600000 * 2, 43000000, -94000000));
+		System.out.println(oNDFD.getReading(56104, System.currentTimeMillis() + 3600000 * 3, 43000000, -94000000));
 	}
 }

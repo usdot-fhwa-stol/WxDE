@@ -8,6 +8,7 @@ package wde.comp;
 import java.util.ArrayList;
 import java.util.Arrays;
 import ucar.unidata.geoloc.projection.LambertConformal;
+import wde.util.MathUtil;
 
 /**
  * Singleton class that has functions to store and retrieve data for the METRo
@@ -18,7 +19,7 @@ import ucar.unidata.geoloc.projection.LambertConformal;
 public class RoadcastDataFactory
 {
 	private static final RoadcastDataFactory g_oRoadcastDataFactory = new RoadcastDataFactory();
-	public ArrayList<RoadcastData> m_oRoadcastDataArray = new ArrayList();
+	public ArrayList<RoadcastData> m_oRoadcastDataList = new ArrayList();   //contains all of the RoadcastData ran from METRo
 	private final int m_nColumns = 2145;               //lon
 	private final int m_nRows = 1377;                  //lat
 	private final double m_dColLeftLimit = -2763.2046;  //lon
@@ -125,42 +126,44 @@ public class RoadcastDataFactory
 	 * Sets the value of the roadcast for the given timestamp, observation type, 
 	 * latitude, longitude.
 	 * 
-	 * @param lTimestamp  time of the roadcast
-	 * @param sObsType    observation type, can be 
-	 *                    rc (road condition), 
-	 *                    st(road surface temperature), or 
-	 *                    sst(road sub surface temperature)
+	 * @param nObsTypeID  observation type: rc = 51137, st = 51138, sst = 51165
+	 * @param lTimestamp  time of the roadcast   
 	 * @param dLat        latitude of the roadcast in decimal degrees
 	 * @param dLon        longitude of the roadcast in decimal degrees
 	 * @param dValue      value of the observation to be set in the array
 	 */
-	public void setValue(long lTimestamp, String sObsType, double dLat, double dLon, double dValue)
+	public void setValue(int nObsTypeID, long lTimestamp, double dLat, double dLon, double dValue)
 	{
-		boolean bFound = false;
-		
 		//convert the lat and lon into the index for the array
 		double[][] dProj = latLonToLambert(dLat, dLon);
 		int nColIndex = getIndex(dProj[0][0], m_dColLeftLimit, m_dColRightLimit, m_nColumns);
 		int nRowIndex = getIndex(dProj[1][0], m_dRowLeftLimit, m_dRowRightLimit, m_nRows);
 		
-		//if there is no RoadcastData in the list, initialize the first object
-		if (m_oRoadcastDataArray.isEmpty())
-			m_oRoadcastDataArray.add(new RoadcastData(lTimestamp, sObsType));
-		
 		//find the correct RoadcastData in the list by obsType and Timestamp
-		for (RoadcastData oData : m_oRoadcastDataArray)
+		for (RoadcastData oData : m_oRoadcastDataList)
 		{
- 			if (oData.m_sObsType.equals(sObsType) && oData.m_lTimestamp <= lTimestamp && oData.m_lTimestampEnd > lTimestamp)
+ 			if (oData.m_nObsTypeID == nObsTypeID && oData.m_lTimestamp <= lTimestamp && oData.m_lTimestampEnd > lTimestamp)
 			{
 				oData.m_dValueArray[nRowIndex][nColIndex] = dValue;
-				bFound = true;
 				break;
 			}
 		}
-		
-		//if the correct RoadcastData isn't found, create a new one 
-		if (!bFound)
-			m_oRoadcastDataArray.add(new RoadcastData(lTimestamp, sObsType, nColIndex, nRowIndex, dValue));
+	}
+	
+	
+	/**
+	 * Sets the value of the roadcast for the given timestamp, observation type, 
+	 * latitude, longitude.
+	 * 
+	 * @param nObsTypeID  observation type: rc = 51137, st = 51138, sst = 51165
+	 * @param lTimestamp  time of the roadcast   
+	 * @param nLat			 latitude of the roadcast in micro degrees
+	 * @param nLon        longitude of the roadcast in micro degrees        
+	 * @param dValue      value of the observation to be set in the array
+	 */
+	public void setValue(int nObsTypeID, long lTimestamp, int nLat, int nLon, double dValue)
+	{
+		setValue(nObsTypeID, lTimestamp, MathUtil.fromMicro(nLat), MathUtil.fromMicro(nLon), dValue);
 	}
 	
 	
@@ -169,62 +172,63 @@ public class RoadcastDataFactory
 	 * type, latitude and longitude.
 	 * 
 	 * @param lTimestamp  time of the roadcast
-	 * @param sObsType    observation type, can be 
-	 *                    rc (road condition), 
-	 *                    st(road surface temperature), or 
-	 *                    sst(road sub surface temperature)
-	 * @param dLat        latitude of where you want the roadcast
-	 * @param dLon        longitude of where you want the roadcast
+	 * @param nObsTypeID  observation type: rc = 51137, st = 51138, sst = 51165
+	 * @param dLat        latitude of the roadcast in decimal degrees
+	 * @param dLon        longitude of the roadcast in decimal degrees
 	 * @return 
 	 */
-	public double getValue(long lTimestamp, String sObsType,  double dLat, double dLon)
+	public double getReading(int nObsTypeID, long lTimestamp, double dLat, double dLon)
 	{
-		double[][] dProj = latLonToLambert(dLat, dLon);
-		for (RoadcastData oData : m_oRoadcastDataArray)
+		double[][] dProj = latLonToLambert(dLat, dLon); //need projection to get the index for the array
+		//find the correct RoadcastData by obs type and timestamp
+		for (RoadcastData oData : m_oRoadcastDataList)
 		{
-			if (oData.m_sObsType.equals(sObsType) && oData.m_lTimestamp <= lTimestamp && oData.m_lTimestampEnd > lTimestamp)
+			if (oData.m_nObsTypeID == nObsTypeID && oData.m_lTimestamp <= lTimestamp && oData.m_lTimestampEnd > lTimestamp)
 				return oData.m_dValueArray[getIndex(dProj[1][0], m_dRowLeftLimit, m_dRowRightLimit, m_nRows)][getIndex(dProj[0][0], m_dColLeftLimit, m_dColRightLimit, m_nColumns)];
 		}
 		return Double.NaN; //the roadcast for the given parameters doesn't exist
+	}
+	
+	/**
+	* Get the value of a roadcast output based on the timestamp, observation 
+	* type, latitude and longitude.
+	* 
+	* @param lTimestamp  time of the roadcast
+	* @param nObsTypeID  observation type: rc = 51137, st = 51138, sst = 51165
+	* @param nLat        latitude of roadcast in micro degrees
+	* @param nLon        longitude of roadcast in micro degrees
+	* @return 
+	*/
+	public double getReading(int nObsTypeID, long lTimestamp, int nLat, int nLon)
+	{
+		return getReading(nObsTypeID, lTimestamp, MathUtil.fromMicro(nLat), MathUtil.fromMicro(nLon));
 	}
 	
 	
 	public final void initArrayList(long lNow, int nObservationHours, int nForecastHours)
 	{
 		//the first time create all of the needed arrays for RoadcastData
-		if (m_oRoadcastDataArray.isEmpty())
+		if (m_oRoadcastDataList.isEmpty())
 		{
-			for (int i = 0 - nObservationHours + 1; i < nForecastHours; i++)
+			for (int i = 0 - nObservationHours + 1; i < nForecastHours; i++)    //encompass all times that are used in METRo
 			{
-				m_oRoadcastDataArray.add(new RoadcastData(lNow + 3600000 * i, "rc"));
-				m_oRoadcastDataArray.add(new RoadcastData(lNow + 3600000 * i, "st"));
-				m_oRoadcastDataArray.add(new RoadcastData(lNow + 3600000 * i, "sst"));
+				m_oRoadcastDataList.add(new RoadcastData(51137, lNow + 3600000 * i));
+				m_oRoadcastDataList.add(new RoadcastData(51138, lNow + 3600000 * i));
+				m_oRoadcastDataList.add(new RoadcastData(51165, lNow + 3600000 * i));
 			}
 		}
 		//if there is already RoadcastData, update the list
 		else
 		{
 			//remove the oldest set of RoadcastData
-			m_oRoadcastDataArray.remove(0);
-			m_oRoadcastDataArray.remove(0);
-			m_oRoadcastDataArray.remove(0);
+			m_oRoadcastDataList.remove(0);
+			m_oRoadcastDataList.remove(0);
+			m_oRoadcastDataList.remove(0);
 			//add 3 new arrays at the last forecast time
-			m_oRoadcastDataArray.add(new RoadcastData(lNow + 3600000 * nForecastHours - 1, "rc"));
-			m_oRoadcastDataArray.add(new RoadcastData(lNow + 3600000 * nForecastHours - 1, "st"));
-			m_oRoadcastDataArray.add(new RoadcastData(lNow + 3600000 * nForecastHours - 1, "sst"));
+			m_oRoadcastDataList.add(new RoadcastData(51137, lNow + 3600000 * nForecastHours - 1));
+			m_oRoadcastDataList.add(new RoadcastData(51138, lNow + 3600000 * nForecastHours - 1));
+			m_oRoadcastDataList.add(new RoadcastData(51165, lNow + 3600000 * nForecastHours - 1));
 		}
-	}
-	
-	
-	public RoadcastData getRoadcastData(long lTimestamp, String sObsType)
-	{
-		for (RoadcastData oData : m_oRoadcastDataArray)
-		{
-			if (oData.m_sObsType.equals(sObsType) && oData.m_lTimestamp <= lTimestamp && oData.m_lTimestampEnd > lTimestamp)
-				return oData;
-		}
-		
-		return new RoadcastData(lTimestamp, sObsType);
 	}
 	
 	
@@ -236,7 +240,7 @@ public class RoadcastDataFactory
 	{
 		public long m_lTimestamp;
 		public long m_lTimestampEnd;
-		public String m_sObsType;
+		public int m_nObsTypeID;
 		public double[][] m_dValueArray;
 
 
@@ -251,40 +255,18 @@ public class RoadcastDataFactory
 		 * observation type.
 		 * 
 		 * @param lTimestamp     time of the roadcast 
-		 * @param sObsType       observation type, can be rc (road condition), 
+		 * @param nObsTypeID       observation type, can be rc (road condition), 
 		 *                       st(road surface temperature), or 
 		 *                       sst(road sub surface temperature)
 		 */
-		RoadcastData(long lTimestamp, String sObsType)
+		RoadcastData(int nObsTypeID, long lTimestamp)
 		{
 			m_lTimestamp = lTimestamp;
 			m_lTimestampEnd = lTimestamp + 3600000;  // roadcast for an hour
-			m_sObsType = sObsType;
+			m_nObsTypeID = nObsTypeID;
 			m_dValueArray = new double[m_nRows][m_nColumns];
 			for (double[] dRow : m_dValueArray)
 					Arrays.fill(dRow, Double.NaN);
-		}
-		
-		
-		/**
-		 * Custom constructor that creates an object by the timestamp and 
-		 * observation type and also initializes one cell of data.
-		 * 
-		 * @param lTimestamp    time of the roadcast
-		 * @param sObsType      observation type, can be rc (road condition), 
-		 *                      st(road surface temperature), or 
-		 *                      sst(road sub surface temperature)
-		 * @param nColIndex	   column index of the array, represents longitude
-		 * @param nRowIndex     row index of the array, represents latitude
-		 * @param dValue        the value to be store in the array
-		 */
-		RoadcastData(long lTimestamp, String sObsType, int nColIndex, int nRowIndex, double dValue)
-		{
-			m_lTimestamp = lTimestamp;
-			m_lTimestampEnd = lTimestamp + 3600000;  //roadcasts are good for 20 minutes
-			m_sObsType = sObsType;
-			m_dValueArray = new double[m_nRows][m_nColumns];
-			m_dValueArray[nRowIndex][nColIndex] = dValue;
 		}
 	}
 	

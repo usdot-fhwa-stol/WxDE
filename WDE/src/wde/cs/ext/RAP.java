@@ -34,6 +34,7 @@ public class RAP extends RemoteData implements Runnable
 		m_sObsTypes = new String[]{"Pressure_surface", "Precipitation_rate_surface"};
 		m_sHrz = "x";
 		m_sVrt = "y";
+		m_sTime = "time";
 		//m_sBaseDir = "C:/Users/aaron.cherney/TestFiles/RAP/";
 		m_sBaseDir = oConfig.getString("dir", "/run/shm/rap");
 		m_sBaseURL = "http://nomads.ncep.noaa.gov/cgi-bin/filter_rap.pl?file=";
@@ -144,6 +145,6 @@ public class RAP extends RemoteData implements Runnable
 	public static void main(String[] args)
 	{
 		RAP oRAP = RAP.getInstance();
-		System.out.println(oRAP.getReading(587, System.currentTimeMillis() + 3600000 * 5, 24000000, -100000000));
+		System.out.println(oRAP.getReading(554, System.currentTimeMillis() + 3600000 * 5, 24000000, -100000000));
 	}
 }

@@ -223,21 +223,52 @@ public class Utility
 	public static int getPerpDist(int nX, int nY, 
 		int nX1, int nY1, int nX2, int nY2)
 	{
-		int nDeltaX = nX2 - nX1;
-		int nDeltaY = nY2 - nY1;
-		
-		long lU = ((nX - nX1) * nDeltaX) + ((nY - nY1) * nDeltaY);
-		long lV = (nDeltaX * nDeltaX + nDeltaY * nDeltaY);
-	
-		if (lU < 0 || lU > lV) // nearest point is not on the line
+		double dDist = getPerpDist((double)nX, (double)nY, 
+			(double)nX1, (double)nY1, (double)nX2, (double)nY2);
+
+		if (Double.isNaN(dDist) || dDist > Integer.MAX_VALUE)
 			return Integer.MIN_VALUE;
 
-		// find the perpendicular intersection of the point on the line
-		int nXp = nX1 + (int)(lU * nDeltaX / lV);
-		int nYp = nY1 + (int)(lU * nDeltaY / lV);
+		return (int)dDist;
+	}
 
-		nDeltaX = nX - nXp; // calculate the squared distance
-		nDeltaY = nY - nYp; // between the point and the intersection
-		return (nDeltaX * nDeltaX) + (nDeltaY * nDeltaY);
+
+	/**
+	 * Determines the squared perpendicular distance between a point and a line. 
+	 * All values are scaled to six decimal places. The distance is returned or 
+	 * NaN when the point does not intersect the line.
+	 * 
+	 * @param dX	longitude
+	 * @param dY	latitude
+	 * @param dX1	longitude for the first end point of the line
+	 * @param dY1	latitude for the first end point of the line
+	 * @param dX2	longitude for the second end point of the line
+	 * @param dY2	latitude for the second end point of the line
+	 * @return scaled degree distance between the point and line
+	 */
+	public static double getPerpDist(double dX, double dY, 
+		double dX1, double dY1, double dX2, double dY2)
+	{
+		double dXd = dX2 - dX1;
+		double dYd = dY2 - dY1;
+		double dXp = dX - dX1;
+		double dYp = dY - dY1;
+
+		if (dXd == 0 && dYd == 0) // line segment is a point
+			return dXp * dXp + dYp * dYp; // squared dist between the points
+		
+		double dU = dXp * dXd + dYp * dYd;
+		double dV = dXd * dXd + dYd * dYd;
+	
+		if (dU < 0 || dU > dV) // nearest point is not on the line
+			return Double.NaN;
+
+		// find the perpendicular intersection of the point on the line
+		dXp = dX1 + (dU * dXd / dV);
+		dYp = dY1 + (dU * dYd / dV);
+
+		dXd = dX - dXp; // calculate the squared distance
+		dYd = dY - dYp; // between the point and the intersection
+		return dXd * dXd + dYd * dYd;
 	}
 }

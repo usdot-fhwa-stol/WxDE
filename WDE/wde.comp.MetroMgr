@@ -1,13 +1,19 @@
 #define region like latTop, lonLeft, latBot, lonRight
 #region=MI
-region=MN
+#region=MN
 #region=NV
+region=IA
+region=GA
 MI=48.3,-90.416667,41.683333,-82.116667
 MN=49.383333,-97.233333,43.5,-89.483333
 NV=42.0,-120,35.0,-114.033333
+IA=43.5,-96.633333,40.383333,-90.133333
+GA=35.0,-85.883333,30.516667,-81.0
 fhours=3
 ohours=2
 dir=C:/Users/aaron.cherney/TestFiles/XML/
-
+threads=2
+offset=0
+period=3600
 
 

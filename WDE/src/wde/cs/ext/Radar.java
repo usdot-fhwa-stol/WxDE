@@ -30,6 +30,7 @@ public class Radar extends RemoteGrid
 		m_sObsTypes = new String[]{"MergedBaseReflectivityQC_altitude_above_msl"};
 		m_sHrz = "lon";
 		m_sVrt = "lat";
+		m_sTime = "time";
 		m_sBaseDir = oConfig.getString("dir", "/run/shm/radar/");
 		m_sBaseURL = "http://mrms.ncep.noaa.gov/data/2D/MergedBaseReflectivityQC/";
 		m_nOffset = 60;
@@ -115,8 +116,8 @@ public class Radar extends RemoteGrid
 		throws Exception
 	{
 		Radar oRadar = Radar.getInstance();
-		for(int i = 2281; i < 2285; i++)
-			for(int j = 1010; j < 1020; j++)
+		for(int i = 1460; i < 1470; i++)
+			for(int j = 5365; j < 5370; j++)
 				System.out.println(oRadar.getReading(0, System.currentTimeMillis(), -10000 * i + 54995000, 10000 * j - 129995000));
 	}
 }

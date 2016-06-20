@@ -7,6 +7,7 @@ package wde.cs.ext;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Iterator;
 import wde.util.Config;
 import wde.util.ConfigSvc;
 import wde.util.Scheduler;
@@ -24,16 +25,18 @@ abstract class NDFDFile extends RemoteData
 	protected NDFDFile()
 	{
 		Config oConfig = ConfigSvc.getInstance().getConfig(this);
-		m_nDelay = -300000; // collection five minutes after source file ready, file read at x-1:55
-		m_nRange = 11100000; // NDFD forecast is produced hourly but good for 3 hours, good to use from x:00 to x+3:00
-		m_nLimit = oConfig.getInt("limit", 12);  // keep up 12 hours of NDFD files
+		m_nDelay = -3900000; // collection five minutes after source file ready, file read at x-1:55
+		m_nRange = 21600000; // NDFD forecast is produced hourly but used for 6 hours, good to use from x+1:00 to x+7:00
+		m_nLimit = oConfig.getInt("limit", 1);  // keep up 12 hours of NDFD files
 		m_sHrz = "x";
 		m_sVrt = "y";
+		m_sTime = "time";
 		m_sBaseURL = "http://weather.noaa.gov/pub/SL.us008001/ST.opnl/DF.gr2/DC.ndfd/AR.conus/VP.001-003/";
 		m_nOffset = 3300;
 		m_nPeriod = 3600;
 		m_oDateForFile.setTimeZone(Scheduler.UTC);
 		m_nInitTime = oConfig.getInt("time", 3600);
+		
 	}
 	
 	/**

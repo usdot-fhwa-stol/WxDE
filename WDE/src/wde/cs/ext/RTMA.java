@@ -48,6 +48,7 @@ public final class RTMA extends RemoteGrid
 		};
 		m_sHrz = "x";
 		m_sVrt = "y";
+		m_sTime = "time";
 		//m_sBaseDir = "C:/Users/aaron.cherney/TestFiles/RTMA/";
 		m_sBaseDir = oConfig.getString("dir", "/run/shm/rtma");
 		m_sBaseURL = "ftp://ftp.ncep.noaa.gov/pub/data/nccf/com/rtma/prod/";
@@ -122,6 +123,9 @@ public final class RTMA extends RemoteGrid
 
 		if (nObsTypeId == 5733 || nObsTypeId == 575) // convert temperature K to C
 			return dVal - 273.15;
+		
+		if (nObsTypeId == 593) // convert cloud coverage from percent to METRo "octal"
+			return Math.round(dVal/12.5);
 
 		return dVal; // no conversion necessary for other observation types
 	}
