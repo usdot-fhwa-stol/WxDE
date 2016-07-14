@@ -38,13 +38,14 @@ public final class RTMA extends RemoteGrid
 		m_nDelay = -300000; // collection five minutes after source file ready, file read at x-1:55
 		m_nRange = 3900000; // RTMA forecast is hourly, good to use from x:00 to x+1:00
 		m_nLimit = oConfig.getInt("limit", 12);  // keep up 12 hours of RTMA files
-		m_nObsTypes = new int[]{575, 554, 5733, 5101, 56105, 56108, 56104};
+		m_nObsTypes = new int[]{575, 554, 5733, 5101, 56105, 56108, 56104, 593};
 		m_sObsTypes = new String[]
 		{
 			"Dewpoint_temperature_height_above_ground", "Pressure_surface", 
 			"Temperature_height_above_ground", "Visibility_surface", 
 			"Wind_direction_from_which_blowing_height_above_ground", 
-			"Wind_speed_gust_height_above_ground", "Wind_speed_height_above_ground"
+			"Wind_speed_gust_height_above_ground", "Wind_speed_height_above_ground",
+			"Total_cloud_cover_entire_atmosphere_single_layer"
 		};
 		m_sHrz = "x";
 		m_sVrt = "y";

@@ -16,9 +16,9 @@ import wde.util.MathUtil;
  * 
  * @author aaron.cherney
  */
-public class RoadcastDataFactory
+public class MetroResults
 {
-	private static final RoadcastDataFactory g_oRoadcastDataFactory = new RoadcastDataFactory();
+	private static final MetroResults g_oMetroResults = new MetroResults();
 	public ArrayList<RoadcastData> m_oRoadcastDataList = new ArrayList();   //contains all of the RoadcastData ran from METRo
 	private final int m_nColumns = 2145;               //lon
 	private final int m_nRows = 1377;                  //lat
@@ -27,19 +27,19 @@ public class RoadcastDataFactory
 	private final double m_dRowLeftLimit = -263.78943;   //lat
 	private final double m_dRowRightLimit = 3230.8418;
 	
-	private RoadcastDataFactory()
+	private MetroResults()
 	{
 	}
 	
 	
 	/**
-	 * Returns a reference to singleton RoadcastDataFactory
+	 * Returns a reference to singleton MetroResults
 	 * 
-	 * @return Singleton RoadcastDataFactory reference
+	 * @return Singleton MetroResults reference
 	 */
-	public static RoadcastDataFactory getInstance()
+	public static MetroResults getInstance()
 	{
-		return g_oRoadcastDataFactory;
+		return g_oMetroResults;
 	}
 	
 	
@@ -210,7 +210,7 @@ public class RoadcastDataFactory
 		//the first time create all of the needed arrays for RoadcastData
 		if (m_oRoadcastDataList.isEmpty())
 		{
-			for (int i = 0 - nObservationHours + 1; i < nForecastHours; i++)    //encompass all times that are used in METRo
+			for (int i = -nObservationHours + 1; i < nForecastHours; i++)    //encompass all times that are used in METRo
 			{
 				m_oRoadcastDataList.add(new RoadcastData(51137, lNow + 3600000 * i));
 				m_oRoadcastDataList.add(new RoadcastData(51138, lNow + 3600000 * i));
@@ -225,9 +225,10 @@ public class RoadcastDataFactory
 			m_oRoadcastDataList.remove(0);
 			m_oRoadcastDataList.remove(0);
 			//add 3 new arrays at the last forecast time
-			m_oRoadcastDataList.add(new RoadcastData(51137, lNow + 3600000 * nForecastHours - 1));
-			m_oRoadcastDataList.add(new RoadcastData(51138, lNow + 3600000 * nForecastHours - 1));
-			m_oRoadcastDataList.add(new RoadcastData(51165, lNow + 3600000 * nForecastHours - 1));
+			long lNextHour = m_oRoadcastDataList.get(m_oRoadcastDataList.size() - 1).m_lTimestampEnd;
+			m_oRoadcastDataList.add(new RoadcastData(51137, lNextHour));
+			m_oRoadcastDataList.add(new RoadcastData(51138, lNextHour));
+			m_oRoadcastDataList.add(new RoadcastData(51165, lNextHour));
 		}
 	}
 	
@@ -255,9 +256,9 @@ public class RoadcastDataFactory
 		 * observation type.
 		 * 
 		 * @param lTimestamp     time of the roadcast 
-		 * @param nObsTypeID       observation type, can be rc (road condition), 
-		 *                       st(road surface temperature), or 
-		 *                       sst(road sub surface temperature)
+		 * @param nObsTypeID       observation type, can be 51137 (road condition), 
+		 *                       51138(road surface temperature), or 
+		 *                       51165(road sub surface temperature)
 		 */
 		RoadcastData(int nObsTypeID, long lTimestamp)
 		{
@@ -266,7 +267,7 @@ public class RoadcastDataFactory
 			m_nObsTypeID = nObsTypeID;
 			m_dValueArray = new double[m_nRows][m_nColumns];
 			for (double[] dRow : m_dValueArray)
-					Arrays.fill(dRow, Double.NaN);
+				Arrays.fill(dRow, Double.NaN);
 		}
 	}
 	

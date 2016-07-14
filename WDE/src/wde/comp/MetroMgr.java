@@ -1,13 +1,6 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
+
 package wde.comp;
 
-import java.io.BufferedInputStream;
-import java.io.File;
-import java.io.FileInputStream;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -17,19 +10,6 @@ import java.util.Comparator;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.transform.OutputKeys;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamResult;
-
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
 
 
 import wde.cs.ext.NDFD;
@@ -44,36 +24,38 @@ import wde.util.MathUtil;
 import wde.util.Scheduler;
 
 /**
- * A singleton class that manages the use of METRo including writing input files, 
- * reading output files, and storing output files using the RoadcastDataFactory.
+ * A singleton class that manages the use and scheduling of METRo.  It contains
+ * a method that determines which MapCells need to be processed by METRo, 
+ * utility methods, and a method that create alerts for the MapCells. When its 
+ * run() is called, it places all of the MapCells with roads in them into a 
+ * thread pool where they are then processed by METRo.
  * 
  * @author aaron.cherney
  */
-public class MetroMgr extends HttpServlet implements Runnable, Comparator<RoadAlert>
+public class MetroMgr implements Runnable, Comparator<RoadAlert>
 {
 	private static final MetroMgr g_oMetroMgr = new MetroMgr();
-	private RoadcastDataFactory m_oRoadcastDataFactory = RoadcastDataFactory.getInstance();
-	private String m_sBaseDir;
+	private MetroResults m_oMetroResults = MetroResults.getInstance();
 	private ArrayList<MapCell> m_oRoadMapCells;  //stores all of the MapCells that contain roads
 	private ArrayList<MapCell> m_oBounds;        //stores the bounds of all of the regions the program is ran on
 	private ArrayList<RoadAlert> m_oAlerts = new ArrayList();
 	private final SimpleDateFormat m_oTimestamp = new SimpleDateFormat("yyyy'-'MM'-'dd'T'HH':'mm'Z'");
-	private final int m_nForecastHours;
-	private final int m_nObservationHours;
+	public final int m_nForecastHours;
+	public final int m_nObservationHours;
 	private final int m_nThreads;
 	private final int m_nOffset;
 	private final int m_nPeriod;
+	private final int m_nRadarFilesPerHour = 15;
 	private double m_dLatTop;
 	private double m_dLonLeft;
 	private double m_dLatBot;
 	private double m_dLonRight;
 	private final double m_dStepX = 2.5385189277;
 	private final double m_dStepY = 2.5378585548;
-	private long m_lNow;
-	private AtomicInteger m_nRunning = new AtomicInteger();
+	public long m_lNow;
+	public AtomicInteger m_nRunning = new AtomicInteger();
 	private ExecutorService m_oThreadPool;
 	
-
 
 	private MetroMgr()
 	{
@@ -82,7 +64,6 @@ public class MetroMgr extends HttpServlet implements Runnable, Comparator<RoadAl
 		m_oThreadPool = Executors.newFixedThreadPool(m_nThreads);
 		m_nForecastHours = oConfig.getInt("fhours", 3);
 		m_nObservationHours = oConfig.getInt("ohours", 12);
-		m_sBaseDir = oConfig.getString("dir", "/run/shm/");
 		m_nOffset = oConfig.getInt("offset", 0);
 		m_nPeriod = oConfig.getInt("period", 3600);
 		String[] sRegionArray = oConfig.getStringArray("region");
@@ -115,442 +96,6 @@ public class MetroMgr extends HttpServlet implements Runnable, Comparator<RoadAl
 	
 	
 	/**
-	 * A utility method that transforms and saves a Document object as an XML
-	 * file to the given destination file.
-	 * 
-	 * @param oDoc       Document object that is to be transformed
-	 * @param sDestFile  Destination file where XML will be saved
-	 */
-	public void transformToXML(Document oDoc, String sDestFile)
-	{
-		try
-		{
-		oDoc.setXmlStandalone(true);  //removes the standalone attribute in the XML declaration, for some reason METRo wouldn't run with the attribute present
-		TransformerFactory oTransformerFactory = TransformerFactory.newInstance();
-		Transformer oTransformer = oTransformerFactory.newTransformer();
-		DOMSource oSource = new DOMSource(oDoc);
-		File oFile = new File(sDestFile);
-		if (!oFile.exists())
-			oFile.createNewFile();
-		StreamResult oResult = new StreamResult(oFile);
-		oTransformer.setOutputProperty(OutputKeys.INDENT, "yes");
-		oTransformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2");
-		oTransformer.transform(oSource, oResult);
-		}
-		catch (Exception e)
-		{
-		}
-	}
-	
-	
-	/**
-	 * A method that creates and saves the Observation XML file that is used as 
-	 * an input for METRo.
-	 * 
-	 * @param oCell       The region the observations are made in
-	 */
-	public void createObsXML(MapCell oCell)
-	{	
-		//set the lat and lon in micro degrees of the middle of the cell
-		int nMicroLat = MathUtil.toMicro((oCell.m_dLatBot + oCell.m_dLatTop) / 2);
-		int nMicroLon = MathUtil.toMicro((oCell.m_dLonRight + oCell.m_dLonRight) / 2 );
-		
-		Calendar oTime = new GregorianCalendar();
-		oTime.setTimeInMillis(m_lNow);
-		RTMA oRTMA = RTMA.getInstance();
-		
-		//set the time so that the last observation is for the current hour
-		oTime.add(Calendar.HOUR_OF_DAY, -m_nObservationHours + 1);
-		try
-		{
-			//create the structure of the XML file
-			DocumentBuilderFactory oDocFactory = DocumentBuilderFactory.newInstance();
-			DocumentBuilder oDocBuilder = oDocFactory.newDocumentBuilder();
-
-			Document oDoc = oDocBuilder.newDocument();
-			
-			Element oObservation = oDoc.createElement("observation");
-			oDoc.appendChild(oObservation);
-
-			Element oHeader = oDoc.createElement("header");
-			oObservation.appendChild(oHeader);
-
-			Element oVersion = oDoc.createElement("version");
-			oVersion.appendChild(oDoc.createTextNode("1.0"));
-			oHeader.appendChild(oVersion);
-
-			Element oRoadStation = oDoc.createElement("road-station");
-			oRoadStation.appendChild(oDoc.createTextNode(nMicroLat + "_" + nMicroLon));
-			oHeader.appendChild(oRoadStation);
-
-			Element oMeasureList = oDoc.createElement("measure-list");
-			oObservation.appendChild(oMeasureList);
-
-			//create the measure clause in the XML file for each observation hour
-			for (int i = 0; i < m_nObservationHours; i++)
-			{
-				Element oMeasure = oDoc.createElement("measure");
-				oMeasureList.appendChild(oMeasure);
-
-				Element oObservationTime = oDoc.createElement("observation-time");
-				oObservationTime.appendChild(oDoc.createTextNode(m_oTimestamp.format(oTime.getTime())));
-				oMeasure.appendChild(oObservationTime);
-
-				double dAirTemp = oRTMA.getReading(5733, oTime.getTimeInMillis(), nMicroLat, nMicroLon);
-				Element oAirTemp = oDoc.createElement("at");
-				oAirTemp.appendChild(oDoc.createTextNode(Double.toString(dAirTemp)));
-				oMeasure.appendChild(oAirTemp);
-
-				Element oDewPoint = oDoc.createElement("td");
-				oDewPoint.appendChild(oDoc.createTextNode(Double.toString(oRTMA.getReading(575, oTime.getTimeInMillis(), nMicroLat, nMicroLon))));
-				oMeasure.appendChild(oDewPoint);
-
-				int nPresenceOfPrecip = getPresenceOfPrecip(nMicroLat, nMicroLon, oTime.getTimeInMillis());
-				Element oPresenceOfPrecip = oDoc.createElement("pi");
-				oPresenceOfPrecip.appendChild(oDoc.createTextNode(Integer.toString(nPresenceOfPrecip)));
-				oMeasure.appendChild(oPresenceOfPrecip);
-
-				Element oWindSpeed = oDoc.createElement("ws");
-				oWindSpeed.appendChild(oDoc.createTextNode(Double.toString(oRTMA.getReading(56104, oTime.getTimeInMillis(), nMicroLat, nMicroLon))));
-				oMeasure.appendChild(oWindSpeed);
-
-				Element oRoadCondition = oDoc.createElement("rc");
-				Element oRoadSurfaceTemp = oDoc.createElement("st");
-				Element oRoadSubSurfaceTemp = oDoc.createElement("sst");
-
-				
-				//if there is no RoadcastData initialize road condition based off of presence of precipitation and air temp
-				if (Double.isNaN(m_oRoadcastDataFactory.getReading(51137, oTime.getTimeInMillis(), nMicroLat, nMicroLon)))
-				{
-					if (nPresenceOfPrecip > 0)  //check if there is precipitation
-					{
-						if (dAirTemp > 2)  //temp greater than 2 C means rain
-							m_oRoadcastDataFactory.setValue(51137, oTime.getTimeInMillis(), nMicroLat, nMicroLon, 2); //wet road
-						else if (dAirTemp < -2) //temp less than -2 C means snow/ice
-							m_oRoadcastDataFactory.setValue(51137, oTime.getTimeInMillis(), nMicroLat, nMicroLon, 3);  //ice/snow on the road
-						else //temp between -2 C and 2 C means mix
-							m_oRoadcastDataFactory.setValue(51137, oTime.getTimeInMillis(), nMicroLat, nMicroLon, 4);  //mix water/snow on the road
-					}
-					else  //no precipitation so dry road
-						m_oRoadcastDataFactory.setValue(51137, oTime.getTimeInMillis(), nMicroLat, nMicroLon, 1);  //dry road
-				}
-				
-				oRoadCondition.appendChild(oDoc.createTextNode(Double.toString(m_oRoadcastDataFactory.getReading(51137, oTime.getTimeInMillis(), nMicroLat, nMicroLon))));
-				oMeasure.appendChild(oRoadCondition);
-				
-
-				//if there is no roadcast data initialize surface temp as the air temp from RTMA
-				if (Double.isNaN(m_oRoadcastDataFactory.getReading(51138, oTime.getTimeInMillis(), nMicroLat, nMicroLon)))
-					m_oRoadcastDataFactory.setValue(51138, oTime.getTimeInMillis(), nMicroLat, nMicroLon, oRTMA.getReading(5733, oTime.getTimeInMillis(), nMicroLat, nMicroLon));
-				
-				oRoadSurfaceTemp.appendChild(oDoc.createTextNode(Double.toString(m_oRoadcastDataFactory.getReading(51138, oTime.getTimeInMillis(), nMicroLat, nMicroLon))));
-				oMeasure.appendChild(oRoadSurfaceTemp);
-				
-				//if there is no roadcast data initialize sub surface temp as the air temp from RTMA
-				if (Double.isNaN(m_oRoadcastDataFactory.getReading(51165, oTime.getTimeInMillis(), nMicroLat, nMicroLon)))
-					m_oRoadcastDataFactory.setValue(51165, oTime.getTimeInMillis(), nMicroLat, nMicroLon, oRTMA.getReading(5733, oTime.getTimeInMillis(), nMicroLat, nMicroLon));
-				
-				oRoadSubSurfaceTemp.appendChild(oDoc.createTextNode(Double.toString(m_oRoadcastDataFactory.getReading(51165, oTime.getTimeInMillis(), nMicroLat, nMicroLon))));
-				oMeasure.appendChild(oRoadSubSurfaceTemp);
-				
-				oTime.add(Calendar.HOUR_OF_DAY, 1);
-			}
-			 
-			transformToXML(oDoc, m_sBaseDir + "observation" + Thread.currentThread().getId() + ".xml"); //create and save XML file
-		}
-		catch(Exception e)
-		{
-		}
-	}
-	
-	
-	/**
-	 * A method that creates and saves the Station XML file that is used as an 
-	 * input for METRo.
-	 * 
-	 * @param oCell  the region for the file
-	 */
-	public void createStationXML(MapCell oCell)
-	{
-		try
-		{
-			//set the lat and lon in micro degrees of the middle of the cell
-			int nMicroLat = MathUtil.toMicro((oCell.m_dLatBot + oCell.m_dLatTop) / 2);
-			int nMicroLon = MathUtil.toMicro((oCell.m_dLonRight + oCell.m_dLonLeft) / 2 );
-			
-			//create the structure for the XML file
-			DocumentBuilderFactory oDocFactory = DocumentBuilderFactory.newInstance();
-			DocumentBuilder oDocBuilder = oDocFactory.newDocumentBuilder();
-
-			Document oDoc = oDocBuilder.newDocument();
-			
-			Element oStation = oDoc.createElement("station");
-			oDoc.appendChild(oStation);
-
-			Element oHeader = oDoc.createElement("header");
-			oStation.appendChild(oHeader);
-
-			Element oFileType = oDoc.createElement("filetype");
-			oFileType.appendChild(oDoc.createTextNode("rwis-configuration"));
-			oHeader.appendChild(oFileType);
-			
-			Element oVersion = oDoc.createElement("version");
-			oVersion.appendChild(oDoc.createTextNode("1.0"));
-			oHeader.appendChild(oVersion);
-
-			Element oRoadStation = oDoc.createElement("road-station");
-			oRoadStation.appendChild(oDoc.createTextNode(nMicroLat + "_" + nMicroLon));
-			oHeader.appendChild(oRoadStation);
-			
-			Element oTimeZone = oDoc.createElement("time-zone");
-			oTimeZone.appendChild(oDoc.createTextNode("UTC"));
-			oHeader.appendChild(oTimeZone);
-			
-			Element oProductionDate = oDoc.createElement("production-date");
-			oProductionDate.appendChild(oDoc.createTextNode(m_oTimestamp.format(m_lNow)));
-			oHeader.appendChild(oProductionDate);
-			
-			Element oCooridnate = oDoc.createElement("coordinate");
-			oHeader.appendChild(oCooridnate);
-			
-			Element oLatitude = oDoc.createElement("latitude");
-			oLatitude.appendChild(oDoc.createTextNode(Double.toString(MathUtil.fromMicro(nMicroLat)))); //use decimal degrees for Lat
-			oCooridnate.appendChild(oLatitude);
-			
-			Element oLongitude = oDoc.createElement("longitude");
-			oLongitude.appendChild(oDoc.createTextNode(Double.toString(MathUtil.fromMicro(nMicroLon)))); //use decimal degrees for Lon
-			oCooridnate.appendChild(oLongitude);
-			
-			Element oStationType = oDoc.createElement("station-type");
-			oStationType.appendChild(oDoc.createTextNode("road"));
-			oHeader.appendChild(oStationType);
-			
-			Element oRoadLayerList = oDoc.createElement("roadlayer-list");
-			oStation.appendChild(oRoadLayerList);
-
-			Element oRoadLayer = oDoc.createElement("roadlayer");
-			oRoadLayerList.appendChild(oRoadLayer);
-
-			Element oPostition = oDoc.createElement("position");
-			oPostition.appendChild(oDoc.createTextNode("1"));
-			oRoadLayer.appendChild(oPostition);
-
-			Element oType = oDoc.createElement("type");
-			oType.appendChild(oDoc.createTextNode("asphalt"));
-			oRoadLayer.appendChild(oType);
-
-			Element oThickness = oDoc.createElement("thickness");
-			oThickness.appendChild(oDoc.createTextNode("0.5"));  //thickness in meters
-			oRoadLayer.appendChild(oThickness);
-
-		  
-			transformToXML(oDoc, m_sBaseDir + "station" + Thread.currentThread().getId() + ".xml");  //createa and save XML file
-		}
-		catch(Exception e)
-		{
-		}
-	}
-	
-	
-	/**
-	 * A method that creates and saves the Forecast XML file that is used as 
-	 * an input for METRo.
-	 * 
-	 * @param oCell          The region for the forecast
-	 */
-	public void createForecastXML(MapCell oCell)
-	{
-		try
-		{
-			//set the lat and lon in micro degrees of the middle of the cell
-			int nMicroLat = MathUtil.toMicro((oCell.m_dLatBot + oCell.m_dLatTop) / 2);
-			int nMicroLon = MathUtil.toMicro((oCell.m_dLonRight + oCell.m_dLonRight) / 2 );
-			Calendar oTime = new GregorianCalendar();
-			oTime.setTimeInMillis(m_lNow);
-
-			NDFD oNDFD = NDFD.getInstance();
-			RTMA oRTMA = RTMA.getInstance();
-			RAP oRAP = RAP.getInstance();
-			
-			//create structure of the XML file
-			DocumentBuilderFactory oDocFactory = DocumentBuilderFactory.newInstance();
-			DocumentBuilder oDocBuilder = oDocFactory.newDocumentBuilder();
-
-			Document oDoc = oDocBuilder.newDocument();
-			
-			Element oForecast = oDoc.createElement("forecast");
-			oDoc.appendChild(oForecast);
-
-			Element oHeader = oDoc.createElement("header");
-			oForecast.appendChild(oHeader);
-
-			Element oVersion = oDoc.createElement("version");
-			oVersion.appendChild(oDoc.createTextNode("1.1"));  //wouldn't run as v1.0
-			oHeader.appendChild(oVersion);
-
-			Element oProductionDate = oDoc.createElement("production-date");
-			oProductionDate.appendChild(oDoc.createTextNode(m_oTimestamp.format(m_lNow)));
-			oHeader.appendChild(oProductionDate);
-			
-			Element oStationID = oDoc.createElement("station-id");
-			oStationID.appendChild(oDoc.createTextNode(nMicroLat + "_" + nMicroLon));
-			oHeader.appendChild(oStationID);
-
-			Element oPredictionList = oDoc.createElement("prediction-list");
-			oForecast.appendChild(oPredictionList);
-			
-			//create the forecast clause in the XML for each hour of forecasts
-			for (int i = 0;i < m_nForecastHours; i++)
-			{
-				Element oPrediction = oDoc.createElement("prediction");
-				oPredictionList.appendChild(oPrediction);
-
-				Element oForecastTime = oDoc.createElement("forecast-time");
-				oForecastTime.appendChild(oDoc.createTextNode(m_oTimestamp.format(oTime.getTime())));
-				oPrediction.appendChild(oForecastTime);
-
-				double dAirTemp;
-				Element oDewPoint = oDoc.createElement("td");
-				Element oWindSpeed = oDoc.createElement("ws");
-				Element oCloudCoverage = oDoc.createElement("cc");
-				//for the first hour use RTMA for the forecast, for all others use NDFD
-				if (i == 0)
-				{
-					dAirTemp = oRTMA.getReading(5733, oTime.getTimeInMillis(), nMicroLat, nMicroLon);
-					oDewPoint.appendChild(oDoc.createTextNode(Double.toString(oRTMA.getReading(575, oTime.getTimeInMillis(), nMicroLat, nMicroLon))));
-					oWindSpeed.appendChild(oDoc.createTextNode(Double.toString(oRTMA.getReading(56104, oTime.getTimeInMillis(), nMicroLat, nMicroLon))));
-					oCloudCoverage.appendChild(oDoc.createTextNode(Integer.toString((int) oRTMA.getReading(593, oTime.getTimeInMillis(), nMicroLat, nMicroLon))));  //cloud coverage has to be an int
-				}
-				else
-				{
-					dAirTemp = oNDFD.getReading(5733, oTime.getTimeInMillis(), nMicroLat, nMicroLon);
-					oDewPoint.appendChild(oDoc.createTextNode(Double.toString(oNDFD.getReading(575, oTime.getTimeInMillis(), nMicroLat, nMicroLon))));
-					oWindSpeed.appendChild(oDoc.createTextNode(Double.toString(oNDFD.getReading(56104, oTime.getTimeInMillis(), nMicroLat, nMicroLon))));
-					oCloudCoverage.appendChild(oDoc.createTextNode(Integer.toString((int) oNDFD.getReading(593, oTime.getTimeInMillis(), nMicroLat, nMicroLon))));   //cloud coverage has to be an int for METRo
-				}
-				Element oAirTemp = oDoc.createElement("at");
-				oAirTemp.appendChild(oDoc.createTextNode(Double.toString(dAirTemp)));
-				oPrediction.appendChild(oAirTemp);					
-				oPrediction.appendChild(oDewPoint);
-
-				double dPrecip = oRAP.getReading(587, oTime.getTimeInMillis(), nMicroLat, nMicroLon);
-				Element oRainPrecipQuant = oDoc.createElement("ra");
-				Element oSnowPrecipQuant = oDoc.createElement("sn");
-				//if air temp is greater than 2 C all precip is rain
-				if (dAirTemp > 2)
-				{
-					oRainPrecipQuant.appendChild(oDoc.createTextNode(Double.toString(3600 * dPrecip)));   //quantity of precip is given in mm/sec, multiply by secs in an hour to get total
-					oSnowPrecipQuant.appendChild(oDoc.createTextNode("0"));
-				}
-				//if air temp is less than -2 C all precip is snow/ice
-				else if (dAirTemp < -2)
-				{
-					oRainPrecipQuant.appendChild(oDoc.createTextNode("0"));
-					oSnowPrecipQuant.appendChild(oDoc.createTextNode(Double.toString(360 * dPrecip)));   //for snow the we need the input in cm instead of mm
-				}
-				//if air temp is between -2 C and 2 C precip is a mix of rain and snow
-				else
-				{
-					oRainPrecipQuant.appendChild(oDoc.createTextNode(Double.toString(1800 * dPrecip)));  //half is rain
-					oSnowPrecipQuant.appendChild(oDoc.createTextNode(Double.toString(180 * dPrecip)));   //half is snow
-				}
-				oPrediction.appendChild(oRainPrecipQuant);
-				oPrediction.appendChild(oSnowPrecipQuant);
-				oPrediction.appendChild(oWindSpeed);
-
-				Element oSurfacePressure = oDoc.createElement("ap");
-				oSurfacePressure.appendChild(oDoc.createTextNode(Double.toString(oRAP.getReading(554, oTime.getTimeInMillis(), nMicroLat, nMicroLon))));
-				oPrediction.appendChild(oSurfacePressure);
-
-				oPrediction.appendChild(oCloudCoverage);
-				
-				oTime.add(Calendar.HOUR_OF_DAY, 1);
-			}
-			transformToXML(oDoc, m_sBaseDir + "forecast" + Thread.currentThread().getId() + ".xml");  //create and save XML file
-		}
-		catch(Exception e)
-		{
-		}
-	}
-		
-	
-	/**
-	 * A method used to read a Roadcast XML file and then store all of the data
-	 * in a list of arrays using the RoadcastDataFactory.
-	 * 
-	 * @param sFilename the name of the Roadcast XML file
-	 */
-	public void readRoadcastFile(String sFilename, MapCell oCell)
-	{
-		StringBuilder sStringBuilder = new StringBuilder();
-		Calendar oTime = new GregorianCalendar();
-		oTime.setTimeInMillis(m_lNow);
-		double dLat = (oCell.m_dLatBot + oCell.m_dLatTop) / 2;
-		double dLon = (oCell.m_dLonRight + oCell.m_dLonLeft) /2;
-		
-		try
-		{
-			// copy remote file index to buffer
-			File oFile = new File(sFilename);
-			if (!oFile.exists())
-				return;
-			BufferedInputStream oIn = new BufferedInputStream(new FileInputStream(oFile));
-			int nByte; 
-			while ((nByte = oIn.read()) >= 0)
-				sStringBuilder.append((char)nByte);
-			oIn.close();
-			
-			//get the time of the first roadcast and set the Calendar
-			int nFirstRoadcastIndex = sStringBuilder.indexOf("<first-roadcast>");
-			nFirstRoadcastIndex += "<first-roadcast>".length();
-			String sFirstRoadcast = sStringBuilder.substring(nFirstRoadcastIndex, nFirstRoadcastIndex + "yyyy-MM-ddTHH:mmZ".length());
-			oTime.set(Calendar.YEAR, Integer.parseInt(sFirstRoadcast.substring(0, 4)));
-			oTime.set(Calendar.MONTH, Integer.parseInt(sFirstRoadcast.substring(5, 7)) - 1);
-			oTime.set(Calendar.DATE, Integer.parseInt(sFirstRoadcast.substring(8, 10)));
-			oTime.set(Calendar.HOUR_OF_DAY, Integer.parseInt(sFirstRoadcast.substring(11, 13)));
-			oTime.set(Calendar.MINUTE, Integer.parseInt(sFirstRoadcast.substring(14, 16)));
-			oTime.set(Calendar.SECOND, 0);
-			oTime.set(Calendar.MILLISECOND, 0);
-
-			//start at the 3rd prediction, one hour after the last observation
-			int nPredictionIndex = sStringBuilder.indexOf("<prediction>");
-			nPredictionIndex = sStringBuilder.indexOf("<prediction>", nPredictionIndex + 1);  
-			nPredictionIndex = sStringBuilder.indexOf("<prediction>", nPredictionIndex + 1);
-			//get all of the Predictions from the XML file
-			while (nPredictionIndex >= 0)
-			{
-				//update the time
-				oTime.add(Calendar.HOUR_OF_DAY, 1); 
-				long lTimestamp = oTime.getTimeInMillis();
-				
-				//get and set the Road Condition
-				int nIndexBegin = sStringBuilder.indexOf("<rc>", nPredictionIndex) + "<rc>".length();
-				int nIndexEnd = sStringBuilder.indexOf("</rc>", nIndexBegin);
-				m_oRoadcastDataFactory.setValue(51137, lTimestamp, dLat, dLon, Double.parseDouble(sStringBuilder.substring(nIndexBegin, nIndexEnd))); 
-				
-				//get and set the Road Surface Temperature
-				nIndexBegin = sStringBuilder.indexOf("<st>", nPredictionIndex) + "<st>".length();
-				nIndexEnd = sStringBuilder.indexOf("</st>", nIndexBegin);
-				m_oRoadcastDataFactory.setValue(51138, lTimestamp, dLat, dLon, Double.parseDouble(sStringBuilder.substring(nIndexBegin, nIndexEnd))); 
-				
-				//get and set the Road Sub Surface Temperature
-				nIndexBegin = sStringBuilder.indexOf("<sst>", nPredictionIndex) + "<sst>".length();
-				nIndexEnd = sStringBuilder.indexOf("</sst>", nIndexBegin);
-				m_oRoadcastDataFactory.setValue(51165, lTimestamp, dLat, dLon, Double.parseDouble(sStringBuilder.substring(nIndexBegin, nIndexEnd))); 
-						
-				//skip two predictions to get to the next hour's prediction
-				nPredictionIndex = sStringBuilder.indexOf("<prediction>", nPredictionIndex + 1);  
-				nPredictionIndex = sStringBuilder.indexOf("<prediction>", nPredictionIndex + 1);
-				nPredictionIndex = sStringBuilder.indexOf("<prediction>", nPredictionIndex + 1);
-			}
-		}
-		catch (Exception e)
-		{
-		}
-	}
-	
-	
-	/**
 	 * A method that fills the RoadMapCells Array List with every cell that
 	 * contains a road.
 	 */
@@ -567,16 +112,16 @@ public class MetroMgr extends HttpServlet implements Runnable, Comparator<RoadAl
 		//for each region defined in the configuration file
 		for (MapCell oRegion : m_oBounds)
 		{
-			//convert lat and lon to lambert conformal projection x and y
-			dProjTR = RoadcastDataFactory.latLonToLambert(oRegion.m_dLatTop, oRegion.m_dLonRight); //top right
-			dProjBL = RoadcastDataFactory.latLonToLambert(oRegion.m_dLatBot, oRegion.m_dLonLeft);	//bottom left
+			//convert lat and lon to lambert conformal projection x and y, need to do this because the grid we are basing our map off of is in lambert conformal
+			dProjTR = MetroResults.latLonToLambert(oRegion.m_dLatTop, oRegion.m_dLonRight); //top right
+			dProjBL = MetroResults.latLonToLambert(oRegion.m_dLatBot, oRegion.m_dLonLeft);	//bottom left
 			for (double x = dProjBL[0][0]; x < dProjTR[0][0]; x += m_dStepX)
 			{
 				for (double y = dProjBL[1][0]; y < dProjTR[1][0]; y += m_dStepY)
 				{
 					//convert projection back to lat lon
-					dLatLonBL = RoadcastDataFactory.lambertToLatLon(x, y);
-					dLatLonTR = RoadcastDataFactory.lambertToLatLon(x + m_dStepX, y + m_dStepY);
+					dLatLonBL = MetroResults.lambertToLatLon(x, y);
+					dLatLonTR = MetroResults.lambertToLatLon(x + m_dStepX, y + m_dStepY);
 					//reset the road list
 					oRoadList.clear();
 					//find roads in the bounding box
@@ -611,8 +156,8 @@ public class MetroMgr extends HttpServlet implements Runnable, Comparator<RoadAl
 	 */
 	public int getPresenceOfPrecip(int nLat, int nLon, long lTimestamp)
 	{
-		//check radar files every 2 minutes for the last hour. if reflectivity is greater than 0, there is precipitation
-		for (int i = 0; i < 30 ; i++)
+		//check radar files every 4 minutes for the last hour. if reflectivity is greater than 0, there is precipitation
+		for (int i = 0; i < m_nRadarFilesPerHour ; i++)
 		{
 			if (Radar.getInstance().getReading(0, lTimestamp - i * 120000, nLat, nLon) > 0)
 				return 1;
@@ -637,9 +182,10 @@ public class MetroMgr extends HttpServlet implements Runnable, Comparator<RoadAl
 			//set the time for the process
 			m_lNow = System.currentTimeMillis();
 			
-			//initialize/update the RoadcastDataList
-			m_oRoadcastDataFactory.initArrayList(m_lNow, m_nObservationHours, m_nForecastHours);
+			//initialize/update the MetroResults List
+			m_oMetroResults.initArrayList(m_lNow, m_nObservationHours, m_nForecastHours);
 			
+			System.out.println("Started METRo at " + m_oTimestamp.format(m_lNow));
 			//queue all of the MapCells into the work queue for the ThreadPool
 			for (MapCell oCell : m_oRoadMapCells)
 			{
@@ -663,8 +209,8 @@ public class MetroMgr extends HttpServlet implements Runnable, Comparator<RoadAl
 		//create alerts/warnings for each hour of roadcasts
 		for (int i = 0; i < m_nForecastHours - 1; i++)  //number of roadcast hours is 1 less than forecast hours input
 		{
-			//read the road condition from the RoadcastData
-			int nRoadCondition = (int) m_oRoadcastDataFactory.getReading(51137, oTime.getTimeInMillis(), (oMapCell.m_dLatBot + oMapCell.m_dLatTop) / 2, (oMapCell.m_dLonLeft + oMapCell.m_dLonRight) / 2);
+			//read the road condition from MetroResults
+			int nRoadCondition = (int) m_oMetroResults.getReading(51137, oTime.getTimeInMillis(), (oMapCell.m_dLatBot + oMapCell.m_dLatTop) / 2, (oMapCell.m_dLonLeft + oMapCell.m_dLonRight) / 2);
 			//convert METRo road conditions into 1204 ess standard numbers
 			switch (nRoadCondition)
 			{
@@ -679,21 +225,24 @@ public class MetroMgr extends HttpServlet implements Runnable, Comparator<RoadAl
 					break;
 				case 8:
 					nRoadCondition = 17; //pavement ice alert
+					break;
 				default:
 					nRoadCondition = 1;  //no alert
 
 			}
 			if (nRoadCondition > 1)
 			{
-
-				for (int nRoadID : oMapCell.m_oRoads)
+				synchronized(m_oAlerts)
 				{
-					//check to see if an alert for the road exists
-					RoadAlert oAlert = new RoadAlert(nRoadID, nRoadCondition);
-					int nAlertIndex = Collections.binarySearch(m_oAlerts, oAlert, this);
-					//if the road does not have an existing alert, add the alert to the list
-					if (nAlertIndex < 0)
-						m_oAlerts.add(~nAlertIndex, oAlert);
+					for (int nRoadID : oMapCell.m_oRoads)
+					{
+						//check to see if an alert for the road exists
+						RoadAlert oAlert = new RoadAlert(nRoadID, nRoadCondition);
+						int nAlertIndex = Collections.binarySearch(m_oAlerts, oAlert, this);
+						//if the road does not have an existing alert, add the alert to the list
+						if (nAlertIndex < 0)
+							m_oAlerts.add(~nAlertIndex, oAlert);
+					}
 				}
 			}
 			oTime.add(Calendar.HOUR_OF_DAY, 1);
@@ -702,7 +251,8 @@ public class MetroMgr extends HttpServlet implements Runnable, Comparator<RoadAl
 	
 	
 	/**
-	 * 
+	 *  This function prints all of the roads that have an alert and the kind of
+	 *  alert for that road
 	 */
 	public void printAlerts()
 	{
@@ -710,7 +260,7 @@ public class MetroMgr extends HttpServlet implements Runnable, Comparator<RoadAl
 			System.out.println("No alerts");
 		else
 			for (RoadAlert oAlert : m_oAlerts)
-				System.out.println(oAlert.getRoadAlertMessage());
+				System.out.println(oAlert.m_nRoadID + ": " + oAlert.getRoadAlertMessage());
 	}
 	
 	
@@ -728,25 +278,7 @@ public class MetroMgr extends HttpServlet implements Runnable, Comparator<RoadAl
 		return "No alert";
 	}
 	
-	
-	/**
-	 * This method deletes old METRo XML to manage space
-	 */
-	public void cleanupFiles()
-	{
-		File oForecast = new File(m_sBaseDir + "forecast" + Thread.currentThread().getId() + ".xml");
-		File oStation = new File(m_sBaseDir + "station" + Thread.currentThread().getId() + ".xml"); 
-		File oObservation = new File(m_sBaseDir + "observation" + Thread.currentThread().getId() + ".xml");
-		File oRoadcast = new File(m_sBaseDir + "roadcast" + Thread.currentThread().getId() + ".xml");
 		
-		oForecast.delete();
-		oStation.delete();
-		oObservation.delete();
-		if (oRoadcast.exists())
-			oRoadcast.delete();
-	}
-	
-	
 /**
  * Allows RoadAlert objects to be compared by their RoadID
  * @param oLhs  left hand side
@@ -758,89 +290,15 @@ public class MetroMgr extends HttpServlet implements Runnable, Comparator<RoadAl
 	{
 		return oLhs.m_nRoadID - oRhs.m_nRoadID;
 	}
-	
-	
-	@Override
-	protected void doGet(HttpServletRequest oReq, HttpServletResponse oResp)
-	{
-		
-	}
-	
-	
-	@Override
-	protected void doPost(HttpServletRequest oReq, HttpServletResponse oResp)
-	{
-		
-	}
-	
-	
-	/**
-	 * An inner class that represents a single cell of a grid map. The cell is 
-	 * defined by a bounding box of latitudes and longitudes. It contains a list
-	 * of roads that are in the region
-	 */
-	public class MapCell implements Runnable
-	{
-		private final double m_dLatTop;
-		private final double m_dLonLeft;
-		private final double m_dLatBot;
-		private final double m_dLonRight;
-		private final String m_sRegion;
-		private ArrayList<Integer> m_oRoads = new ArrayList();
-		
-		
-		MapCell(double dLatTop, double dLonLeft, double dLatBot, double dLonRight, String sRegion)
-		{
-			m_dLatTop = dLatTop;
-			m_dLonLeft = dLonLeft;
-			m_dLatBot = dLatBot;
-			m_dLonRight = dLonRight;
-			m_sRegion = sRegion;
-		}
-		
-		
-		/**
-		 * This method creates the 3 input files for METRo, runs METRo, reads the 
-		 * resulting Roadcast Files, and creates Alerts for all map cells that 
-		 * contain roads.
-		 */
-		@Override
-		public void run()
-		{
-			//create the 3 input XML files
-			createForecastXML(this);
-			createStationXML(this);
-			createObsXML(this);
-			//run METRo
-			try
-			{
-				Process oProcess = Runtime.getRuntime().exec("python /usr/local/metro/usr/bin/metro"
-					+ " --input-forecast " + m_sBaseDir + "forecast" + Thread.currentThread().getId() + ".xml"
-					+ " --input-station " + m_sBaseDir + "station" + Thread.currentThread().getId() + ".xml" 
-					+ " --input-observation " + m_sBaseDir + "observation" + Thread.currentThread().getId() + ".xml" 
-					+ " --output-roadcast " + m_sBaseDir + "roadcast" + Thread.currentThread().getId() + ".xml");
-				oProcess.waitFor();
-			}
-			catch(Exception e)
-			{
-			}
-			//read and save data from the output Roadcast File
-			readRoadcastFile(m_sBaseDir + "roadcast" + Thread.currentThread().getId() + ".xml", this);
-			System.out.print(m_nRunning.decrementAndGet() + " " + m_oRoadcastDataFactory.getReading(51138, m_lNow + 3600000, (m_dLatTop + m_dLatBot) / 2, (m_dLonRight + m_dLonLeft) / 2));
-			System.out.println(" " + m_oRoadcastDataFactory.getReading(51165, m_lNow + 3600000, (m_dLatTop + m_dLatBot) / 2, (m_dLonRight + m_dLonLeft) / 2) + " " + m_oRoadcastDataFactory.getReading(51137, m_lNow + 3600000, (m_dLatTop + m_dLatBot) / 2, (m_dLonRight + m_dLonLeft) / 2));
-			//delete old XML files
-			cleanupFiles();
-			//create alerts for all the roads in the MapCell
-			createAlerts(this);
-			if (m_nRunning.get() == 0)
-				printAlerts();
-		}
-	}
 
 	
 	public static void main(String[] args)
 	{
 		MetroMgr oMetroMgr = MetroMgr.getInstance();
+		NDFD.getInstance();
+		RAP.getInstance();
+		Radar.getInstance();
+		RTMA.getInstance();
 		oMetroMgr.run();
 	}
 }

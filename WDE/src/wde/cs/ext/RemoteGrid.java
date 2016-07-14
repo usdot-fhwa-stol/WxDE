@@ -52,7 +52,7 @@ abstract class RemoteGrid extends RemoteData implements Runnable
 	
 	
 	/**
-	*  Initializes the data for the past 12 hours. 
+	*  Initializes the data for the configured amount of time. 
 	*
 	*/
 	@Override
