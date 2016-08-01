@@ -6,6 +6,7 @@
 package wde.cs.ext;
 
 import javax.servlet.http.HttpServlet;
+import wde.WDEMgr;
 import wde.comp.MetroMgr;
 
 
@@ -26,7 +27,9 @@ public class ExtStarter extends HttpServlet implements Runnable
 	@Override
 	public void init()
 	{
+		WDEMgr.getInstance();
 		new Thread(this).start();
+
 	}
 	
 	/**
@@ -35,11 +38,12 @@ public class ExtStarter extends HttpServlet implements Runnable
 	 */
 	@Override
 	public void run()
-	{
+	{		
+		WDEMgr.getInstance().startup();
 		MetroMgr.getInstance(); // Roads are also loaded by MetroMgr
 		NDFD.getInstance();
 		Radar.getInstance();
 		RAP.getInstance();
-		RTMA.getInstance();		
+		RTMA.getInstance();
 	}
 }

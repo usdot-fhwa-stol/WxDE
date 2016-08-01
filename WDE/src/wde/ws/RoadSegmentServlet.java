@@ -183,7 +183,8 @@ public class RoadSegmentServlet extends LayerServlet
     }
     catch (Exception oEx)
     {
-      m_oLogger.error("", oEx);
+		if (!oEx.getMessage().contains("relation ") && !oEx.getMessage().contains("does not exist"))
+			m_oLogger.error("", oEx);
     }
 
     Collections.sort(oWarningRoadIds);
@@ -397,9 +398,10 @@ public class RoadSegmentServlet extends LayerServlet
     }
     catch (Exception ex)
     {
-      m_oLogger.error("", ex);
+		if (!ex.getMessage().contains("relation ") && !ex.getMessage().contains("does not exist"))
+			m_oLogger.error("", ex);
     }
-
+	 
     //check if the request time is in the current hour
     Calendar oCal = Calendar.getInstance();
     oCal.set(Calendar.MILLISECOND, 0);
@@ -438,7 +440,8 @@ public class RoadSegmentServlet extends LayerServlet
 		serializeObsRecord(oOutputGenerator, oObstypeIdList, oNumberFormatter, oConfFormat, oDateFormat, oDate, nObstypeId, dValue, oObsRequest.getRequestTimestamp(), -1, 0, -1, null);
 	 }
 	 
-    oOutputGenerator.writeEndObject();
+	 oOutputGenerator.writeEndArray();
+	 oOutputGenerator.writeEndObject();
   }
 
   @Override

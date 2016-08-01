@@ -17,6 +17,8 @@ import wde.util.MathUtil;
  */
 public class DoMetroWrapper implements Runnable
 {
+	public static boolean g_bLibraryLoaded = true;
+	private static final Logger m_oLogger = Logger.getLogger(DoMetroWrapper.class);
 	static
 	{
 		try
@@ -25,9 +27,10 @@ public class DoMetroWrapper implements Runnable
 		}
 		catch(Exception e)
 		{
+			g_bLibraryLoaded = false;
+			m_oLogger.info("Failed to load shared library");
 		}
 	}
-	private static final Logger m_oLogger = Logger.getLogger(DoMetroWrapper.class);
 	public boolean m_bFail = false;
 	private int m_bBridge; 
 	private double m_dLat; 
@@ -51,7 +54,6 @@ public class DoMetroWrapper implements Runnable
 	private final double[] m_dObsDewPoint;
 	private final double[] m_dObsWindSpeed;
 	private final double[] m_dObsTime;
-	private final double m_dMETRO_MISSING_VALUE = 9999.0;
 	private final MetroResults m_oMetroResults = MetroResults.getInstance();
 	private final MetroMgr m_oMetroMgr = MetroMgr.getInstance();
 	private final int m_nNumOfOutputs = (m_oMetroMgr.m_nForecastHours - 1) * 120;
@@ -203,35 +205,35 @@ public class DoMetroWrapper implements Runnable
 			m_dObsTime[i] = oCal.get(Calendar.HOUR_OF_DAY);
 			
 			//check that values fall within the correct range, if not exit the function and set that it failed so METRo isn't ran for the MapCell
-			if (m_dObsRoadTemp[i] < dRoadTemperatureMin || m_dObsRoadTemp[i] > dRoadTemperatureHigh)
+			if (Double.isNaN(m_dObsRoadTemp[i]) || m_dObsRoadTemp[i] < dRoadTemperatureMin || m_dObsRoadTemp[i] > dRoadTemperatureHigh)
 			{
 				m_bFail = true;
 				m_oLogger.info("Observation Road Temp out of range");
 				return;
 			}
       
-			if (m_dObsSubSurfTemp[i] < dSubSurRoadTmpMin || m_dObsSubSurfTemp[i] > dSubSurRoadTmpHigh)
+			if (Double.isNaN(m_dObsSubSurfTemp[i]) || m_dObsSubSurfTemp[i] < dSubSurRoadTmpMin || m_dObsSubSurfTemp[i] > dSubSurRoadTmpHigh)
 			{
 				m_bFail = true;
 				m_oLogger.info("Observation Sub Surface Temp out of range");
 				return;
 			}
       
-			if (m_dObsAirTemp[i] < dAirTempMin || m_dObsAirTemp[i] > dAirTempHigh)
+			if (Double.isNaN(m_dObsAirTemp[i]) || m_dObsAirTemp[i] < dAirTempMin || m_dObsAirTemp[i] > dAirTempHigh)
 			{
 				m_bFail = true;
 				m_oLogger.info("Observation Air Temperature out of range");
 				return;
 			}
       
-			if (m_dObsDewPoint[i] < dAirTempMin || m_dObsDewPoint[i] > dAirTempHigh)
+			if (Double.isNaN(m_dObsDewPoint[i]) || m_dObsDewPoint[i] < dAirTempMin || m_dObsDewPoint[i] > dAirTempHigh)
 			{
 				m_bFail = true;
 				m_oLogger.info("Observation Dew Point out of range");
 				return;
 			}
       
-			if (m_dObsWindSpeed[i] < 0 || m_dObsWindSpeed[i] > dMaxWindSpeed)
+			if (Double.isNaN(m_dObsWindSpeed[i]) || m_dObsWindSpeed[i] < 0 || m_dObsWindSpeed[i] > dMaxWindSpeed)
 			{
 				m_bFail = true;
 				m_oLogger.info("Observation Wind Speed out of range");
@@ -273,19 +275,19 @@ public class DoMetroWrapper implements Runnable
 			m_dFTime[i] = oCal.get(Calendar.HOUR_OF_DAY);
 			m_dFTimeSeconds[i] = (int)(lTimestamp / 1000);
 			//check that values fall within the correct range, if not exit the function and set that it failed so METRo isn't ran for the MapCell except for Surface Pressure
-			if (m_dAirTemp[i] < dAirTempMin || m_dAirTemp[i] > dAirTempHigh)
+			if (Double.isNaN(m_dAirTemp[i]) || m_dAirTemp[i] < dAirTempMin || m_dAirTemp[i] > dAirTempHigh)
 			{
 				m_bFail = true;
 				m_oLogger.info("Forecast Air Temperature out of range");
 				return;
 			}
-			if (m_dDewPoint[i] < dAirTempMin || m_dDewPoint[i] > dAirTempHigh)
+			if (Double.isNaN(m_dDewPoint[i]) || m_dDewPoint[i] < dAirTempMin || m_dDewPoint[i] > dAirTempHigh)
 			{
 				m_bFail = true;
 				m_oLogger.info("Forecast Dew Point out of range");
 				return;
 			}
-			if (m_dWindSpeed[i] < 0 || m_dWindSpeed[i] > dMaxWindSpeed)
+			if (Double.isNaN(m_dWindSpeed[i]) || m_dWindSpeed[i] < 0 || m_dWindSpeed[i] > dMaxWindSpeed)
 			{
 				m_bFail = true;
 				m_oLogger.info("Forecast Wind Speed out of range");
@@ -293,7 +295,7 @@ public class DoMetroWrapper implements Runnable
 			}
 			if (m_dSfcPres[i] < dLowerPressure || m_dSfcPres[i] > dUpperPressure)
 				m_dSfcPres[i] = dNormalPressure;  //METRo code set the Pressure to normal pressure if it was not in the correct range
-			if (m_dCloudCover[i] < 0 || m_dCloudCover[i] > 8)
+			if (Double.isNaN(m_dCloudCover[i]) || m_dCloudCover[i] < 0 || m_dCloudCover[i] > 8)
 			{
 				m_bFail = true;
 				m_oLogger.info("Forecast Cloud Cover out of range");

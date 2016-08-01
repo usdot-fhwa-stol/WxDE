@@ -13,6 +13,7 @@ import java.net.URL;
 import java.util.ArrayDeque;
 import java.util.Calendar;
 import java.util.Iterator;
+import org.apache.log4j.Logger;
 
 /**
  * This abstract base class implements common NetCDF patterns for identifying, 
@@ -20,9 +21,7 @@ import java.util.Iterator;
  */
 abstract class RemoteData 
 {
-	/**
-	* Lookup arrays map names between model and observation types.
-	*/
+	private static final Logger m_oLogger = Logger.getLogger(RemoteData.class);
 	protected int m_nDelay;
 	protected int m_nRange;
 	protected int m_nLimit;
@@ -106,7 +105,7 @@ abstract class RemoteData
 			return; // file name could not be resolved
 
 		String sDestFile = getDestFilename(sFilename, oTime);
-		System.out.println(sDestFile);
+		m_oLogger.info("Loading file: " + sDestFile);
 		try
 		{
 			File oFile = new File(sDestFile);

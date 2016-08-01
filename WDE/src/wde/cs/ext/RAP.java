@@ -111,15 +111,15 @@ public class RAP extends RemoteData implements Runnable
 	{
 		if (nObsTypeId == 207)
 		{
-			if (super.getReading(2076, lTimestamp, nLat, nLon) == 1)
+			if (super.getReading(2076, lTimestamp, nLat, nLon) == 1)  //freezing rain
 				return 6;
-			else if (super.getReading(2077, lTimestamp, nLat, nLon) == 1)
+			else if (super.getReading(2077, lTimestamp, nLat, nLon) == 1) //ice pellets
 				return 6;
-			else if (super.getReading(2075, lTimestamp, nLat, nLon) == 1)
+			else if (super.getReading(2075, lTimestamp, nLat, nLon) == 1) //snow
 				return 5;
-			else if (super.getReading(2074, lTimestamp, nLat, nLon) == 1)
+			else if (super.getReading(2074, lTimestamp, nLat, nLon) == 1) //rain
 				return 4;
-			else
+			else //no precip
 				return 3;
 		}
 		else
@@ -178,8 +178,8 @@ public class RAP extends RemoteData implements Runnable
 			m_nDelay += 3600000;
 		}
 		//set the time range back to the default range
-		m_nRange -= 3600000 * 6;
-		m_nDelay -= 3600000 * 6;
+		m_nRange -= (3600000 * (m_nInitTime /3600));   //init time is in secs, want it in hours here
+		m_nDelay -= (3600000 * (m_nInitTime /3600));
 	}
 
 	public static void main(String[] args)
