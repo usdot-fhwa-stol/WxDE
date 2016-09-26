@@ -1,11 +1,17 @@
 <%@page import="ucar.ma2.ForbiddenConversionException"%>
 <%@page import="javax.xml.ws.http.HTTPException"%>
 <%@page contentType="text/html; charset=UTF-8" language="java" import="java.io.*,java.sql.*,java.text.*,java.util.*,javax.sql.*,wde.*,wde.util.*" %>
-<jsp:useBean id="oSubscription" scope="session" class="wde.qeds.Subscription" />
-<jsp:setProperty name="oSubscription" property="*" />
+<%if (Integer.parseInt(request.getParameter("subId")) >= 0){%>
+<jsp:useBean id="oSubscription" scope="session" class="wde.qeds.Subscription" 
+/><jsp:setProperty name="oSubscription" property="*" 
+/><%} else{%>
+<jsp:useBean id="oFcstSubscription" scope="session" class="wde.qeds.FcstSubscription"
+/><jsp:setProperty name="oFcstSubscription" property="*"
+/>
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 
 <%
+   }
 	Config oConfig = ConfigSvc.getInstance().getConfig("wde.qeds.QedsMgr");
 	String sDataSourceName =
 		oConfig.getString("datasource", "java:comp/env/jdbc/wxde");
@@ -17,7 +23,11 @@
 	
 	String subId = request.getParameter("subId");
     DecimalFormat oFormatter = new DecimalFormat("#,###");
-    File oDir = new File(sSubDir + "/" + subId);
+    File oDir;
+    if (Integer.parseInt(subId) > 0)
+        oDir = new File(sSubDir + "/" + subId);
+    else
+       oDir = new File(sSubDir + "/" + subId.substring(1));
     
 	if (!SubscriptionHelper.isAuthorized(request.getRemoteUser(), subId)) {
 		response.sendError(401, "Unauthorized!" );

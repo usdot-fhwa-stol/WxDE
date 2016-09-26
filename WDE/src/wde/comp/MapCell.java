@@ -53,7 +53,8 @@ import java.util.ArrayList;
 				oMetroMgr.createAlerts(this);
 			}
 //			if (oMetroMgr.m_nRunning.get() % 1000 == 0)
-//				System.out.println(((m_dLatTop + m_dLatBot) / 2) + "_" + ((m_dLonRight + m_dLonLeft) / 2) + " " + MetroResults.getInstance().getReading(51137, oMetroMgr.m_lNow + 3600000, (m_dLatTop + m_dLatBot) / 2, (m_dLonRight + m_dLonLeft) / 2)+ " " + MetroResults.getInstance().getReading(51138, oMetroMgr.m_lNow + 3600000, (m_dLatTop + m_dLatBot) / 2, (m_dLonRight + m_dLonLeft) / 2));
+//				for (int i = 1; i <= oMetroMgr.m_nForecastHours - 1; i++)
+//					System.out.println(((m_dLatTop + m_dLatBot) / 2) + "_" + ((m_dLonRight + m_dLonLeft) / 2) + " " + MetroResults.getInstance().getReading(51137, oMetroMgr.m_lNow + (3600000 * i), (m_dLatTop + m_dLatBot) / 2, (m_dLonRight + m_dLonLeft) / 2)+ " " + MetroResults.getInstance().getReading(51138, oMetroMgr.m_lNow + (3600000 * i), (m_dLatTop + m_dLatBot) / 2, (m_dLonRight + m_dLonLeft) / 2)+ " " + MetroResults.getInstance().getReading(51165, oMetroMgr.m_lNow + (3600000 * i), (m_dLatTop + m_dLatBot) / 2, (m_dLonRight + m_dLonLeft) / 2));
 			if (oMetroMgr.m_nRunning.decrementAndGet() == 0)
 			{
 				long lNow = System.currentTimeMillis();
@@ -72,7 +73,7 @@ import java.util.ArrayList;
 		/**
 		 * This method runs Metro by calling the Python code for a given MapCell.
 		 */
-		public void runPython()
+		public void runpython()
 		{
 			MetroMgr oMM = MetroMgr.getInstance();
 			oMM.createObsXML(this);

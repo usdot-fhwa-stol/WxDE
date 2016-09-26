@@ -175,7 +175,7 @@
         <img src="/image/icons/light/fa-cloud-download.png" class="main-menu-icons" alt="Data Icon"/>
         Data</a>
         <ul>
-            <li class="current"><a href="/summaryMap.jsp">Summary Map</a></li>
+            <li class="current"><a href="/wdeMap.jsp">Summary Map</a></li>
             <li>
                 <a href="#" class="non-link-cursor" title="Observations">Observations</a>
                 <ul>
@@ -190,6 +190,13 @@
                     <% } %>
                     <li><a href="/auth/wizardGeospatial.jsp">
                         Coordinates
+                        <% if (request.getUserPrincipal() == null) {%>
+                        <!-- 									<i class="icon-lock" style="margin-left:12px;"></i> -->
+                        <img src="/image/icons/light/fa-lock.png" style="margin-left: 12px;" alt="Locked"/>
+                        <% } %>
+                    </a></li>
+                    <li><a href="/auth/WizardFcstGeospatial.jsp">
+                        Forecast
                         <% if (request.getUserPrincipal() == null) {%>
                         <!-- 									<i class="icon-lock" style="margin-left:12px;"></i> -->
                         <img src="/image/icons/light/fa-lock.png" style="margin-left: 12px;" alt="Locked"/>
@@ -223,6 +230,7 @@
                     </a></li>
                 </ul>
             </li>
+            <li><a href="/auth2/archive.jsp">Archive</a></li>
             <% } %>
         </ul>
     </li>

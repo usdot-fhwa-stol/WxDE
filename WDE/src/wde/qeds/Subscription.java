@@ -16,9 +16,13 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.StringTokenizer;
+import java.util.TimeZone;
+import wde.util.Scheduler;
+
 
 /**
  * Provides filtering parameters which can be set and used to gather
@@ -28,7 +32,7 @@ import java.util.StringTokenizer;
  */
 public class Subscription {
     private static final Logger logger = Logger.getLogger(Subscription.class);
-
+	 public static NextId g_oNextId = new NextId();
     /**
      * Subscription id.
      */
@@ -764,4 +768,73 @@ public class Subscription {
     public void setFormat(String sFormat) {
         m_sOutputFormat = sFormat.toUpperCase();
     }
+	 
+	 public static class NextId implements Runnable
+	 {
+		 public int m_nNextId = 0;
+		 
+		 NextId()
+		 {
+			 run();
+			 Scheduler.getInstance().schedule(this, 0, 86400, true);
+		 }
+		 @Override
+		 public final void run()
+		 {
+			boolean bFoundMax = false;
+			boolean bFoundMin = false;
+			java.util.Date oToday = new java.util.Date();
+			SimpleDateFormat oFormat = new SimpleDateFormat("yyyyMMdd");
+			oFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
+			String sSearch = "'%" + oFormat.format(oToday) + "%'";
+			if (m_nNextId != 0)
+			{
+				m_nNextId = Integer.parseInt(oFormat.format(oToday)) * 100;
+			}
+			Connection iConnection = null;
+			try 
+			{
+            DataSource iDataSource = WDEMgr.getInstance().getDataSource("java:comp/env/jdbc/wxde");
+            if (iDataSource == null)
+                return;
+
+            iConnection = iDataSource.getConnection();
+            if (iConnection == null)
+                return;
+
+				int nMax = 0;
+				int nMin = 0;
+				Statement iStatementMax = iConnection.createStatement();
+				Statement iStatementMin = iConnection.createStatement();
+				ResultSet oRsMax = iStatementMax.executeQuery("SELECT MAX(id) FROM subs.subscription WHERE CAST(id AS TEXT) LIKE " + sSearch + " AND id>0");
+				ResultSet oRsMin = iStatementMin.executeQuery("SELECT MIN(id) FROM subs.subscription WHERE CAST(id AS TEXT) LIKE " + sSearch + " AND id<0");
+				if (oRsMax.next())
+				{
+					nMax = oRsMax.getInt(1);
+					if (nMax != 0)
+						bFoundMax = true;
+				}
+				oRsMax.close();
+				if (oRsMin.next())
+				{
+					nMin = oRsMin.getInt(1);
+					if (nMin != 0)
+						bFoundMin = true;
+				}
+				oRsMin.close();
+				if (bFoundMax && bFoundMin)
+					m_nNextId = Math.max(nMax, -nMin) + 1;
+				else if (bFoundMax)
+					m_nNextId = nMax + 1;
+				else if (bFoundMin)
+					m_nNextId = -nMin + 1;
+				else
+					m_nNextId = Integer.parseInt(oFormat.format(oToday)) * 100;	
+			}
+			catch (Exception oException)
+			{
+
+			}
+		 }
+	 }
 }

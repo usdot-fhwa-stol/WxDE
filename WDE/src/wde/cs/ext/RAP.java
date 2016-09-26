@@ -155,8 +155,8 @@ public class RAP extends RemoteData implements Runnable
 			m_nDelay += 3600000;
 		}
 		//set the time range back to the default range
-		m_nRange -= 3600000 * 6;
-		m_nDelay -= 3600000 * 6;
+		m_nRange -= (3600000 * (m_nInitTime / 3600));   //init time is in secs, want it in hours here
+		m_nDelay -= (3600000 * (m_nInitTime / 3600));
 	}
 
 	
@@ -178,8 +178,8 @@ public class RAP extends RemoteData implements Runnable
 			m_nDelay += 3600000;
 		}
 		//set the time range back to the default range
-		m_nRange -= (3600000 * (m_nInitTime /3600));   //init time is in secs, want it in hours here
-		m_nDelay -= (3600000 * (m_nInitTime /3600));
+		m_nRange -= (3600000 * (m_nInitTime / 3600));   //init time is in secs, want it in hours here
+		m_nDelay -= (3600000 * (m_nInitTime / 3600));
 	}
 
 	public static void main(String[] args)

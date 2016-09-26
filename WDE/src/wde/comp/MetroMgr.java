@@ -106,6 +106,7 @@ public class MetroMgr implements Runnable, Comparator<RoadAlert>
 		}		
 		getMapCells(); //initialize list of MapCells that contain roads
 		Scheduler.getInstance().schedule(this, m_nOffset, m_nPeriod, true);
+		run();
 	}
 
 	
@@ -163,9 +164,12 @@ public class MetroMgr implements Runnable, Comparator<RoadAlert>
 						{
 							m_oRoadMapCells.get(m_oRoadMapCells.size() - 1).m_oRoads.add(oRoad.m_nId);
 							//check to see the road is in the list, add it if it is not
-							int nRoadIndex = Collections.binarySearch(m_oRoads, oRoad, oRoads);
-							if (nRoadIndex < 0) // include a road in each grid cell only once
-									m_oRoads.add(~nRoadIndex, oRoad);
+							synchronized(m_oRoads)
+							{
+								int nRoadIndex = Collections.binarySearch(m_oRoads, oRoad, oRoads);
+								if (nRoadIndex < 0) // include a road in each grid cell only once
+										m_oRoads.add(~nRoadIndex, oRoad);
+							}
 						}
 					}
 				}
@@ -207,11 +211,15 @@ public class MetroMgr implements Runnable, Comparator<RoadAlert>
 		//check if the previous process is still running, if it is skip the next one
 		if (m_nRunning.compareAndSet(0, m_oRoadMapCells.size()))
 		{
+			//set the time for the process
+			Calendar oNow = new GregorianCalendar();
+			oNow.set(Calendar.MILLISECOND, 0);
+			oNow.set(Calendar.SECOND, 0);
+			oNow.set(Calendar.MINUTE, m_nOffset);
+			m_lNow = oNow.getTimeInMillis();
+			
 			//reset Alerts
 			m_oAlerts.clear();
-			//set the time for the process
-			m_lNow = System.currentTimeMillis();
-			
 			//initialize/update the MetroResults List
 			m_oMetroResults.initArrayList(m_lNow, m_nObservationHours, m_nForecastHours);
 			
@@ -788,7 +796,6 @@ public class MetroMgr implements Runnable, Comparator<RoadAlert>
 		if (oFile.exists()) //if the file exists delete it
 			oFile.delete();
 		
-
 		try
 		{
 			NetcdfFileWriter oWriter = NetcdfFileWriter.createNew(NetcdfFileWriter.Version.netcdf3, sLocation);
@@ -934,11 +941,7 @@ public class MetroMgr implements Runnable, Comparator<RoadAlert>
 	
 	public static void main(String[] args)
 	{
-		MetroMgr oMetroMgr = MetroMgr.getInstance();
-		NDFD.getInstance();
-		RAP.getInstance();
-		Radar.getInstance();
-		RTMA.getInstance();
-		oMetroMgr.run();
+		MetroMgr oMM = MetroMgr.getInstance();
+		
 	}
 }

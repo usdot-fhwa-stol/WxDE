@@ -68,7 +68,9 @@ public class OutputCsv extends OutputFormat {
             "Latitude,Longitude,Elevation,Observation,Units," +
             "EnglishValue,EnglishUnits,ConfValue," +
             "Complete,Manual,Sensor_Range,Climate_Range,Step,Like_Instrument,Persistence,IQR_Spatial,Barnes_Spatial,Dew_Point,Sea_Level_Pressure,Precip_Accum,Model_Analysis,Neighboring_Vehicle,Vehicle_Std_Dev";
-    /**
+    
+	 protected String m_sFcstHeader = "ObsTypeID,ObsTypeName,Timestamp,Latitude,Longitude,Elevation,Observation,Units,EnglishValue,EnglishUnits";
+	 /**
      * Quality checking algorithm run flag buffer.
      */
     protected char[] m_cRunFlags;
@@ -217,6 +219,98 @@ public class OutputCsv extends OutputFormat {
             oExp.printStackTrace(System.out);
         }
     }
+	 
+	 
+	/**
+     * Prints {@code SubObs} data to provided output stream. First prints the
+     * defined header, then traverses the provided {@code SubObs} list, printing
+     * the contained data in a .csv comma-delimited manner, of the format:
+     * <p/>
+     * <blockquote>
+     * observation-type id, observation-type name, sensor id, sensor index,
+     * station id, site id, climate id, contributor id, contributor name,
+     * station code, observation timestamp, latitude, longitude, elevation,
+     * observation value, units, english-unit value, english-units, confidence
+     * level, quality check
+     * </blockquote>
+     * followed by a timestamp footer.
+     * <p/>
+     * <p>
+     * Required for extension of {@link OutputFormat}.
+     * </p>
+     *
+     * @param oWriter     output stream, connected, and ready to write data.
+     * @param oSubObsList list of observations to print.
+     * @param oSub        fcstsubscription - used for filtering.
+     * @param sFilename   output filename to write in footer, can be specified as
+     *                    null
+     * @param nId         subscription id.
+     * @param lLimit      timestamp lower bound. All observations with recieved or
+     *                    completed date less than this limit will not be printed.
+     */
+    void fulfill(PrintWriter oWriter, ArrayList<SubObs> oSubObsList,
+                 FcstSubscription oSub, String sFilename, int nId, long lLimit, boolean matchCheck) {
+        Introsort.usort(oSubObsList, this);
+
+        try {
+            if (oSubObsList.size() == 0) {
+                oWriter.println("No records found");
+                return;
+            }
+
+            // output the header information
+            oWriter.println(m_sFcstHeader);
+            //ArrayList<String> qualityFlags = QualityFlagDao.getInstance().getQualityFlagStringArray();
+            //for (String qf : qualityFlags) {
+            //    oWriter.println(qf);
+            //}
+            //oWriter.println("WxDE (5) [2015-10-05 00:00:00+00, 2016-10-05 00:00:00+00) - QchsSequenceComplete,QchsManualFlag,QchsServiceSensorRange,QchsServiceClimateRange,QchsServiceStep,QchsServiceLike,QchsServicePersist,QchsServiceBarnes,QchsServicePressure,Complete,Manual,Sensor_Range,Climate_Range,Step,Like_Instrument,Persistence,IQR_Spatial,Barnes_Spatial,Dew_Point,Sea_Level_Pressure,Precip_Accum,Model_Analysis,Neighboring_Vehicle,Standard_Deviation");
+
+            //oWriter.println("---BEGIN OF RECORDS---");
+
+            // output the obs details
+            for (int nIndex = 0; nIndex < oSubObsList.size(); nIndex++) {
+                SubObs oSubObs = oSubObsList.get(nIndex);
+                // obs must match the time range and filter criteria
+                if (oSubObs.recvTime < lLimit || !oSub.matches(oSubObs, matchCheck))
+                    continue;
+
+                oWriter.print(oSubObs.m_nObsTypeId);
+                oWriter.print(",");
+                oWriter.print(oSubObs.m_iObsType.getObsType());
+                oWriter.print(",");
+                oWriter.print(m_oDateFormat.format(oSubObs.m_lTimestamp));
+                oWriter.print(",");
+                oWriter.print(oSubObs.m_dLat);
+                oWriter.print(",");
+                oWriter.print(oSubObs.m_dLon);
+                oWriter.print(",");
+                oWriter.print(oSubObs.m_nElev);
+                oWriter.print(",");
+                oWriter.print(m_oDecimal.format(oSubObs.m_dValue));
+                oWriter.print(",");
+                oWriter.print(oSubObs.m_iObsType.getObsInternalUnit());
+                oWriter.print(",");
+                oWriter.print(m_oDecimal.format(oSubObs.m_dEnglishValue));
+                oWriter.print(",");
+                oWriter.print(oSubObs.m_iObsType.getObsEnglishUnit());
+                oWriter.println();
+            }
+
+            // output the end of file
+            oWriter.print("---END OF RECORDS---");
+
+            if (sFilename != null) {
+                //oWriter.println();
+                //oWriter.print(" --");
+                oWriter.print(nId);
+                oWriter.print(":");
+                oWriter.println(sFilename);
+            }
+        } catch (Exception oExp) {
+            oExp.printStackTrace(System.out);
+        }
+    }
 
 
     /**
@@ -293,9 +387,13 @@ public class OutputCsv extends OutputFormat {
      */
     public int compare(SubObs oSubObsL, SubObs oSubObsR) {
         // sort the observations for neat output by contrib, obstype, timestamp
-        int nCompare = oSubObsL.m_oContrib.m_nId - oSubObsR.m_oContrib.m_nId;
-        if (nCompare != 0)
-            return nCompare;
+		  int nCompare;
+		  if (oSubObsL.m_oContrib != null && oSubObsR.m_oContrib != null)
+		  {
+				nCompare = oSubObsL.m_oContrib.m_nId - oSubObsR.m_oContrib.m_nId;
+				if (nCompare != 0)
+					 return nCompare;
+		  }
 
         nCompare = oSubObsL.m_nObsTypeId - oSubObsR.m_nObsTypeId;
         if (nCompare != 0)

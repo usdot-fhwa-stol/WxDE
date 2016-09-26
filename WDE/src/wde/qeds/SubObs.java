@@ -94,6 +94,19 @@ public class SubObs {
     SubObs() {
     }
 
+	 SubObs(int nObsType, long lTimestamp, long lReceived, double dLat, double dLon, int nElev, double dVal, ObsTypeDao oObsTypeDao)
+	 {
+		 m_nObsTypeId = nObsType;
+		 m_lTimestamp = lTimestamp;
+		 recvTime = lReceived;
+		 m_dLat = dLat;
+		 m_dLon = dLon;
+		 m_nElev = nElev;
+		 m_dValue = dVal;
+		 m_iObsType = oObsTypeDao.getObsType(nObsType);
+		 UnitConv oUnitConv = Units.getInstance().getConversion(m_iObsType.getObsInternalUnit(), m_iObsType.getObsEnglishUnit());
+		 m_dEnglishValue = oUnitConv.convert(m_dValue);
+	 }
 
     /**
      * <b> Constructor </b>
@@ -148,6 +161,25 @@ public class SubObs {
     }
 
 
+	 SubObs(IObs iObs, ObsTypeDao oObsTypeDao)
+	 {
+		m_nObsTypeId = iObs.getObsTypeId();
+		sourceId = iObs.getSourceId();
+		m_nSensorId = iObs.getSensorId();
+		m_lTimestamp = iObs.getObsTimeLong();
+		m_dLat = MathUtil.fromMicro(iObs.getLatitude());
+		m_dLon = MathUtil.fromMicro(iObs.getLongitude());
+		m_nElev = iObs.getElevation();
+		m_dValue = iObs.getValue();
+		m_fConfidence = iObs.getConfValue();
+		m_nFlags = iObs.getQchCharFlag();
+		recvTime = iObs.getRecvTimeLong();
+		m_iObsType = oObsTypeDao.getObsType(m_nObsTypeId);
+		UnitConv oUnitConv = Units.getInstance().getConversion(m_iObsType.getObsInternalUnit(), m_iObsType.getObsEnglishUnit());
+		m_dEnglishValue = oUnitConv.convert(m_dValue);
+	 }
+	 
+	 
     SubObs(Contribs oContribs, PlatformDao platforms, SensorDao sensorDao,
            Units oUnits, ObsTypeDao obsTypeDao, IObs iObs) {
         m_nObsTypeId = iObs.getObsTypeId();

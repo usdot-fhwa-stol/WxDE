@@ -247,7 +247,7 @@
                 <img src="/image/minified-map-ui/caret-down.png" alt="Down"/>
             </a>
             <ul class="drop drop-list drop-data">
-                <li><a href="/summaryMap.jsp">Summary Map</a></li>
+                <li><a href="/wdeMap.jsp">Summary Map</a></li>
                 <li class="drop-observation subdrop-trigger" class="ie-fix-obs-li">
                     <a href="#">Observations <img src="/image/minified-map-ui/caret-right.png"
                                                   class="reduce-top-margin-2" alt="Right"/></a>
@@ -265,6 +265,10 @@
                             Coordinates
                             <img src="/image/icons/dark/fa-lock.png" class="reduce-top-margin-2" alt="Lock Icon"/>
                         </a></li>
+                        <li><a href="/auth/WizardFcstGeospatial.jsp" class="ie-fix-li-2" style="width: 130px;">
+                            Forecast
+                            <img src="/image/icons/dark/fa-lock.png" class="reduce-top-margin-2" alt="Lock Icon"/>
+                        </a></li>
                     </ul>
 
                     <% } else { %>
@@ -275,6 +279,9 @@
                         </a></li>
                         <li><a href="/auth/wizardGeospatial.jsp" class="ie-fix-li-2" style="width: 130px;">
                             Coordinates
+                        </a></li>
+                        <li><a href="/auth/WizardFcstGeospatial.jsp" class="ie-fix-li-2" style="width: 130px;">
+                            Forecast
                         </a></li>
                     </ul>
 
@@ -321,6 +328,7 @@
                     </ul>
                     <% } %>
                 </li>
+                <li><a href="/auth2/archive.jsp">Archive</a></li>
                 <% } %>
             </ul>
         </li>

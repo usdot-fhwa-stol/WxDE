@@ -93,7 +93,7 @@
                 slope = (double)(in[i +1] - in[i]) / (double)increment;
             else
                 slope = 0;
-            for(j = i; j < increment; j++)
+            for(j = 0; j < increment; j++)
             {
                 int nIndex = (increment * i) + j;
                 out[nIndex] = in[i] + slope * j;
@@ -587,7 +587,7 @@
         bNoObs[2] = 0;    //NCAR documentation says setting this to 1 returns an error so don't set it
         bNoObs[3] = 0;    //set to 1 if there is only one valid observation
 
-        long nLenObservation = nObservationHrs * metroTimesPerHour; //this is the size of the observation arrays after they are interpolated to data points every 30 seconds
+        long nLenObservation = (nObservationHrs - 1) * metroTimesPerHour; //this is the size of the observation arrays after they are interpolated to data points every 30 seconds
         
         //create the arrays that will contain the interpolated values for observations
         double dTimeO[nLenObservation]; 
@@ -597,10 +597,15 @@
         double dTDO[nLenObservation];
         double dFFO[nLenObservation];
         double dRC[nLenObservation];
-        dTimeO[0] = cdObsTime[0];
-        for (i = 1; i < nLenObservation; i++)
-            dTimeO[i] = dTimeO[i - 1] + (1.0/120.0);  //fill in values for the obs times for every 30 seconds
-        
+        int j;
+        for (i = 0; i < nObservationHrs; i++)
+            dTimeO[i * metroTimesPerHour] = cdObsTime[i];
+        for (i = 0; i < nObservationHrs - 1; i++)
+            for (j = 1; j < metroTimesPerHour; j ++)
+                dTimeO[j + (i * metroTimesPerHour)] = dTimeO[(j + (i * metroTimesPerHour)) - 1] + (1.0/120.0);
+//        dTimeO[0] = cdObsTime[0];
+//        for (i = 1; i < nLenObservation; i++)
+//            dTimeO[i] = dTimeO[i - 1] + (1.0/120.0);  //fill in values for the obs times for every 30 seconds
         //interpolate all of the observation data. 
         interp(dTRO, nLenObservation, cdObsRoadTemp, nObservationHrs, metroTimesPerHour, 0);
         interp(dDTO, nLenObservation, cdObsSubSurfTemp, nObservationHrs, metroTimesPerHour, 0);
@@ -611,15 +616,15 @@
         
         //since we don't have an endpoint for the next hour, the last hour of observations didn't get interpolated
         //so fill in the last hour with the most current observation
-        for (i = ((nObservationHrs - 1) * metroTimesPerHour); i < nLenObservation; i++)
-        {
-            dTRO[i] = cdObsRoadTemp[nObservationHrs - 1];
-            dDTO[i] = cdObsSubSurfTemp[nObservationHrs - 1];
-            dTAO[i] = cdObsAirTemp[nObservationHrs - 1];
-            dTDO[i] = cdObsDewPoint[nObservationHrs - 1]; 
-            dFFO[i] = cdObsWindSpeed[nObservationHrs - 1];
-            dRC[i] = cdRoadCond[nObservationHrs - 1];
-        }
+//        for (i = ((nObservationHrs - 1) * metroTimesPerHour); i < nLenObservation; i++)
+//        {
+//            dTRO[i] = cdObsRoadTemp[nObservationHrs - 1];
+//            dDTO[i] = cdObsSubSurfTemp[nObservationHrs - 1];
+//            dTAO[i] = cdObsAirTemp[nObservationHrs - 1];
+//            dTDO[i] = cdObsDewPoint[nObservationHrs - 1]; 
+//            dFFO[i] = cdObsWindSpeed[nObservationHrs - 1];
+//            dRC[i] = cdRoadCond[nObservationHrs - 1];
+//        }
 
         long nSwo[46080]; //have to use 46080 which is the max size in the fortran METRo code
         for (i = 0; i < nLenObservation; i++)
@@ -675,7 +680,11 @@
         //calculate deltaT (difference of the first forecast time and the first observation time)
         double dDeltaT = cdFTime[0] - cdObsTime[0];
         if (dDeltaT <= 0)
-            bNoObs[0] = 1;
+        {
+            dDeltaT = dDeltaT + 24;
+        }
+
+            //bNoObs[0] = 1;
         
         if (cdFTime[0] - cdObsTime[nObservationHrs - 1] > -3) //if there is less than a 3 hour overlap do not do the coupling
             bNoObs[1] = 1;
@@ -690,15 +699,120 @@
         double dFA[nNbrTimeSteps];
         for (i = 0; i < nNbrTimeSteps; i++)
             dFA[i] = 10;
- 
+
         //Run the METRo Heat Balance Model
         Do_Metro(bFlat, dMLat, dMLon, dZones, nNbrOfZone, nMateriau, dTA,
                dQP, dFF, dPS, dFS, dFI, dFA, dTYP, dRC, dTAO, dTRO, dDTO,
                dAH, dTimeO, nSwo, bNoObs, dDeltaT, nLenObservation,
                nNbrTimeSteps, bSilent, dSstDepth, bDeepTemp, dDeepTemp,
                clOutRoadCond, cdOutRoadTemp, cdOutSubSurfTemp);        
-
-          
+//        int a;
+//        for (a = 0; a < nNbrTimeSteps; a++)
+//        {
+//            if (cdOutSubSurfTemp[a] < 10)
+//            {
+//
+//                FILE *fp;
+//                char file[100];
+//                sprintf(file, "/home/cherneya/MetroLog/log%f,%f", dMLat, dMLon);
+//                fp = fopen(file, "a");
+//                
+//                fprintf(fp, "bFlat: %d\n", bFlat);
+//                fprintf(fp, "dMLat: %5.2f\n", dMLat);
+//                fprintf(fp, "dMLon: %5.2f\n", dMLon);
+//                fprintf(fp, "dZones[0]: %5.2f\n", dZones[0]);
+//                fprintf(fp, "nNbrOfZone: %d\n", nNbrOfZone);
+//                fprintf(fp, "nMateriau[0]: %d\n", nMateriau[0]);
+//
+//                fprintf(fp, "dTA:\n");
+//                for (i = 0; i < nNbrTimeSteps; i++)
+//                    fprintf(fp, "%5.2f ", dTA[i]);
+//                fprintf(fp, "\n");
+//                fprintf(fp, "dQP:\n");
+//                for (i = 0; i < nNbrTimeSteps; i++)
+//                    fprintf(fp, "%5.2f ", dQP[i]);
+//                fprintf(fp, "\n");
+//                fprintf(fp, "dFF:\n");
+//                for (i = 0; i < nNbrTimeSteps; i++)
+//                    fprintf(fp, "%5.2f ", dFF[i]);
+//                fprintf(fp, "\n");
+//                fprintf(fp, "dPS:\n");
+//                for (i = 0; i < nNbrTimeSteps; i++)
+//                    fprintf(fp, "%5.2f ", dPS[i]);
+//                fprintf(fp, "\n");
+//                fprintf(fp, "dFS:\n");
+//                for (i = 0; i < nNbrTimeSteps; i++)
+//                    fprintf(fp, "%5.2f ", dFS[i]);
+//                fprintf(fp, "\n");
+//                fprintf(fp, "dFI:\n");
+//                for (i = 0; i < nNbrTimeSteps; i++)
+//                    fprintf(fp, "%5.2f ", dFI[i]);
+//                fprintf(fp, "\n");
+//                fprintf(fp, "dFA:\n");
+//                for (i = 0; i < nNbrTimeSteps; i++)
+//                    fprintf(fp, "%5.2f ", dFA[i]);
+//                fprintf(fp, "\n");
+//                fprintf(fp, "dTYP:\n");
+//                for (i = 0; i < nNbrTimeSteps; i++)
+//                    fprintf(fp, "%5.2f ", dTYP[i]);
+//                fprintf(fp, "\n");
+//                fprintf(fp, "dRC:\n");
+//                for (i = 0; i < nNbrTimeSteps; i++)
+//                    fprintf(fp, "%5.2f ", dRC[i]);
+//                fprintf(fp, "\n");
+//                fprintf(fp, "dTAO:\n");
+//                for (i = 0; i < nNbrTimeSteps; i++)
+//                    fprintf(fp, "%5.2f ", dTAO[i]);
+//                fprintf(fp, "\n");
+//                fprintf(fp, "dTRO:\n");
+//                for (i = 0; i < nNbrTimeSteps; i++)
+//                    fprintf(fp, "%5.2f ", dTRO[i]);
+//                fprintf(fp, "\n");
+//                fprintf(fp, "dDTO:\n");
+//                for (i = 0; i < nNbrTimeSteps; i++)
+//                    fprintf(fp, "%5.2f ", dDTO[i]);
+//                fprintf(fp, "\n");
+//                fprintf(fp, "dAH:\n");
+//                for (i = 0; i < nNbrTimeSteps; i++)
+//                    fprintf(fp, "%5.2f ", dAH[i]);
+//                fprintf(fp, "\n");
+//                fprintf(fp, "dTimeO: ");
+//                for (i = 0; i < nNbrTimeSteps; i++)
+//                  fprintf(fp, "%5.2f ", dTimeO[i]);
+//                fprintf(fp, "\n");
+//                fprintf(fp, "nSwo:\n");
+//                for (i = 0; i < nNbrTimeSteps; i++)
+//                    fprintf(fp, "%d ", nSwo[i]);
+//                fprintf(fp, "\n");
+//                fprintf(fp, "bNoObs0: %d\n", bNoObs[0]);
+//                fprintf(fp, "bNoObs1: %d\n", bNoObs[1]);
+//                fprintf(fp, "bNoObs2: %d\n", bNoObs[2]);
+//                fprintf(fp, "bNoObs3: %d\n", bNoObs[3]);
+//                fprintf(fp, "dDeltaT: %5.2f\n", dDeltaT);
+//                fprintf(fp, "nLenObservation: %d\n", nLenObservation);
+//                fprintf(fp, "nNbrTimeSteps: %d\n", nNbrTimeSteps);
+//                fprintf(fp, "bSilent: %d\n", bSilent);
+//                fprintf(fp, "dSstDepth: %5.2f\n", dSstDepth);
+//                fprintf(fp, "bDeepTemp: %d\n", bDeepTemp);
+//                fprintf(fp, "dDeepTemp: %5.2f\n", dDeepTemp);
+//                fprintf(fp, "clOutRoadCond:\n");
+//                for (i = 0; i < nNbrTimeSteps; i++)
+//                    fprintf(fp, "%d ", clOutRoadCond[i]);
+//                fprintf(fp, "\n"); 
+//                fprintf(fp, "cdOutRoadTemp:\n");
+//                for (i = 0; i < nNbrTimeSteps; i++)
+//                    fprintf(fp, "%5.2f ", cdOutRoadTemp[i]);
+//                fprintf(fp, "\n"); 
+//                fprintf(fp, "cdOutSubSurfTemp:\n");
+//                for (i = 0; i < nNbrTimeSteps; i++)
+//                    fprintf(fp, "%5.2f ", cdOutSubSurfTemp[i]);
+//                fprintf(fp, "\n"); 
+//
+//                fclose(fp);
+//                break;
+//            }
+//        }
+        
         //free all of the memory
         (*env)->ReleaseDoubleArrayElements(env, dObsRoadTemp, cdObsRoadTemp, 0);
         (*env)->ReleaseDoubleArrayElements(env, dObsSubSurfTemp, cdObsSubSurfTemp, 0);

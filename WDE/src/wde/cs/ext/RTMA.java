@@ -156,7 +156,7 @@ public final class RTMA extends RemoteGrid
 	{
 		RTMA oRTMA = RTMA.getInstance();
 		long lTime = System.currentTimeMillis();
-		for (int i = 0; i < 1; i++)
+		for (int i = 0; i < 5; i++)
 		{
 			System.out.println(oRTMA.getReading(575, lTime - i * 3600000, 43000000, -94000000));
 			System.out.println(oRTMA.getReading(554, lTime - i * 3600000, 43000000, -94000000));

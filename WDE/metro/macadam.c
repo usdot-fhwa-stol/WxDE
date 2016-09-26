@@ -373,7 +373,7 @@ void Do_Metro( BOOL bFlat, double dMLat, double dMLon, double* dpZones,\
     }/* End else observation complete */
 
     /************ roadcast **************************************************/
-    nNtp2 = 0;  //set the beginning index to 0 so we have all the hours of roadcast we want.
+    //nNtp2 = 0;  //set the beginning index to 0 so we have all the hours of roadcast we want.
     f77name(balanc)(dpFS, dpFI, dpPS, dpTA, dpAH, dpFF, dpTYP, dpQP,\
                     &stTemperatureDepth.nSize,					\
                     &nIR40, &nNtp2, &nNbrTimeSteps, dpItp, &bFlat, &dFCorr,\

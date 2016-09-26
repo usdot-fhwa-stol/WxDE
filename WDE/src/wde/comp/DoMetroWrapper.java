@@ -77,7 +77,7 @@ public class DoMetroWrapper implements Runnable
 		m_dObsSubSurfTemp = new double[m_oMetroMgr.m_nObservationHours];
 		m_dObsDewPoint = new double[m_oMetroMgr.m_nObservationHours];
 		m_dObsWindSpeed = new double[m_oMetroMgr.m_nObservationHours];
-		m_dCloudCover = new double[m_oMetroMgr.m_nObservationHours];
+		m_dCloudCover = new double[m_oMetroMgr.m_nForecastHours];
 		m_dObsTime = new double[m_oMetroMgr.m_nObservationHours];
 	}
 	
@@ -186,14 +186,16 @@ public class DoMetroWrapper implements Runnable
 			
 			m_dRoadCond[i] = m_oMetroResults.getReading(51137, lTimestamp, nMicroLat, nMicroLon);
 			
-			if (Double.isNaN(m_oMetroResults.getReading(51138, lTimestamp, nMicroLat, nMicroLon)))  //if there is no MetroResults initialize surface temp using RTMA air temp
+			m_dObsRoadTemp[i] = m_oMetroResults.getReading(51138, lTimestamp, nMicroLat, nMicroLon);
+			if (Double.isNaN(m_dObsRoadTemp[i]) || m_dObsRoadTemp[i] < dRoadTemperatureMin || m_dObsRoadTemp[i] > dRoadTemperatureHigh)  //if there is no MetroResults or ObsRoadTemp is out of range initialize surface temp using RTMA air temp
 			{
 				m_oMetroResults.setValue(51138, lTimestamp, nMicroLat, nMicroLon, oRTMA.getReading(5733, lTimestamp, nMicroLat, nMicroLon));					
 			}
 			
 			m_dObsRoadTemp[i] = m_oMetroResults.getReading(51138, lTimestamp, nMicroLat, nMicroLon);
 			
-			if (Double.isNaN(m_oMetroResults.getReading(51165, lTimestamp, nMicroLat, nMicroLon)))  //if there is no MetroResults initialize subsurface temp using RTMA air temp
+			m_dObsSubSurfTemp[i] = m_oMetroResults.getReading(51165, lTimestamp, nMicroLat, nMicroLon);
+			if (Double.isNaN(m_dObsSubSurfTemp[i]) || m_dObsSubSurfTemp[i] < dSubSurRoadTmpMin || m_dObsSubSurfTemp[i] > dSubSurRoadTmpHigh)  //if there is no MetroResults or ObsSubSurfTemp is out of range initialize subsurface temp using RTMA air temp
 			{
 				m_oMetroResults.setValue(51165, lTimestamp, nMicroLat, nMicroLon, oRTMA.getReading(5733, lTimestamp, nMicroLat, nMicroLon));
 			}
@@ -208,35 +210,35 @@ public class DoMetroWrapper implements Runnable
 			if (Double.isNaN(m_dObsRoadTemp[i]) || m_dObsRoadTemp[i] < dRoadTemperatureMin || m_dObsRoadTemp[i] > dRoadTemperatureHigh)
 			{
 				m_bFail = true;
-				m_oLogger.info("Observation Road Temp out of range");
+				m_oLogger.info("Observation Road Temp out of range: " + " " + m_dObsRoadTemp[i] + " at " + nMicroLat + " " + nMicroLon + " for hour " + i);
 				return;
 			}
       
 			if (Double.isNaN(m_dObsSubSurfTemp[i]) || m_dObsSubSurfTemp[i] < dSubSurRoadTmpMin || m_dObsSubSurfTemp[i] > dSubSurRoadTmpHigh)
 			{
 				m_bFail = true;
-				m_oLogger.info("Observation Sub Surface Temp out of range");
+				m_oLogger.info("Observation Sub Surface Temp out of range: " + " " + m_dObsSubSurfTemp[i] + " at " + nMicroLat + " " + nMicroLon + " for hour " + i);
 				return;
 			}
       
 			if (Double.isNaN(m_dObsAirTemp[i]) || m_dObsAirTemp[i] < dAirTempMin || m_dObsAirTemp[i] > dAirTempHigh)
 			{
 				m_bFail = true;
-				m_oLogger.info("Observation Air Temperature out of range");
+				m_oLogger.info("Observation Air Temperature out of range: " + " " + m_dObsAirTemp[i] + " at " + nMicroLat + " " + nMicroLon + " for hour " + i);
 				return;
 			}
       
 			if (Double.isNaN(m_dObsDewPoint[i]) || m_dObsDewPoint[i] < dAirTempMin || m_dObsDewPoint[i] > dAirTempHigh)
 			{
 				m_bFail = true;
-				m_oLogger.info("Observation Dew Point out of range");
+				m_oLogger.info("Observation Dew Point out of range: " + " " + m_dObsDewPoint[i] + " at " + nMicroLat + " " + nMicroLon + " for hour " + i);
 				return;
 			}
       
 			if (Double.isNaN(m_dObsWindSpeed[i]) || m_dObsWindSpeed[i] < 0 || m_dObsWindSpeed[i] > dMaxWindSpeed)
 			{
 				m_bFail = true;
-				m_oLogger.info("Observation Wind Speed out of range");
+				m_oLogger.info("Observation Wind Speed out of range: " + " " + m_dObsWindSpeed[i] + " at " + nMicroLat + " " + nMicroLon + " for hour " + i);
 				return;
 			}
 		}
@@ -278,19 +280,19 @@ public class DoMetroWrapper implements Runnable
 			if (Double.isNaN(m_dAirTemp[i]) || m_dAirTemp[i] < dAirTempMin || m_dAirTemp[i] > dAirTempHigh)
 			{
 				m_bFail = true;
-				m_oLogger.info("Forecast Air Temperature out of range");
+				m_oLogger.info("Forecast Air Temperature out of range: " + " " + m_dAirTemp[i] + " at " + nMicroLat + " " + nMicroLon + " for hour " + i);
 				return;
 			}
 			if (Double.isNaN(m_dDewPoint[i]) || m_dDewPoint[i] < dAirTempMin || m_dDewPoint[i] > dAirTempHigh)
 			{
 				m_bFail = true;
-				m_oLogger.info("Forecast Dew Point out of range");
+				m_oLogger.info("Forecast Dew Point out of range: " + " " + m_dDewPoint[i] + " at " + nMicroLat + " " + nMicroLon + " for hour " + i);
 				return;
 			}
 			if (Double.isNaN(m_dWindSpeed[i]) || m_dWindSpeed[i] < 0 || m_dWindSpeed[i] > dMaxWindSpeed)
 			{
 				m_bFail = true;
-				m_oLogger.info("Forecast Wind Speed out of range");
+				m_oLogger.info("Forecast Wind Speed out of range: " + " " + m_dWindSpeed[i] + " at " + nMicroLat + " " + nMicroLon + " for hour " + i);
 				return;
 			}
 			if (m_dSfcPres[i] < dLowerPressure || m_dSfcPres[i] > dUpperPressure)
@@ -298,7 +300,7 @@ public class DoMetroWrapper implements Runnable
 			if (Double.isNaN(m_dCloudCover[i]) || m_dCloudCover[i] < 0 || m_dCloudCover[i] > 8)
 			{
 				m_bFail = true;
-				m_oLogger.info("Forecast Cloud Cover out of range");
+				m_oLogger.info("Forecast Cloud Cover out of range: " + " " + m_dCloudCover[i] + " at " + nMicroLat + " " + nMicroLon + " for hour " + i);
 				return;
 			}
 		}
