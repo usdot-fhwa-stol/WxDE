@@ -1,3 +1,4 @@
+<%@page import="org.owasp.encoder.Encode"%>
 <%@ page import="java.io.Console" %>
 <%@ page language="java" contentType="text/html; charset=ISO-8859-1" pageEncoding="ISO-8859-1" %>
 <style type="text/css">
@@ -200,7 +201,7 @@
 
                 <% if (request.getUserPrincipal() != null) { %>
                 <li class="current" style="float: right;">
-                    <a href="#"><%= request.getUserPrincipal().getName() %>
+                  <a href="#"><%= Encode.forHtml(request.getUserPrincipal().getName()) %>
                     </a>
                     <ul>
                         <li class="current"><a href="/auth/userEdit.html">Manage</a></li>

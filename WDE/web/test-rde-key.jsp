@@ -1,3 +1,5 @@
+
+<%@page import="org.owasp.encoder.Encode"%>
 <%@page contentType="text/html; charset=UTF-8" language="java" import="java.net.URLEncoder,wde.security.*" %>
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <html>
@@ -19,7 +21,7 @@
 				System.out.println("key from JSP: " + key);
 			%>	
 				var rdeInfo = new Object();
-				rdeInfo.key = "<%=key%>";
+				rdeInfo.key = "<%=Encode.forJavaScript(key)%>";
 				$.ajax({
 					url: "http://10.10.10.28/resources/rde",
 				    type: "POST",
@@ -38,6 +40,6 @@
 </head>
 <body>
 	<button id="login" type="button">Login</button>
-	<a href="http://10.10.10.28/resources/rde?key=<%=getKey%>&lat=45&long=-93&radius=50">login</a>
+  <a href="http://10.10.10.28/resources/rde?key=<%=Encode.forHtmlAttribute( getKey )%>&lat=45&long=-93&radius=50">login</a>
 </body>
 </html>

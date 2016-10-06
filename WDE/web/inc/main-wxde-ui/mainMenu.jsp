@@ -1,3 +1,4 @@
+<%@page import="org.owasp.encoder.Encode"%>
 <script>
     $(document).ready(function () {
 
@@ -250,8 +251,8 @@
     <li id="userPage" class="current main-nav" style="float: right;">
         <a href="#" class="non-link-cursor">
             <img src="/image/icons/light/fa-user.png" class="main-menu-icons"
-                 title="<%= request.getUserPrincipal().getName() %>" alt="User"/>
-            <%= request.getUserPrincipal().getName() %>
+                 title="<%= Encode.forHtmlAttribute( request.getUserPrincipal().getName() ) %>" alt="User"/>
+            <%= Encode.forHtml( request.getUserPrincipal().getName()) %>
         </a>
         <ul>
             <% if (!request.isUserInRole("wde_limited")) { %>

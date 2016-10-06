@@ -1,3 +1,4 @@
+<%@page import="org.owasp.encoder.Encode"%>
 <%@page contentType="text/html; charset=UTF-8" language="java" import="java.io.*,java.sql.*,java.text.*,java.util.*,javax.sql.*,wde.*,wde.dao.*,wde.emc.*,wde.metadata.IPlatform,wde.qeds.*,wde.util.*" %>
 <jsp:useBean id="oSubscription" scope="session" class="wde.qeds.Subscription" />
 <jsp:setProperty name="oSubscription" property="*" />
@@ -298,8 +299,8 @@
     	<div class="col-5" style="margin-top:-15px;">
 			<h3>Subscription Info</h3>
 			<div style="margin-left:10px;"> 
-		        <b>Name: </b><%= oSubscription.getName() %><br/>
-		        <b>Description: </b><%= oSubscription.getDescription() %><br/>
+        <b>Name: </b><%= Encode.forHtml( oSubscription.getName()) %><br/>
+		        <b>Description: </b><%= Encode.forHtml(oSubscription.getDescription() )%><br/>
 				<b>Subscription Identifier: </b><%= nSubId %><br/>
 	            <b>Expires On: </b><%= oDateFormat.format(oDate) %><br/>
 		        <b>Direct URL: </b><%= request.getScheme() + "://" + request.getServerName() + ":" + request.getServerPort() + "/downloadSubscription?uuid=" + uuid + "&amp;file=&lt;filename&gt;" %><br/>

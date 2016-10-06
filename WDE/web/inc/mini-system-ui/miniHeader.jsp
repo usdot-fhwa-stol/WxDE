@@ -1,3 +1,4 @@
+<%@page import="org.owasp.encoder.Encode"%>
 <script>
     $(document).ready(function () {
 
@@ -348,7 +349,7 @@
             <a href="#">
                 <!-- 						<i class="icon-user"></i> -->
                 <img src="/image/icons/dark/fa-user.png" class="reduce-top-margin-2" alt="User Icon"/>
-                <%= request.getUserPrincipal().getName() %>
+                <%= Encode.forHtml(request.getUserPrincipal().getName()) %>
                 <img src="/image/minified-map-ui/caret-down.png" alt="Down Icon"/>
             </a>
             <ul class="drop drop-list drop-user">

@@ -1,3 +1,4 @@
+<%@page import="org.owasp.encoder.Encode"%>
 <%@page contentType="text/html; charset=UTF-8" language="java" import="wde.qeds.Subscription" %>
 <jsp:useBean id="oSubscription" scope="session" class="wde.qeds.Subscription"/>
 <jsp:setProperty name="oSubscription" property="*"/>
@@ -131,7 +132,7 @@
     </style>
 </head>
 
-<body onload='onLoad("<%= oSubscription.getContributors() %>")' id="dataPage">
+<body onload='onLoad("<%= Encode.forJavaScript(oSubscription.getContributors() )%>")' id="dataPage">
 <jsp:include page="/inc/main-wxde-ui/mainHeader.jsp"></jsp:include>
 <jsp:include page="/inc/main-wxde-ui/mainMenu.jsp"></jsp:include>
 

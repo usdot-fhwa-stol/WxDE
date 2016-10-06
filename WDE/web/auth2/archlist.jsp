@@ -1,3 +1,4 @@
+<%@page import="org.owasp.encoder.Encode"%>
 <%@page contentType="text/html; charset=UTF-8" language="java" import="wde.qeds.Subscription,java.util.*,java.io.*" %>
 <jsp:useBean id="oSubscription" scope="session" class="wde.qeds.Subscription" />
 <jsp:setProperty name="oSubscription" property="*" />
@@ -125,7 +126,7 @@
             
             <p>
                 There are a total of <%=nTotal%> files.<br/><br/>
-                To download the complete list of specified archive files, download this <a href='/archive-scripts/<%=sUsername%>.sh' download>wget script</a>
+            To download the complete list of specified archive files, download this <a href='/archive-scripts/<%=Encode.forHtmlAttribute(sUsername)%>.sh' download>wget script</a>
                 and run it in a Linux command line.
             </p>
             

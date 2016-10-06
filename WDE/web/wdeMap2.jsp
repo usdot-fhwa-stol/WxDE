@@ -1,3 +1,4 @@
+<%@page import="org.owasp.encoder.Encode"%>
 <!DOCTYPE html>
 <html>
 <head>
@@ -362,7 +363,7 @@
     	
       $.ajax({
         type: "GET",
-        url: "ResetSession?roads=<%= request.getParameter("roads") %>"
+        url: "ResetSession?roads=<%= Encode.forJavaScript( request.getParameter("roads")) %>"
       });
       
        $( "#LayersMenu" ).menu();

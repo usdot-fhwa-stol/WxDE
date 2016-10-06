@@ -1,3 +1,4 @@
+<%@page import="org.owasp.encoder.Encode"%>
 <%@page contentType="text/html; charset=UTF-8" language="java" import="wde.qeds.Subscription"%>
 <jsp:useBean id="oSubscription" scope="session" class="wde.qeds.Subscription" />
 <jsp:setProperty name="oSubscription" property="*" />
@@ -114,7 +115,7 @@
 		</div>
 		<div align="center">
 			<button class="btn-dark" id="btnNext" type="submit"> Subscribe</button>
-			<input id="jsessionid" type="hidden" value="<%=request.getSession().getId()%>" />
+      <input id="jsessionid" type="hidden" value="<%=Encode.forHtmlAttribute(request.getSession().getId()%>)" />
 		</div>
 		</form>
 		<br>
