@@ -209,5 +209,41 @@
         <error-code>404</error-code>
         <location>/error/404.jsp</location>
     </error-page>
+    
+  <filter>
+    <filter-name>CsrfFilter</filter-name>
+    <filter-class>org.apache.catalina.filters.CsrfPreventionFilter</filter-class>
+    <init-param>
+      <param-name>entryPoints</param-name>
+      <param-value>/auth/loginRedirect.jsp,/userLogin.jsp,/userLoginFailed.jsp,/index.jsp,/downloadSubscription,/userAccountRetrieval.jsp</param-value>
+    </init-param>
+    <init-param>
+      <param-name>nonceCacheSize</param-name>
+      <param-value>20</param-value>
+    </init-param>
+  </filter>
+  
+  <!--  The filter will only be able to insert tokens in links on a page
+        if is mapped, so we need to make sure all JSPs go through the filter  -->
+  <filter-mapping>
+    <filter-name>CsrfFilter</filter-name>
+    <url-pattern>*.jsp</url-pattern>
+  </filter-mapping>
+  <filter-mapping>
+    <filter-name>CsrfFilter</filter-name>
+    <url-pattern>/auth/*</url-pattern>
+  </filter-mapping>
+  <filter-mapping>
+    <filter-name>CsrfFilter</filter-name>
+    <url-pattern>/auth2/*</url-pattern>
+  </filter-mapping>
+  <filter-mapping>
+    <filter-name>CsrfFilter</filter-name>
+    <url-pattern>/admin/*</url-pattern>
+  </filter-mapping>
+  <filter-mapping>
+    <filter-name>CsrfFilter</filter-name>
+    <url-pattern>/resources/*</url-pattern>
+  </filter-mapping>
 
 </web-app>
