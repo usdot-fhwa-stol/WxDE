@@ -421,7 +421,7 @@ function GetObsList()
 
     var oXmlRequest = new XmlRequest();
     // oXmlRequest.getXml("../obsv1/listObsTypes.jsp", cbGetObsList);
-    oXmlRequest.getXml("ListObsTypes", cbGetObsList);
+    oXmlRequest.getXml("ListObsTypes?" + csrf_nonce_param, cbGetObsList);
 }
 
 
@@ -665,7 +665,7 @@ function GetStations()
     if (m_bShowASOS)
       oXmlRequest.addParameter("showasos", "1");
 
-    oXmlRequest.getXml("GetPlatformsForRegion", cbGetStations);
+    oXmlRequest.getXml("GetPlatformsForRegion?" + csrf_nonce_param, cbGetStations);
 }
 
 
@@ -694,7 +694,7 @@ var ShowInfoWindow = function(oMarker)
     oXmlRequest.addParameter("stationId", oMarker.m_oStation.id);
     oXmlRequest.addParameter("lat", oMarker.m_oStation.lt);
     oXmlRequest.addParameter("lon", oMarker.m_oStation.ln);
-    oXmlRequest.getXml("GetPlatformsForRegion", cbGetObsForStation);
+    oXmlRequest.getXml("GetPlatformsForRegion?" + csrf_nonce_param, cbGetObsForStation);
 };
 
 /*
@@ -1534,7 +1534,7 @@ function GetObsValue()
 
     var oXmlRequest = new XmlRequest(); // request the obs values
     oXmlRequest.addParameter("obsType", oSelect.value);
-    oXmlRequest.getXml("GetPlatformsForRegion", cbGetObsValue);
+    oXmlRequest.getXml("GetPlatformsForRegion?" + csrf_nonce_param, cbGetObsValue);
 }
 
 

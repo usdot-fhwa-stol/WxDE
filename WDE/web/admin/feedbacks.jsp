@@ -82,7 +82,7 @@
 					                'Accept': 'application/json',
 					                'Content-Type': 'application/json' 
 				            	},
-				        		url : '/resources/admin/feedback/delete',
+				        		url : '<%= response.encodeURL("/resources/admin/feedback/delete")%>',
 				        		data : JSON.stringify(feedback),
 				        		type : 'post',
 				        		success : function() {

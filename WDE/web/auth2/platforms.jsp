@@ -35,7 +35,7 @@
 				<img id="loading" style="display: none; height: 22px; width: 22px; opacity: .5" src="/image/loading-dark.gif">
 			</h1>
 			
-			<a href="/auth2/dataSource.jsp" class="btn-light"
+			<a href="<%= response.encodeURL("/auth2/dataSource.jsp")%>" class="btn-light"
 				style="margin-left: 0px; display:block; text-decoration: none; max-width: 100px; padding: 5px 10px; font-size: 14px; text-align:center;">
 					<img src="/image/icons/dark/fa-arrow-left.png" alt="Data Source Icon" style="margin-bottom: -2px;" />
 					Data Source

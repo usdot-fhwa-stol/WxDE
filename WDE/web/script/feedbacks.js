@@ -7,7 +7,7 @@ $(function() {
 	setTimeout( function() {
 		
 		$.ajax({
-            url:'/resources/admin/feedback', 
+            url:'/resources/admin/feedback?' + csrf_nonce_param, 
             dataType: 'json',
             success: populateData,
             cache: false
@@ -89,6 +89,7 @@ $(function() {
 								+ strSection
 								+ '"><a class="page-link link" href="'
 								+ item.section
+                + '?' +  csrf_nonce_param 
 								+ '" title="Go to Section" target="_blank">'
 								+ strSection
 								+ '</a></td>'

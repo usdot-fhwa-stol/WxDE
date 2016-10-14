@@ -26,7 +26,7 @@ function onLoad()
     m_oTestTable = document.getElementById("tblTests");
 
     var oXmlRequest = new XmlRequest();
-    oXmlRequest.getXml("/ListObsTypes", cbGetObsTypes);
+    oXmlRequest.getXml("/ListObsTypes?" + csrf_nonce_param, cbGetObsTypes);
 }
 
 
@@ -81,7 +81,7 @@ function ObsTypeChanged()
 
         var oXmlRequest = new XmlRequest();
         oXmlRequest.addParameter("obsType", oSelect.value);
-        oXmlRequest.getXml("../auth/listQualityChecks.jsp", cbGetQualityChecks);
+        oXmlRequest.getXml("../auth/listQualityChecks.jsp?" + csrf_nonce_param, cbGetQualityChecks);
     }
 }
 

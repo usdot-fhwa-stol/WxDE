@@ -5,7 +5,7 @@
 <!-- footer navigation -->
 <div class="navbar navbar-fixed-bottom map-footer">
 	<ul class="nav nav-pills pull-right">
-		<li><a href="/privacyPolicy.jsp" title="">Privacy Policy</a></li>
+		<li><a href="<%= response.encodeURL("/privacyPolicy.jsp")%>" title="">Privacy Policy</a></li>
 		<li><a href="http://www.fhwa.dot.gov/foia/" title="">Freedom of Information Act (FOIA)</a></li>
         <li><a href="http://www.fhwa.dot.gov/accessibility/" title="">Accessibility</a></li>
         <li><a href="http://www.fhwa.dot.gov/webpolicies/publishschedule.cfm" title="">Web Policies</a></li>

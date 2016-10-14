@@ -49,7 +49,7 @@ $(function(){
 		errorMsg.hide();
 		nextStep();
 		$('input[name="email"]').focus();
-		webService = "/resources/email/forgotPassword";
+		webService = "/resources/email/forgotPassword?" + csrf_nonce_param;
 		disablePhase($(this), "#backStep");
 	});
 	
@@ -57,7 +57,7 @@ $(function(){
 		errorMsg.hide();
 		nextStep();
 		$('input[name="email"]').focus();
-		webService = "/resources/email/forgotUserId";
+		webService = "/resources/email/forgotUserId?" + csrf_nonce_param;
 		disablePhase($(this), "#backStep");
 	});
 	

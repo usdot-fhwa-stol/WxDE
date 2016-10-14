@@ -25,7 +25,7 @@
 	    	$('#j_username').focus();
 	    	
 			$("#register").click(function() {
-	   			window.location.replace("/userRegistration.jsp");
+	   			window.location.replace("<%= response.encodeURL("/userRegistration.jsp")%>" );
 	   		});
 		});
 	</script>

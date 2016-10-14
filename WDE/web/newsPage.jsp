@@ -42,7 +42,7 @@
 			
 			$.ajax({
 				type: 'GET',
-				url: '/changeLog.xml',
+				url: '<%= response.encodeURL("/changeLog.xml")%>',
 				dataType: 'xml',
 				success: function(xml) {
 					loadNews(xml);

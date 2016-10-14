@@ -12,7 +12,10 @@
     
     while (oNames.hasMoreElements())
     {
-        Integer oParam = new Integer(oNames.nextElement());
+        String sParamName = oNames.nextElement();
+        if("org.apache.catalina.filters.CSRF_NONCE".equalsIgnoreCase(sParamName))
+          continue;
+        Integer oParam = new Integer(sParamName);
         paramArray.add(oParam);
     }
     Integer oBeginInt = null;
@@ -118,7 +121,7 @@
                 Larger numbers of files may be downloaded with the script instructions below.<br/>
                 To write your own script, you must know the contributor id's that you would like to
                 receive data from as well as the range of dates for the data. <br/>The contributor id's
-                can be found <a href='ShowMetadata.jsp?file=contrib.csv'>here</a>.
+                can be found <a href='<%= response.encodeURL("ShowMetadata.jsp?file=contrib.csv")%>'>here</a>.
                 <br/>
             </p>
             
@@ -126,7 +129,7 @@
             
             <p>
                 There are a total of <%=nTotal%> files.<br/><br/>
-            To download the complete list of specified archive files, download this <a href='/archive-scripts/<%=Encode.forHtmlAttribute(sUsername)%>.sh' download>wget script</a>
+            To download the complete list of specified archive files, download this <a href='<%= response.encodeURL("/archive-scripts/" + Encode.forHtmlAttribute(sUsername) + ".sh" )%>' download>wget script</a>
                 and run it in a Linux command line.
             </p>
             

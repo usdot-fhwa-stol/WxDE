@@ -128,7 +128,7 @@
 	<script type="text/javascript">
 		$(document).ready(function() {
 			$.ajax({
-	            url:'/resources/auth/subscriptions/<%= Encode.forJavaScript( request.getParameter("subId"))%>', 
+	            url:'<%= response.encodeURL("/resources/auth/subscriptions/" + Encode.forJavaScript( request.getParameter("subId")))%>', 
 	            dataType: 'json',
 	            success: function(resp) {
 					$("#hName").text(resp.name);
@@ -162,7 +162,7 @@
 		File oFile = oFiles.get(nIndex);
 %>
           <tr>
-            <td><a href="SubShowObs.jsp?subId=<%= Encode.forHtmlAttribute( request.getParameter("subId")) + "&file=" + oFile.getName() %>" target="_blank"><%= oFile.getName() %></a></td>
+            <td><a href="<%= response.encodeURL( "SubShowObs.jsp?subId=" + Encode.forHtmlAttribute( request.getParameter("subId")) + "&file=" + oFile.getName()) %>" target="_blank"><%= oFile.getName() %></a></td>
             <td class="fileSize"><%= oFormatter.format(oFile.length()) %></td>
           </tr>
 <%

@@ -75,7 +75,7 @@
 					  	<%= datify %>
 					  </td>
 					  <td class="align-center"><%= Math.round(Double.valueOf(objFile[i].length() / 1000000.0) * 100.0) / 100.0 %> MB</td>
-					  <td><a href="../data/reports/<%= strFileName[i] %>" class="btn-dark align-center"><img src="/image/icons/light/fa-download.png" alt="Download Icon" style="margin-bottom: -1px;" /> Download</a></td>
+            <td><a href="<%= response.encodeURL( "../data/reports/" + strFileName[i])%>" class="btn-dark align-center"><img src="/image/icons/light/fa-download.png" alt="Download Icon" style="margin-bottom: -1px;" /> Download</a></td>
 					</tr>
 				 <%
 					}

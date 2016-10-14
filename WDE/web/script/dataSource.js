@@ -48,7 +48,7 @@ $( function() {
 	setTimeout( function() {
 
 		$.ajax({
-			url:'/resources/auth/contributors',
+			url:'/resources/auth/contributors?' + csrf_nonce_param,
 			dataType: 'json',
 			success: populateData,
 			cache: false
@@ -81,8 +81,9 @@ $( function() {
 								+ value.agency
 								+ '</td>'
 								+ strDisclaimer
-								+ '<td><a href="/auth2/platforms.jsp#'
-								+ value.contributorId + '.' + value.name
+								+ '<td><a href="/auth2/platforms.jsp'
+                + '?' + csrf_nonce_param
+								+ '#' + value.contributorId + '.' + value.name
 								+ '" class="btn-dark btn-access align-center"><img src="/image/icons/light/fa-file.png" alt="Sort Icon" style="margin-bottom: -1px;" /> View</a>'
 							+ '</tr>');
 					} //end function(key, value)
@@ -107,7 +108,7 @@ $( function() {
 		//This required a separate ajax call because it just
 		//needs fewer data to present.
 		$.ajax({
-			url:'/resources/auth/contributors/subset',
+			url:'/resources/auth/contributors/subset?' + csrf_nonce_param,
 			dataType: 'json',
 			success: function(data) {
 				jsonContributors = JSON2CSV(data, "contributor");

@@ -71,7 +71,7 @@
                     }
                 }
                 $.ajax({
-                    url: "/resources/feedback",
+                    url: "<%= response.encodeURL("/resources/feedback")%>",
                     type: "POST",
                     contentType: "application/json",
                     data: JSON.stringify(feedbackInfo),
@@ -93,7 +93,7 @@
             open: function () {
                 $("#txtPageUrl").val($(location).attr('href'));
                 $.ajax({
-                    url: "/resources/user",
+                    url: "<%= response.encodeURL("/resources/user")%>",
                     dataType: "json",
                     success: function (resp) {
                         $("#txtName").val(resp.firstName + " " + resp.lastName);
@@ -234,7 +234,7 @@
 <div class="navbar navbar-fixed-top nav-top" id="menu-nav">
     <ul class="nav-top-menu">
         <!-- Home : Main Menu Item -->
-        <li class="ie-fix-nav"><a href="/">
+        <li class="ie-fix-nav"><a href="<%= response.encodeURL("/")%>">
             <!-- 				<i class="icon-home"></i>  -->
             <img src="/image/icons/dark/fa-home.png" class="reduce-top-margin-2" alt="Home Icons"/>
             Home
@@ -248,7 +248,7 @@
                 <img src="/image/minified-map-ui/caret-down.png" alt="Down"/>
             </a>
             <ul class="drop drop-list drop-data">
-                <li><a href="/summaryMap.jsp">Summary Map</a></li>
+                <li><a href="<%= response.encodeURL("/summaryMap.jsp")%>">Summary Map</a></li>
                 <li class="drop-observation subdrop-trigger" class="ie-fix-obs-li">
                     <a href="#">Observations <img src="/image/minified-map-ui/caret-right.png"
                                                   class="reduce-top-margin-2" alt="Right"/></a>
@@ -258,11 +258,11 @@
                     <%if (request.getUserPrincipal() == null) { %>
 
                     <ul class="sub-drop drop-observation">
-                        <li><a href="/auth2/wizardContributor.jsp" class="ie-fix-li-2">
+                        <li><a href="<%= response.encodeURL("/auth2/wizardContributor.jsp")%>" class="ie-fix-li-2">
                             Contributor
                             <img src="/image/icons/dark/fa-lock.png" class="reduce-top-margin-2" alt="Lock Icon"/>
                         </a></li>
-                        <li><a href="/auth/wizardGeospatial.jsp" class="ie-fix-li-2" style="width: 130px;">
+                        <li><a href="<%= response.encodeURL("/auth/wizardGeospatial.jsp")%>" class="ie-fix-li-2" style="width: 130px;">
                             Coordinates
                             <img src="/image/icons/dark/fa-lock.png" class="reduce-top-margin-2" alt="Lock Icon"/>
                         </a></li>
@@ -271,10 +271,10 @@
                     <% } else { %>
 
                     <ul class="sub-drop drop-observation user-logged-in">
-                        <li><a href="/auth2/wizardContributor.jsp" class="ie-fix-li-2">
+                        <li><a href="<%= response.encodeURL("/auth2/wizardContributor.jsp")%>" class="ie-fix-li-2">
                             Contributor
                         </a></li>
-                        <li><a href="/auth/wizardGeospatial.jsp" class="ie-fix-li-2" style="width: 130px;">
+                        <li><a href="<%= response.encodeURL("/auth/wizardGeospatial.jsp")%>" class="ie-fix-li-2" style="width: 130px;">
                             Coordinates
                         </a></li>
                     </ul>
@@ -285,7 +285,7 @@
 
                 </li>
                 <% if (request.getUserPrincipal() == null || request.getUserPrincipal() != null && !request.isUserInRole("wde_limited")) { %>
-                <li><a href="/auth2/Subscriptions.jsp">
+                <li><a href="<%= response.encodeURL("/auth2/Subscriptions.jsp")%>">
                     Data Subscription
                     <% if (request.getUserPrincipal() == null) {%>
                     <!-- 							<i class="icon-lock" style="margin-left:12px;"></i> -->
@@ -298,12 +298,12 @@
 
                     <% if (request.getUserPrincipal() == null) { %>
                     <ul class="sub-drop drop-metadata">
-                        <li><a href="/auth2/metadata.jsp" class="ie-fix-li-2">
+                        <li><a href="<%= response.encodeURL("/auth2/metadata.jsp")%>" class="ie-fix-li-2">
                             Files
                             <img src="/image/icons/dark/fa-lock.png" class="reduce-top-margin-2" alt="Lock Icon"/>
                         </a></li>
                         <li>
-                            <a href="/auth2/dataSource.jsp" class="ie-fix-li-2" style="width: 130px;">
+                            <a href="<%= response.encodeURL("/auth2/dataSource.jsp")%>" class="ie-fix-li-2" style="width: 130px;">
                                 Tables
                                 <img src="/image/icons/dark/fa-lock.png" class="reduce-top-margin-2" alt="Lock Icon"/>
                             </a>
@@ -311,11 +311,11 @@
                     </ul>
                     <% } else { %>
                     <ul class="sub-drop drop-metadata user-logged-in">
-                        <li><a href="/auth2/metadata.jsp" class="ie-fix-li-2">
+                        <li><a href="<%= response.encodeURL("/auth2/metadata.jsp")%>" class="ie-fix-li-2">
                             Files
                         </a></li>
                         <li>
-                            <a href="/auth2/dataSource.jsp" class="ie-fix-li-2" style="width: 130px;">
+                            <a href="<%= response.encodeURL("/auth2/dataSource.jsp")%>" class="ie-fix-li-2" style="width: 130px;">
                                 Tables
                             </a>
                         </li>
@@ -333,11 +333,11 @@
                 About <img src="/image/minified-map-ui/caret-down.png" alt="Down Icon"/>
             </a>
             <ul class="drop drop-list drop-about">
-                <li class="current"><a href="/newsPage.jsp">News</a></li>
-                <li class="current"><a href="/changeLog.jsp">Change Logs</a></li>
-                <li><a href="/termsOfUse.jsp">Terms of Use</a></li>
-                <li><a href="/frequentlyAskedQuestions.jsp">FAQ</a></li>
-                <li><a href="/siteMap.jsp">Site Map</a></li>
+                <li class="current"><a href="<%= response.encodeURL("/newsPage.jsp")%>">News</a></li>
+                <li class="current"><a href="<%= response.encodeURL("/changeLog.jsp")%>">Change Logs</a></li>
+                <li><a href="<%= response.encodeURL("/termsOfUse.jsp")%>">Terms of Use</a></li>
+                <li><a href="<%= response.encodeURL("/frequentlyAskedQuestions.jsp")%>">FAQ</a></li>
+                <li><a href="<%= response.encodeURL("/siteMap.jsp")%>">Site Map</a></li>
             </ul>
         </li>
         <li><a href="#" onclick="$( '#dialogFeedback' ).dialog( 'open' );">
@@ -354,9 +354,9 @@
             </a>
             <ul class="drop drop-list drop-user">
                 <% if (!request.isUserInRole("wde_limited")) { %>
-                <li><a href="/auth2/userEdit.jsp">Manage</a></li>
+                <li><a href="<%= response.encodeURL("/auth2/userEdit.jsp")%>">Manage</a></li>
                 <% } %>
-                <li><a href="/auth/logout.jsp">Logout</a></li>
+                <li><a href="<%= response.encodeURL("/auth/logout.jsp")%>">Logout</a></li>
             </ul>
                 <% if (request.isUserInRole("wde_admin")) { %>
         <li class="drop drop-trigger drop-admin" style="float:right;">
@@ -367,21 +367,21 @@
                 <img src="/image/minified-map-ui/caret-down.png" alt="Down Icon"/>
             </a>
             <ul class="drop drop-list drop-admin">
-                <li><a href="/admin/feedbacks.jsp">User Feedback</a></li>
-                <li><a href="/admin/reports.jsp">Reports</a></li>
-                <li><a href="/wdeMap.jsp?lat=46&lon=-108&zoom=4">Full Data Map</a></li>
+                <li><a href="<%= response.encodeURL("/admin/feedbacks.jsp")%>">User Feedback</a></li>
+                <li><a href="<%= response.encodeURL("/admin/reports.jsp")%>">Reports</a></li>
+                <li><a href="<%= response.encodeURL("/wdeMap.jsp?lat=46&lon=-108&zoom=4")%>">Full Data Map</a></li>
             </ul>
         </li>
         <% } %>
         <% } else { %>
         <!-- Login : Main Menu Item -->
-        <a href="/auth/loginRedirect.jsp">
+        <a href="<%= response.encodeURL("/auth/loginRedirect.jsp")%>">
             <!-- 						<i class="icon-signin"></i> -->
             <img src="/image/icons/dark/fa-signin.png" alt="Login Icon"/>
             Login <img src="/image/minified-map-ui/caret-down.png" alt="Down Icon"/>
         </a>
         <ul class="drop drop-list drop-user">
-            <li><a href="/userRegistration.jsp">
+            <li><a href="<%= response.encodeURL("/userRegistration.jsp")%>">
                 Registration
             </a></li>
         </ul>

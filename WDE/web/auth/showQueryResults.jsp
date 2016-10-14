@@ -75,7 +75,7 @@
           
           <p>Display the Results for Saving:</p>
           
-          <a class="btn btn-info" id="fullscreen-button" href="queryResults.jsp">
+          <a class="btn btn-info" id="fullscreen-button" href="<%= response.encodeURL( "queryResults.jsp")%>">
 	       	  <img src="/image/icons/light/fa-expand.png" alt="Fullscreen Icon" />	
               Click Here
        	  </a>

@@ -13,7 +13,7 @@ function Generate()
         var appendStart = dateToString(startDate);
         var appendEnd = dateToString(endDate);
         
-        window.location.href = "archlist.jsp?&" + appendlist + appendStart + "&" + appendEnd;
+        window.location.href = "archlist.jsp?" + csrf_nonce_param + "&" + appendlist + appendStart + "&" + appendEnd;
     }
     else
     {

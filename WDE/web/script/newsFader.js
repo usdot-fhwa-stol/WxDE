@@ -2,7 +2,7 @@ $(function() {
 	
 	$.ajax({
 		type: 'GET',
-		url: '/changeLog.xml',
+		url: '/changeLog.xml?' + csrf_nonce_param,
 		dataType: 'xml',
 		success: displayNews,
 		cache: false

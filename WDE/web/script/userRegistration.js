@@ -5,7 +5,7 @@ $(function(){
     });
     
     $.ajax({
-        url: "/resources/organizationTypes/",
+        url: "/resources/organizationTypes/?" + csrf_nonce_param,
         dataType: "json",
         success: function(resp) {
             $.each(resp.organizationType, function(index, item) {
@@ -15,7 +15,7 @@ $(function(){
     });
     
     $.ajax({
-        url: "/resources/countries/",
+        url: "/resources/countries/?" + csrf_nonce_param,
         dataType: "json",
         success: function(resp) {
             $.each(resp.country, function(index, item) {
@@ -96,7 +96,7 @@ $(function(){
 			userInfo.country = $("#country").val();
 			
 			$.ajax({
-			    url: "/resources/user",
+			    url: "/resources/user?" + csrf_nonce_param,
 			    type: "POST",
 			    contentType: "application/json",
 			    data: JSON.stringify(userInfo),

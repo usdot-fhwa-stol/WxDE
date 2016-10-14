@@ -35,7 +35,7 @@
 			
 			<p><em>* Click column headers containing vertically aligned carets (<img src="/image/icons/dark/fa-sort.png" alt="Sort Icon" />) to sort.</em></p>
 			
-			<p><a href="/resources/download" download="download.txt">Click Here</a></p>
+			<p><a href="<%= response.encodeURL("/resources/download")%>" download="download.txt">Click Here</a></p>
 			
 			<table class="reports-table jsonData" id="sortable-table">
 				<caption style="display: none;">Reports</caption>

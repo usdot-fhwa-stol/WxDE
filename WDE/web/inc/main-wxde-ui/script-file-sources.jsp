@@ -1,4 +1,13 @@
-  
+
+<script type="text/javascript">
+  <%
+    String nonceParam = response.encodeURL("/");
+    int index = nonceParam.indexOf("/?");
+    nonceParam = index >= 0 ? nonceParam.substring(index + 2) : "";
+  %>
+  csrf_nonce_param = '<%= nonceParam %>';
+</script>
+
 	<script src="/script/jquery/jquery-1.9.1.js" type="text/javascript"></script>
 	<script src="/script/jquery/jquery-ui-1.10.2.custom.js" type="text/javascript"></script>
 	<script src="/script/jquery/jquery.validate.js" type="text/javascript"></script>

@@ -16,13 +16,13 @@
     <script>
         $(document).ready(function () {
             $("#cancel").click(function () {
-                window.location.replace("/index.jsp");
+                window.location.replace("<%= response.encodeURL("/index.jsp")%>" );
             });
 
             $('#register').find('img').toggle(0);
 
             $.ajax({
-                url: "/resources/user",
+                url: "<%= response.encodeURL("/resources/user")%>",
                 dataType: "json",
                 success: function (resp) {
                     $("#userName").text(resp.user);
@@ -31,7 +31,7 @@
                     $("#email").val(resp.email);
                     $("#organization").val(resp.organization);
                     $.ajax({
-                        url: "/resources/countries/",
+                        url: "<%= response.encodeURL("/resources/countries/")%>",
                         dataType: "json",
                         success: function (countResp) {
                             $('#country').append('<option value="" selected="selected">Please select a country...</option>');
@@ -42,7 +42,7 @@
                         }
                     });
                     $.ajax({
-                        url: "/resources/organizationTypes/",
+                        url: "<%= response.encodeURL("/resources/organizationTypes/")%>",
                         dataType: "json",
                         success: function (orgResp) {
                             $('#organizationType').append('<option selected="selected" value="">Please select a type...</option>');
@@ -132,7 +132,7 @@
                     userInfo.organizationType = $("#organizationType").val();
                     userInfo.country = $("#country").val();
                     $.ajax({
-                        url: "/resources/user",
+                        url: "<%= response.encodeURL("/resources/user")%>",
                         type: "PUT",
                         contentType: "application/json",
                         data: JSON.stringify(userInfo),
@@ -155,7 +155,7 @@
                 buttons: {
                     OK: function () {
                         $(this).dialog("close");
-                        window.location.replace("/auth/loginRedirect.jsp");
+                        window.location.replace("<%= response.encodeURL("/auth/loginRedirect.jsp")%>" );
                     }
                 }
             });

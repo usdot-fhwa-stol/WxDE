@@ -5,7 +5,7 @@
 	var queslinkID = "";
 	
 	$.ajax({
-		url:'faq.xml',
+		url:'faq.xml?' + csrf_nonce_param,
 		dataType: 'xml',
 		success: loadQuestions,
 		cache: false

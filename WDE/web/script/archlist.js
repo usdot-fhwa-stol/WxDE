@@ -101,7 +101,7 @@ function printArray(testArray)
                 }
 
                 dateString = displayYear + displayMonth + displayDay;
-                var urlHelp = protocol + "//" + hostname + "/archdl.jsp?file=" + testArray[i] + "-" + dateString;
+                var urlHelp = protocol + "//" + hostname + "/archdl.jsp?" + csrf_nonce_param + "&file=" + testArray[i] + "-" + dateString;
                 finalArray[inc] = "<li><a href='" + urlHelp +"' download='" + testArray[i] + "-" + dateString + ".csv.gz'>" + testArray[i] + "-" + dateString + ".csv.gz" + "</a></li>";
                 inc++;
             }

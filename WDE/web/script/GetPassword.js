@@ -15,7 +15,7 @@ function Validate()
 
     var oXmlRequest = new XmlRequest();
     oXmlRequest.addParameter("secretAttempt", oPassword.value);
-    oXmlRequest.getXml("setPassword.jsp", cbSetPassword);
+    oXmlRequest.getXml("setPassword.jsp?" + csrf_nonce_param, cbSetPassword);
 }
 
 

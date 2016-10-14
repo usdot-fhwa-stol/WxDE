@@ -60,7 +60,7 @@
 		        	console.log(document.forms[0].action);
 		        	var a = document.forms[0].action;
 		        	var tok = a.split("/");
-		        	if (tok[tok.length - 1] == "WizardSubResults.jsp") {
+		        	if (tok[tok.length - 1].startsWith("WizardSubResults.jsp")) {
 			        	Validate();
 		        	}
 		        }
@@ -80,7 +80,7 @@
 		<h1 id="pageTitle">Create Subscription</h1>
 		<br>
 		<div id="linkArea2" class="col-5" style="margin-top: -15px;">
-		<form name="subscriptionForm" id="subscriptionForm" method="POST" action="WizardSubResults.jsp">
+		<form name="subscriptionForm" id="subscriptionForm" method="POST" action="<%= response.encodeURL("WizardSubResults.jsp")%>">
 		<div>
 			<label for="name" style="width:120px;font-weight:bold;">Name *</label> 
 			<input id="name" name="name" type="text" style="width:300px;">
@@ -102,7 +102,7 @@
 		</div>
 		<div>
 			<label for="listFormat" style="width:120px;font-weight:bold;">Output Format</label> 
-			<select id="format" name="format" style="width: 300px;">
+			<select id="listFormat" name="format" style="width: 300px;">
 				<option value="CMML">CMML</option>
 				<option value="CSV" selected="selected">CSV</option>
 				<option value="KML">KML</option>
@@ -115,7 +115,7 @@
 		</div>
 		<div align="center">
 			<button class="btn-dark" id="btnNext" type="submit"> Subscribe</button>
-      <input id="jsessionid" type="hidden" value="<%=Encode.forHtmlAttribute(request.getSession().getId()%>)" />
+      <input id="jsessionid" type="hidden" value="<%=Encode.forHtmlAttribute(request.getSession().getId())%>" />
 		</div>
 		</form>
 		<br>
