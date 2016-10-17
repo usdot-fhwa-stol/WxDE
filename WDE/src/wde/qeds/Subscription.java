@@ -4,21 +4,20 @@
  */
 package wde.qeds;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import javax.sql.DataSource;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import wde.WDEMgr;
 import wde.util.MathUtil;
 import wde.util.QualityCheckFlagUtil;
 import wde.util.Region;
-
-import javax.sql.DataSource;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.StringTokenizer;
 
 /**
  * Provides filtering parameters which can be set and used to gather
@@ -29,6 +28,16 @@ import java.util.StringTokenizer;
 public class Subscription {
     private static final Logger logger = Logger.getLogger(Subscription.class);
 
+    /**
+     * The allowable values for the subscription format
+     */
+    public static final String[] FORMATS = {"CMML", "CSV", "KML", "XML"};
+
+    /**
+     * The default format
+     */
+    public static final int DEFAULT_FORMAT_INDEX = 1;
+    
     /**
      * Subscription id.
      */
@@ -54,7 +63,7 @@ public class Subscription {
     /**
      * Output file format.
      */
-    public String m_sOutputFormat = "CSV";
+    public String m_sOutputFormat = FORMATS[DEFAULT_FORMAT_INDEX];
 
     /**
      * Get observations no earlier than this.
@@ -149,7 +158,7 @@ public class Subscription {
         m_sSecret = "";
         m_sSecretAttempt = "";
 
-        m_sOutputFormat = "CSV";
+        m_sOutputFormat = FORMATS[DEFAULT_FORMAT_INDEX];
 
         m_lStartTime = Long.MIN_VALUE;
         m_lEndTime = Long.MIN_VALUE;
@@ -762,6 +771,10 @@ public class Subscription {
      * @param sFormat
      */
     public void setFormat(String sFormat) {
-        m_sOutputFormat = sFormat.toUpperCase();
+        int nFormatIndex = Arrays.binarySearch(FORMATS, sFormat.toUpperCase());
+        if(nFormatIndex < 0)
+          nFormatIndex = DEFAULT_FORMAT_INDEX;
+
+        m_sOutputFormat = FORMATS[nFormatIndex];
     }
 }
