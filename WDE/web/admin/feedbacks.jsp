@@ -49,6 +49,7 @@
 				color: #888;
 			}
 		</style>
+		<script src="/script/escape.js" type="text/javascript"></script>
 		<script src="/script/feedbacks.js" type="text/javascript"></script>
 		<script src="/script/simpleSorter.js" type="text/javascript"></script>
 		<script src="/script/feedbackDescription.js" type="text/javascript"></script>
