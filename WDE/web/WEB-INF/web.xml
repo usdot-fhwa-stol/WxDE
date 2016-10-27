@@ -260,4 +260,28 @@
     <url-pattern>/resources/*</url-pattern>
   </filter-mapping>
 
+	<!-- Only Allow GET and POST methods to access JSPs -->
+  <security-constraint>
+		<web-resource-collection>
+			<web-resource-name>wxde</web-resource-name>
+			<url-pattern>*.jsp</url-pattern>
+			<http-method-omission>GET</http-method-omission>
+			<http-method-omission>POST</http-method-omission>
+		</web-resource-collection>
+		<auth-constraint />
+	</security-constraint>
+
+	<!-- Only allow GET, POST, PUT, and DELETE methods when accessing application. -->
+  <security-constraint>
+		<web-resource-collection>
+			<web-resource-name>wxde</web-resource-name>
+			<url-pattern>/*</url-pattern>
+			<http-method-omission>GET</http-method-omission>
+			<http-method-omission>POST</http-method-omission>
+			<http-method-omission>PUT</http-method-omission>
+			<http-method-omission>DELETE</http-method-omission>
+		</web-resource-collection>
+		<auth-constraint />
+	</security-constraint>
+    
 </web-app>
