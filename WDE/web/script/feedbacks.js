@@ -89,6 +89,8 @@ $(function() {
 						timeCreated = '<em style="color: #aaa;">Not Provided</em>';
 					}
 						
+					strDescription = item.description;
+					
 					$('.reports-table')
 						.append(
 							'<tr>'
