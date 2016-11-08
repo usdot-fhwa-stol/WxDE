@@ -532,4 +532,20 @@ public class Text {
 
         return nLength;
     }
+
+
+    /**
+     * Truncates the passed string value if it is longer than the
+     * passed length, or returns the original value if it isn't.
+     *
+   * @param sValue The value to truncate
+   * @param nLength The maximum length of the truncated string.
+     * @return The truncated string
+     */
+    public static String truncate(String sValue, int nLength) {
+        if(sValue == null || sValue.length() <= nLength)
+          return sValue;
+        else
+          return sValue.substring(0, nLength);
+    }
 }

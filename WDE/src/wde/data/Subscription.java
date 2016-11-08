@@ -1,6 +1,7 @@
 package wde.data;
 
 import javax.xml.bind.annotation.XmlRootElement;
+import wde.util.Text;
 
 
 @XmlRootElement
@@ -43,7 +44,7 @@ public class Subscription {
     }
 
     public void setName(String name) {
-        this.name = name;
+        this.name = Text.truncate(name, 5);
     }
 
     public String getDescription() {

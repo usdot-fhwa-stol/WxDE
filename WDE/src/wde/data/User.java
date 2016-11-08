@@ -1,7 +1,8 @@
 package wde.data;
 
-import javax.xml.bind.annotation.XmlRootElement;
 import java.util.Date;
+import javax.xml.bind.annotation.XmlRootElement;
+import wde.util.Text;
 
 
 @XmlRootElement
@@ -42,7 +43,7 @@ public class User {
     }
 
     public void setFirstName(String firstName) {
-        this.firstName = firstName;
+        this.firstName = Text.truncate(firstName, 100);
     }
 
     public String getLastName() {
@@ -50,7 +51,7 @@ public class User {
     }
 
     public void setLastName(String lastName) {
-        this.lastName = lastName;
+        this.lastName = Text.truncate(lastName, 100);
     }
 
     public String getOrganization() {
@@ -58,7 +59,7 @@ public class User {
     }
 
     public void setOrganization(String organization) {
-        this.organization = organization;
+        this.organization = Text.truncate(organization, 100);
     }
 
     public String getOrganizationType() {
@@ -66,7 +67,7 @@ public class User {
     }
 
     public void setOrganizationType(String organizationType) {
-        this.organizationType = organizationType;
+        this.organizationType = Text.truncate(organizationType, 32);
     }
 
     public String getCountry() {
@@ -74,7 +75,7 @@ public class User {
     }
 
     public void setCountry(String country) {
-        this.country = country;
+        this.country = Text.truncate(country, 2);
     }
 
     public String getEmail() {
@@ -82,7 +83,7 @@ public class User {
     }
 
     public void setEmail(String email) {
-        this.email = email;
+        this.email = Text.truncate(email, 100);
     }
 
     public Boolean getIsVerified() {

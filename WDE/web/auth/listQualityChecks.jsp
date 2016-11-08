@@ -1,9 +1,17 @@
+<%@page import="org.apache.log4j.Logger"%>
 <%@ page contentType="text/xml; charset=UTF-8" language="java" import="java.io.*,java.sql.*,javax.sql.*,wde.WDEMgr" %>
 <%
     int nObsTypeId = 0;
 	String sObsTypeId = request.getParameter("obsType");
+  try
+  {
 	if (sObsTypeId != null && sObsTypeId.length() > 0)
 		nObsTypeId = Integer.parseInt(sObsTypeId);
+  }
+  catch(Exception ex)
+  {
+    Logger.getLogger("wde.jsp.listQualityChecks").error("Unable to parse [" + sObsTypeId + "] into an int");
+  }
 
 	String sDataSourceName = "java:comp/env/jdbc/wxde";
 	String sQuery = "SELECT bitPosition, className FROM conf.qchseqmgr, conf.qchseq " +

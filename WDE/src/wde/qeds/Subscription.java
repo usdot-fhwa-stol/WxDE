@@ -18,6 +18,7 @@ import wde.WDEMgr;
 import wde.util.MathUtil;
 import wde.util.QualityCheckFlagUtil;
 import wde.util.Region;
+import wde.util.Text;
 
 /**
  * Provides filtering parameters which can be set and used to gather
@@ -182,13 +183,13 @@ public class Subscription {
 
     public void setContactEmail(String sContactEmail) {
         if (sContactEmail != null && sContactEmail.length() > 0)
-            m_sContactEmail = sContactEmail;
+            m_sContactEmail = Text.truncate(sContactEmail, 128);
     }
 
 
     public void setContactName(String sContactName) {
         if (sContactName != null && sContactName.length() > 0)
-            m_sContactName = sContactName;
+            m_sContactName = Text.truncate(sContactName, 64);
     }
 
 
@@ -364,6 +365,8 @@ public class Subscription {
 
         String[] sObsFilters = sObs.split(",");
 
+        try
+        {
         if (sObsFilters.length > 0 && sObsFilters[0] != null && sObsFilters[0].length() > 0)
             m_nObsType = Integer.parseInt(sObsFilters[0]);
 
@@ -372,6 +375,11 @@ public class Subscription {
 
         if (sObsFilters.length > 2 && sObsFilters[2] != null && sObsFilters[2].length() > 0)
             m_dMax = Double.parseDouble(sObsFilters[2]);
+        }
+        catch(Exception ex)
+        {
+          logger.error("Unable to set obs types", ex);
+        }
     }
 
     /**
@@ -671,7 +679,14 @@ public class Subscription {
      *               cycle attribute.
      */
     public void setCycle(String sCycle) {
+      try
+      {
         m_nCycle = Integer.parseInt(sCycle);
+      }
+      catch(Exception ex)
+      {
+        logger.error("Unable to parse cycle value", ex);
+      }
     }
 
     /**
@@ -744,7 +759,7 @@ public class Subscription {
     }
 
     public void setName(String name) {
-        this.name = name;
+        this.name = Text.truncate(name, 100);
     }
 
     public String getDescription() {
@@ -752,7 +767,7 @@ public class Subscription {
     }
 
     public void setDescription(String description) {
-        this.description = description;
+        this.description = Text.truncate(description, 500);
     }
 
     public String getSubScope() {
@@ -760,7 +775,7 @@ public class Subscription {
     }
 
     public void setSubScope(String subScope) {
-        this.subScope = subScope;
+        this.subScope = "public".equalsIgnoreCase(subScope) ? "public" : "private";
     }
 
     public String getFormat() {
