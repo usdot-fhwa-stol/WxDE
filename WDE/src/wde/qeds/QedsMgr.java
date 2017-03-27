@@ -48,6 +48,12 @@ public class QedsMgr extends HttpServlet {
      * QedsMgr also starts the subscription fulfillment component.
      */
     private Subscriptions m_oSubs = Subscriptions.getInstance();
+	 
+	 /**
+	  * Pointer to the singleton instance of FcstSubscriptions. QedsMgr also
+	  * starts the forecast subscription fulfillment component.
+	  */
+	 private FcstSubscriptions m_oFcstSubs = FcstSubscriptions.getInstance();
 
 
     /**

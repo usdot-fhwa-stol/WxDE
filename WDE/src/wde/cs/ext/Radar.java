@@ -10,7 +10,7 @@ import wde.util.Scheduler;
 
 
 /**
- * This singleton class downloads Radar files every 2 minutes from the 
+ * This singleton class downloads Radar files every 4 minutes from the 
  * National Oceanic and Atmospheric Administration
  */
 public class Radar extends RemoteGrid 
@@ -23,9 +23,9 @@ public class Radar extends RemoteGrid
 	{
 		Config oConfig = ConfigSvc.getInstance().getConfig(this);
 		
-		m_nDelay = 60000; // collection 180 seconds after source file ready, file is good for use for the next 2 minute interval
-		m_nRange = 180000; // radar files are updated every two minutes (ex. file for 3:10 is read at 3:13 and is good for 3:12 - 3:14)
-		m_nLimit = oConfig.getInt("limit", 360);  // keep up 3 hours of NDFD files
+		m_nDelay = 60000; // collection 60 seconds after source file ready, reading files every 4 minutes
+		m_nRange = 300000; // radar files are downloaded every 4 minutes (ex. file for 3:52 is read at 3:57 and is good for 3:56 - 4:00)
+		m_nLimit = oConfig.getInt("limit", 360);  
 		m_nObsTypes = new int[]{0};
 		m_sObsTypes = new String[]{"MergedBaseReflectivityQC_altitude_above_msl"};
 		m_sHrz = "lon";
@@ -34,7 +34,7 @@ public class Radar extends RemoteGrid
 		m_sBaseDir = oConfig.getString("dir", "/run/shm/radar/");
 		m_sBaseURL = "http://mrms.ncep.noaa.gov/data/2D/MergedBaseReflectivityQC/";
 		m_nOffset = 60;
-		m_nPeriod = 120;
+		m_nPeriod = 240;
 		m_oNeededFile.setTimeZone(Scheduler.UTC);
 		m_nInitTime = oConfig.getInt("time", 3600 * 3);
 		init();

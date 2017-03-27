@@ -68,4 +68,18 @@ public abstract class OutputFormat implements Comparator<SubObs> {
      */
     abstract void fulfill(PrintWriter oWriter, ArrayList<SubObs> oSubObsList,
                           Subscription oSub, String sFilename, int nId, long lLimit, boolean matchCheck);
+	/**
+     * Extension must implement this method to print in the observation data
+     * in the corresponding format.
+     *
+     * @param oWriter     Output stream to write data to.
+     * @param oSubObsList List containing observation data to print.
+     * @param oSub        FcstSubscription filter.
+     * @param sFilename   output filename printed on footer.
+     * @param nId         subscription id.
+     * @param lLimit      timerange for observations.
+     * @param matchCheck  check additional match criteria.
+     */
+    abstract void fulfill(PrintWriter oWriter, ArrayList<SubObs> oSubObsList,
+                          FcstSubscription oSub, String sFilename, int nId, long lLimit, boolean matchCheck);
 }

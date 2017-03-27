@@ -30,8 +30,9 @@ public class RAP extends RemoteData implements Runnable
 		m_nDelay = -300000; // collection five minutes after source file ready, file read at x-1:55
 		m_nRange = 3900000; // RAP forecast is hourly, good to use from x:00 to x+1:00
 		m_nLimit = oConfig.getInt("limit", 6);  // keep up to 6 hours of RAP files
-		m_nObsTypes = new int[]{554, 587};
-		m_sObsTypes = new String[]{"Pressure_surface", "Precipitation_rate_surface"};
+		m_nObsTypes = new int[]{554, 587, 207, 2076, 2077, 2074, 2075};
+		m_sObsTypes = new String[]{"Pressure_surface", "Precipitation_rate_surface", "precipType", "Categorical_Freezing_Rain_surface",
+											"Categorical_Ice_Pellets_surface", "Categorical_Rain_surface", "Categorical_snow_surface"};
 		m_sHrz = "x";
 		m_sVrt = "y";
 		m_sTime = "time";
@@ -94,6 +95,45 @@ public class RAP extends RemoteData implements Runnable
 	}
 	
 	
+		/**
+	 * Finds the RAPGrid model value for an observation type by time and location.
+	 *
+	 * @param nObsTypeId	the observation type to lookup.
+	 * @param lTimestamp	the timestamp of the observation.
+	 * @param nLat				the latitude of the requested data.
+	 * @param nLon				the longitude of the requested data.
+	 * 
+	 * @return	the RAPGrid model value for the requested observation type for the 
+					specified time at the specified location.
+	 */
+	@Override
+	public synchronized double getReading(int nObsTypeId, long lTimestamp, int nLat, int nLon)
+	{
+		if (nObsTypeId == 207)
+		{
+			if (super.getReading(2076, lTimestamp, nLat, nLon) == 1)  //freezing rain
+				return 6;
+			else if (super.getReading(2077, lTimestamp, nLat, nLon) == 1) //ice pellets
+				return 6;
+			else if (super.getReading(2075, lTimestamp, nLat, nLon) == 1) //snow
+				return 5;
+			else if (super.getReading(2074, lTimestamp, nLat, nLon) == 1) //rain
+				return 4;
+			else //no precip
+				return 3;
+		}
+		else
+		{
+			double dVal = super.getReading(nObsTypeId, lTimestamp, nLat, nLon);
+
+			if (nObsTypeId == 554) // convert pressure Pa to mbar
+				return dVal / 100.0;
+
+			return dVal;
+		}
+	}
+	
+	
 	/**
 	 * This method initializes data collection for RAP files by downloading the
 	 * most recent files and scheduling future downloads.
@@ -108,15 +148,15 @@ public class RAP extends RemoteData implements Runnable
 		for (int i = 0; i < m_nInitTime / m_nPeriod; i++)
 		{
 			m_oSrcFile.applyPattern("'rap.t'HH'z.awp130pgrbf0'" + i + 
-				"'.grib2&lev_surface=on&var_PRATE=on&var_PRES=on&leftlon=0&rightlon=360&toplat=90&bottomlat=-90&dir=%2Frap.'yyyyMMdd");
+				"'.grib2&lev_surface=on&var_CFRZR=on&var_CICEP=on&var_CRAIN=on&var_CSNOW=on&var_PRATE=on&var_PRES=on&leftlon=0&rightlon=360&toplat=90&bottomlat=-90&dir=%2Frap.'yyyyMMdd");
 			loadFile(iCalendar);
 			//update the time range by an hour
 			m_nRange += 3600000;   
 			m_nDelay += 3600000;
 		}
 		//set the time range back to the default range
-		m_nRange -= 3600000 * 6;
-		m_nDelay -= 3600000 * 6;
+		m_nRange -= (3600000 * (m_nInitTime / 3600));   //init time is in secs, want it in hours here
+		m_nDelay -= (3600000 * (m_nInitTime / 3600));
 	}
 
 	
@@ -131,20 +171,20 @@ public class RAP extends RemoteData implements Runnable
 		for (int i = 0; i < m_nInitTime / m_nPeriod; i++)
 		{
 			m_oSrcFile.applyPattern("'rap.t'HH'z.awp130pgrbf0'" + i + 
-				"'.grib2&lev_surface=on&var_PRATE=on&var_PRES=on&leftlon=0&rightlon=360&toplat=90&bottomlat=-90&dir=%2Frap.'yyyyMMdd");
+				"'.grib2&lev_surface=on&var_CFRZR=on&var_CICEP=on&var_CRAIN=on&var_CSNOW=on&var_PRATE=on&var_PRES=on&leftlon=0&rightlon=360&toplat=90&bottomlat=-90&dir=%2Frap.'yyyyMMdd");
 			loadFile(oTime);
 			//update the time range by an hour
 			m_nRange += 3600000;
 			m_nDelay += 3600000;
 		}
 		//set the time range back to the default range
-		m_nRange -= 3600000 * 6;
-		m_nDelay -= 3600000 * 6;
+		m_nRange -= (3600000 * (m_nInitTime / 3600));   //init time is in secs, want it in hours here
+		m_nDelay -= (3600000 * (m_nInitTime / 3600));
 	}
 
 	public static void main(String[] args)
 	{
 		RAP oRAP = RAP.getInstance();
-		System.out.println(oRAP.getReading(554, System.currentTimeMillis() + 3600000 * 5, 24000000, -100000000));
+		System.out.println(oRAP.getReading(207, System.currentTimeMillis() + 3600000 * 5, 24000000, -100000000));
 	}
 }

@@ -1,23 +1,3 @@
-/**
- * Copyright (c) 2010 Mixon/Hill, Inc. All rights reserved.
- * <p/>
- * Author: 	n/a
- * Date: 	n/a
- * <p/>
- * Modification History:
- * dd-Mmm-yyyy		iii		[Bug #]
- * Change description.
- * <p/>
- * 29-Jun-2012		das
- * Quoted maxValue in SUBS_QUERY due to it being a reserved word
- * in newer releases of MySQL server.
- *
- * @file Subscriptions.java
- * @file Subscriptions.java
- */
-/**
- * @file Subscriptions.java
- */
 package wde.qeds;
 
 import org.apache.catalina.realm.GenericPrincipal;
@@ -27,8 +7,6 @@ import wde.dao.ObsTypeDao;
 import wde.dao.PlatformDao;
 import wde.dao.SensorDao;
 import wde.dao.Units;
-import wde.obs.IObs;
-import wde.obs.ObsArchiveMgr;
 import wde.security.AccessControl;
 import wde.util.Config;
 import wde.util.ConfigSvc;
@@ -42,9 +20,18 @@ import java.io.PrintWriter;
 import java.sql.*;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Calendar;
+import java.util.Comparator;
 import java.util.GregorianCalendar;
 import java.util.Hashtable;
 import java.util.TimeZone;
+import org.postgresql.util.PSQLException;
+import wde.cs.ext.NDFD;
+import wde.cs.ext.RAP;
+import wde.cs.ext.RTMA;
+import wde.data.osm.Road;
+import wde.data.osm.Roads;
 
 /**
  * Provides an interface and control class that gathers and processes
@@ -58,20 +45,36 @@ import java.util.TimeZone;
  * of, and allow execution by threads.
  * </p>
  */
-public class Subscriptions implements Runnable {
+public class FcstSubscriptions implements Runnable, Comparator<Road> {
     private static final long NUM_OF_MILLI_SECONDS_IN_A_DAY = 86400000L;
-    static Logger logger = Logger.getLogger(Subscriptions.class);
+    static Logger logger = Logger.getLogger(FcstSubscriptions.class);
     /**
      * Pointer to the singleton instance of {@code Subscriptions}
      */
-    private static Subscriptions g_oInstance = new Subscriptions();
+    private static final FcstSubscriptions g_oInstance = new FcstSubscriptions();
 
     /**
      * Subscriptions query format.
      */
     private static String SUBS_QUERY = "SELECT id, lat1, lng1, lat2, lng2, " +
             "obsTypeId, minValue, maxValue, qchRun, qchFlags, format, cycle " +
-            "FROM subs.subscription WHERE expires >= ? AND id>0 ORDER BY cycle, id";
+            "FROM subs.subscription WHERE expires >= ? AND id<0 ORDER BY cycle, id";
+	 /**
+	  * Obs types for NDFD
+	  */
+	 private final int[] m_nNdfdObsTypes = new int[]{575, 593, 5733, 56104};
+	 /**
+	  * Obs types for RAP
+	  */
+	 private final int[] m_nRapObsTypes = new int[]{207, 554, 587, 2074, 2075, 2076, 2077};
+	 /**
+	  * Obs types for RTMA
+	  */
+	 private final int[] m_nRtmaObsTypes = new int[]{554, 575, 593, 5101, 5733, 56104, 56105, 56108};
+	 /**
+	  * Obs types for alerts, warnings, and forecasted infer obs that come from the database
+	  */
+	 private final int[] m_nDbObsTypes = new int[]{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 589, 5102, 51137};
 
     /**
      * Subscriptions cleanup query used in conjunction with lifetime attribute.
@@ -156,8 +159,8 @@ public class Subscriptions implements Runnable {
      * itself to run on a 5-minute cycle.
      * </p>
      */
-    public Subscriptions() {
-        Config oConfig = ConfigSvc.getInstance().getConfig(this);
+    public FcstSubscriptions() {
+        Config oConfig = ConfigSvc.getInstance().getConfig("wde.qeds.Subscriptions");
         m_sSubsDir = oConfig.getString("subsRoot", "./");
 
         // add a trailing slash if one was not set
@@ -187,149 +190,187 @@ public class Subscriptions implements Runnable {
         m_oFormatters.put("XML", new OutputXml());
 
         m_oDateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
-
+		  //ensure all of the obs type arrays are sorted because binary search is used with them
+		  Arrays.sort(m_nNdfdObsTypes);
+		  Arrays.sort(m_nRapObsTypes);
+		  Arrays.sort(m_nRtmaObsTypes);
+		  Arrays.sort(m_nDbObsTypes);
         // set the five-minute subscription fulfillment interval
-        Scheduler.getInstance().schedule(this, 0, 300, true);
+        Scheduler.getInstance().schedule(this, 0, 3600, true);
     }
 
     /**
      * <b> Accessor </b>
      * @return the singleton instance of {@code Subscriptions}.
      */
-    public static Subscriptions getInstance() {
+    public static FcstSubscriptions getInstance() {
         return g_oInstance;
     }
 
-    /**
-     * Executes database observation query, gathering observations that fall
-     * within the given time bounds, and populates the provided
-     * {@code SubObs} list with the results.
-     * @param oSubObsList
-     * @param lMinTime lower time-bound.
-     * @param lMaxTime upper time-bound.
-     * @return 0 if the query is fully executed, 1 if the query is not executed
-     * 2 if the row number exceeds configured limit, 3 if time exceeds configured limit
-     */
-    private int getObs(ArrayList<SubObs> oSubObsList, Subscription sub, boolean isSuperUser) {
-        int status = 1;
+	 /**
+	  * Executes forecast getReadings and database queries to populate the given 
+	  * list with forecast observations that meet the specifications of the given 
+	  * Forecast Subscription
+	  * 
+	  * 
+	  * @param oSubObsList empty list to be populated with observations
+	  * @param oSub the Forecast Subscription
+	  */
+    private void getObs(ArrayList<SubObs> oSubObsList, FcstSubscription oSub) 
+	 {
+		Connection iObsDb = null;
+		ResultSet iRs = null;
+		NDFD oNDFD = NDFD.getInstance();
+		RAP oRAP = RAP.getInstance();
+		RTMA oRTMA = RTMA.getInstance();
+		int nMaxLat = (int)Math.max(MathUtil.toMicro(oSub.m_dLat1), MathUtil.toMicro(oSub.m_dLat2));
+		int nMinLat = (int)Math.min(MathUtil.toMicro(oSub.m_dLat1), MathUtil.toMicro(oSub.m_dLat2));
+		int nMaxLon = (int)Math.max(MathUtil.toMicro(oSub.m_dLng1), MathUtil.toMicro(oSub.m_dLng2));
+		int nMinLon = (int)Math.min(MathUtil.toMicro(oSub.m_dLng1), MathUtil.toMicro(oSub.m_dLng2));
+		ArrayList<SubObs> oTempList = new ArrayList();
+		ArrayList<Road> oRoadList = new ArrayList();
+		Roads oRoads = Roads.getInstance();
+		oRoads.getLinks(oRoadList, 1, MathUtil.toMicro(oSub.m_dLng1), MathUtil.toMicro(oSub.m_dLat1), MathUtil.toMicro(oSub.m_dLng2), MathUtil.toMicro(oSub.m_dLat2)); //get all roads in the bounding box
+		int nIndex = oRoadList.size();
+		while (nIndex-- > 0) //remove roads that have a midpoint outside of the bounding box of the subscription
+		{
+			Road oTempRoad = oRoadList.get(nIndex);
+			if (oTempRoad.m_nYmid > nMaxLat || oTempRoad.m_nYmid < nMinLat ||
+				 oTempRoad.m_nXmid > nMaxLon || oTempRoad.m_nXmid < nMinLon)
+				oRoadList.remove(nIndex);
+		}
+		Calendar oNow = new GregorianCalendar();
+		//set the time to the beginning of the hour
+		oNow.set(Calendar.MILLISECOND, 0);
+		oNow.set(Calendar.SECOND, 0);
+		oNow.set(Calendar.MINUTE, 0);
+		try
+		{
+			//get the data source for the obs tables
+			if (m_iDsObs != null)
+				iObsDb = m_iDsObs.getConnection();
+			
+			Arrays.sort(oSub.m_nObsTypes); //sort obstypeids in ascending order
+			oRoadList.sort(this); //sort the roads by latitude then longitute
+			for (int nObsType : oSub.m_nObsTypes) //for each obstype
+			{
+				oTempList.clear(); //clear the temporary list
+				boolean bNdfdObs = false;
+				boolean bDbObs = false;
+				boolean bRtmaObs = false;
+				boolean bRapObs = false;
+				boolean bCaught = false;
+				//determine which type of obs it is
+				if (Arrays.binarySearch(m_nNdfdObsTypes, nObsType) >= 0)
+					bNdfdObs = true;
+				if (Arrays.binarySearch(m_nDbObsTypes, nObsType) >= 0)
+					bDbObs = true;
+				if (Arrays.binarySearch(m_nRtmaObsTypes, nObsType) >= 0)
+					bRtmaObs = true;
+				if (Arrays.binarySearch(m_nRapObsTypes, nObsType) >= 0)
+					bRapObs = true;
+				if (iObsDb != null)
+				{
+					Timestamp oNowTs = new Timestamp(oNow.getTimeInMillis());
+					String sTableName = String.format("obs_%d-%02d-%02d", oNow.get(GregorianCalendar.YEAR),
+						oNow.get(GregorianCalendar.MONTH) + 1, oNow.get(GregorianCalendar.DAY_OF_MONTH));
+					Statement iStatement = iObsDb.createStatement();
+					Calendar oTomorrow = new GregorianCalendar();
+					oTomorrow.setTimeInMillis(oNow.getTimeInMillis());
+					oTomorrow.set(GregorianCalendar.DAY_OF_MONTH, oTomorrow.get(GregorianCalendar.DAY_OF_MONTH) + 1);
+					String sTomTableName = String.format("obs_%d-%02d-%02d", oTomorrow.get(GregorianCalendar.YEAR),
+						oTomorrow.get(GregorianCalendar.MONTH) + 1, oTomorrow.get(GregorianCalendar.DAY_OF_MONTH));
+					try //try getting obs from today and tomorrow
+					{
+						iRs = iStatement.executeQuery("SELECT * FROM("
+							+ "SELECT obstypeid, obstime, recvtime, latitude, longitude, value "
+							+ "FROM obs.\"" + sTableName + "\" "
+							+ "WHERE obstypeid = " + nObsType + " AND obstime >= '" + oNowTs.toString().substring(0,19) + "' AND obstime >= recvtime "
+							+ "UNION "
+							+ "SELECT obstypeid, obstime, recvtime, latitude, longitude, value "
+							+ "FROM obs.\"" + sTomTableName + "\" "
+							+ "WHERE obstypeid = " + nObsType + " AND obstime >= '" + oNowTs.toString().substring(0, 19) + "' AND obstime >= recvtime) AS a "
+							+ "ORDER BY latitude, longitude, obstime, recvtime");
+					}
+					catch (PSQLException oException) //tomorrow's table might not exist yet, if it doesn't just get results from today's table
+					{
+						bCaught = true;
+					}
+					finally
+					{
+						if (bCaught) //the query didn't run so run it for today's table only
+						{
+							iRs = iStatement.executeQuery("SELECT obstypeid, obstime, recvtime, latitude, longitude, value FROM obs.\"" + sTableName + 
+							"\" WHERE obstypeid = " + nObsType + " AND obstime >= '" + oNowTs.toString().substring(0,19) + "' AND obstime>=recvtime ORDER BY latitude, longitude, obstime, recvtime");
+						}
+						if (iRs != null)
+						{
+							while (iRs.next()) //put the result set in memory so we can filter out noncurrent forecasts
+								oTempList.add(new SubObs(iRs.getInt(1), iRs.getTimestamp(2).getTime(), 
+									iRs.getTimestamp(3).getTime(), iRs.getInt(4), iRs.getInt(5), 0, iRs.getDouble(6), obsTypeDao));
+							iRs.close();
+						}
+					}
+				}
 
-        Connection dbConn = null;
-        PreparedStatement ps = null;
-        ResultSet rs = null;
-
-        try {
-            // attempt to get the needed obs cache connection
-            if (m_iDsObs == null)
-                return status;
-
-            dbConn = m_iDsObs.getConnection();
-            if (dbConn == null)
-                return status;
-
-            String contribListStr = sub.getContributors();
-            String platformListStr = null;
-
-            if (contribListStr != null && contribListStr.length() > 0) {
-                contribListStr = "(" + contribListStr + ")";
-
-                platformListStr = "(";
-                for (Integer pi : sub.m_oPlatformIds) {
-                    platformListStr += pi.intValue() + ",";
-                }
-                platformListStr = platformListStr.substring(0, platformListStr.length() - 1) + ")";
-            }
-
-            int rowCount = 0;
-            long startQueryTime = System.currentTimeMillis();
-            Timestamp beginTime = new Timestamp(sub.m_lStartTime);
-            Timestamp endTime = new Timestamp(sub.m_lEndTime);
-            Timestamp runningTime = new Timestamp(sub.m_lStartTime);
-
-            logger.info("Statistics on-demand query obsType: " + sub.m_nObsType
-                    + " Start time: " + beginTime + " End time: " + endTime
-                    + " Contributors: " + contribListStr + " Platforms: " + platformListStr);
-
-            while (runningTime.getTime() < (sub.m_lEndTime + NUM_OF_MILLI_SECONDS_IN_A_DAY)) {
-                String tableName = "obs_" + runningTime.toString().substring(0, 10);
-                runningTime.setTime(runningTime.getTime() + NUM_OF_MILLI_SECONDS_IN_A_DAY);
-                DatabaseMetaData dbm = dbConn.getMetaData();
-                ResultSet tables = dbm.getTables(null, null, tableName, null);
-                if (!tables.next()) {
-                    tables.close();
-                    logger.debug(tableName + " does not exist");
-                    continue;
-                }
-                tables.close();
-
-                String queryStr = null;
-                String obsTypeStr1 = "";
-                String obsTypeStr2 = "";
-                if (sub.m_nObsType != 0) {
-                    obsTypeStr1 = " and o.obsTypeId = " + sub.m_nObsType;
-                    obsTypeStr2 = " and obsTypeId = " + sub.m_nObsType;
-                }
-                if (contribListStr != null && contribListStr.length() > 2)
-                    queryStr = "SELECT o.* FROM obs.\"" + tableName + "\" o, meta.sensor s " +
-                            "WHERE obsTime >= ? AND obsTime < ? AND o.sensorId=s.id " +
-                            "AND s.contribId IN " + contribListStr + " AND s.platformId in " + platformListStr + obsTypeStr1 +
-                            " ORDER BY obsTypeId, sourceId, sensorId limit " + (maxRows - rowCount);
-                else
-                    queryStr = "SELECT * FROM obs.\"" + tableName + "\" " +
-                            "WHERE obsTime >= ? AND obsTime < ?" +
-                            " AND latitude > " + MathUtil.toMicro(sub.m_dLat1) + " AND latitude < " + MathUtil.toMicro(sub.m_dLat2) +
-                            " AND longitude > " + MathUtil.toMicro(sub.m_dLng1) + " AND longitude < " + MathUtil.toMicro(sub.m_dLng2) + obsTypeStr2 +
-                            " ORDER BY obsTypeId, sourceId, sensorId limit " + (maxRows - rowCount);
-
-                // now that we have database connections, get the obs
-                ps = dbConn.prepareStatement(queryStr);
-
-                ps.setTimestamp(1, beginTime);
-                ps.setTimestamp(2, endTime);
-
-                // cache obs records as objects with resolved contribs and stations
-                rs = ps.executeQuery();
-
-                while (rs.next()) {
-
-                    SubObs oSubObs = new SubObs(m_oContribs, platformDao,
-                            sensorDao, m_oUnits, obsTypeDao, rs);
-
-                    // only add obs that have valid metadata and can be distributed
-                    if
-                            (
-                            oSubObs.m_iObsType != null &&
-                                    oSubObs.m_iSensor != null &&
-                                    (oSubObs.m_iSensor.getDistGroup() == 2 || oSubObs.m_iSensor.getDistGroup() == 0 && isSuperUser) &&
-                                    oSubObs.m_oContrib != null &&
-                                    oSubObs.m_iPlatform != null
-                            )
-                        oSubObsList.add(oSubObs);
-                    rowCount++;
-                }
-
-                if (rowCount >= maxRows) {
-                    status = 2;
-                    break;
-                }
-
-                long now = System.currentTimeMillis();
-                if (now - startQueryTime >= maxTime) {
-                    status = 3;
-                    break;
-                }
-                rs.close();
-                rs = null;
-                ps.close();
-                ps = null;
-            }
-            dbConn.close();
-            dbConn = null;
-        } catch (Exception e) {
-            e.printStackTrace();
-            logger.error(e.getMessage());
-        }
-
-        return status;
+				nIndex = oTempList.size() - 1; //start at the next to last obs in the list
+				while (nIndex-- > 0)
+				{
+					SubObs oTempSubObs = oTempList.get(nIndex);
+					//remove noncurrent forecasts from the list (the list is ordered by latitude, then longitude, then obstime, then received time)
+					if (oTempSubObs.m_dLat < nMinLat || oTempSubObs.m_dLat > nMaxLat ||
+						 oTempSubObs.m_dLon < nMinLon || oTempSubObs.m_dLon > nMaxLon ||
+						(oTempSubObs.m_dLat == oTempList.get(nIndex + 1).m_dLat && 
+						 oTempSubObs.m_dLon == oTempList.get(nIndex + 1).m_dLon && 
+						 oTempSubObs.m_lTimestamp == oTempList.get(nIndex + 1).m_lTimestamp))
+						oTempList.remove(nIndex);
+				}
+				//the last object never got checked in the other loop so check it now
+				if (!oTempList.isEmpty())
+					if(oTempList.get(oTempList.size() - 1).m_dLat < nMinLat || 
+							oTempList.get(oTempList.size() - 1).m_dLat > nMaxLat ||
+							oTempList.get(oTempList.size() - 1).m_dLon < nMinLon || 
+							oTempList.get(oTempList.size() - 1).m_dLon > nMaxLon)
+						oTempList.remove(oTempList.size() -1);
+				for (Road oRoad : oRoadList)
+				{
+					for (int i = 0; i <= 6; i++) //for each road and each forecast hour get the desired observation
+					{
+						long lFcstTime = oNow.getTimeInMillis() + (i * 3600000);
+						double dVal = Double.NaN;
+						if (bRapObs)
+						{
+							dVal = oRAP.getReading(nObsType, lFcstTime, oRoad.m_nYmid, oRoad.m_nXmid);
+						}
+						else if (bDbObs && !oTempList.isEmpty())
+						{
+							SubObs oTemp = oTempList.get(0); //only need to check the first obs since the list is sorted by lat, then lon, then obstime
+							if (oTemp.m_dLat == oRoad.m_nYmid && oTemp.m_dLon == oRoad.m_nXmid && oTemp.m_lTimestamp >= lFcstTime && oTemp.m_lTimestamp < lFcstTime + 3600000) //check if the obs is the correct lat, lon, and time
+							{
+								dVal = oTemp.m_dValue;
+								oTempList.remove(0);
+							}
+						}
+						else if (i == 0 && bRtmaObs)
+						{
+							dVal = oRTMA.getReading(nObsType, lFcstTime, oRoad.m_nYmid, oRoad.m_nXmid);
+						}
+						else if(bNdfdObs)
+						{
+							dVal = oNDFD.getReading(nObsType, lFcstTime, oRoad.m_nYmid, oRoad.m_nXmid);
+						}
+						if (!Double.isNaN(dVal)) //if the value got set, add the obs to the list
+						{
+							oSubObsList.add(new SubObs(nObsType, lFcstTime, oNow.getTimeInMillis(), oRoad.m_nYmid, oRoad.m_nXmid, oRoad.m_tElev, dVal, obsTypeDao));
+						}
+					}
+				}
+			}
+		}
+		catch (Exception e)
+		{
+			e.printStackTrace();
+		}
     }
 
 
@@ -341,7 +382,8 @@ public class Subscriptions implements Runnable {
      * @param oWriter stream to write the subscription-observation data to.
      * @param oSubs subscription matching to observations to output.
      */
-    public void getResults(HttpServletRequest request, PrintWriter writer, Subscription subs) {
+    public void getResults(HttpServletRequest request, PrintWriter writer, FcstSubscription subs) 
+	 {
         ArrayList<SubObs> oSubObsList = new ArrayList<SubObs>();
         boolean isSuperUser = AccessControl.isSuperUser(request);
 
@@ -351,18 +393,12 @@ public class Subscriptions implements Runnable {
 
         logger.info("Statistics on-demand query requester username: " + principal.getName());
 
-        int status = getObs(oSubObsList, subs, isSuperUser);
+        getObs(oSubObsList, subs);
 
         logger.debug("getResults() -- end calling getObs()");
 
         OutputFormat oOutputFormat =
                 m_oFormatters.get(subs.m_sOutputFormat);
-
-        if (status == 2 && oSubObsList.size() > 0)
-            writer.println(String.format(OutputFormat.warning1, maxRows));
-
-        if (status == 3 && oSubObsList.size() > 0)
-            writer.println(String.format(OutputFormat.warning2, (maxTime / 1000)));
 
         if (oOutputFormat != null) {
             oOutputFormat.fulfill(writer, oSubObsList,
@@ -375,7 +411,7 @@ public class Subscriptions implements Runnable {
     /**
      * Connects to the data-source to perform the subscription query. For each
      * subscription found, the observations are gathered, processed, and
-     * output. Runs on a five minute cycle, as configured in the default
+     * output. Runs on a 60 minute cycle, as configured in the default
      * constructor.
      * <p>
      * Defines a required method for the implementation of {@link Runnable}.
@@ -386,33 +422,14 @@ public class Subscriptions implements Runnable {
 
         // process subscriptions here
         GregorianCalendar oNow = new GregorianCalendar();
+		  oNow.set(GregorianCalendar.MILLISECOND, 0);
+		  oNow.set(GregorianCalendar.SECOND, 0);
+		  oNow.set(GregorianCalendar.MINUTE, 0);
         Timestamp oNowTs = new Timestamp(oNow.getTimeInMillis());
 
         // only one object of each is needed to deserialize database records
         ArrayList<SubObs> oSubObsList = new ArrayList<SubObs>();
-        Subscription oSubs = new Subscription();
-
-        // a 30-minute window is always queried
-        ArrayList<IObs> oRawObsList = new ArrayList<IObs>();
-        ObsArchiveMgr.getInstance().getObs(oRawObsList,
-                oNow.getTimeInMillis() - 3900000); // 65 minutes
-        int nIndex = oRawObsList.size();
-        while (nIndex-- > 0) {
-            SubObs oSubObs = new SubObs(m_oContribs, platformDao,
-                    sensorDao, m_oUnits, obsTypeDao, oRawObsList.get(nIndex));
-
-            // only add obs that have valid metadata and can be distributed
-            if
-                    (
-                    oSubObs.m_iObsType != null &&
-                            oSubObs.m_iSensor != null &&
-                            oSubObs.m_iSensor.getDistGroup() == 2 &&
-                            oSubObs.m_oContrib != null &&
-                            oSubObs.m_iPlatform != null
-                    )
-                oSubObsList.add(oSubObs);
-        }
-
+        FcstSubscription oSubs = new FcstSubscription();
         try {
             // get the subscription information
             if (m_iDsSubs == null)
@@ -421,25 +438,24 @@ public class Subscriptions implements Runnable {
             Connection iSubsDb = m_iDsSubs.getConnection();
             if (iSubsDb == null)
                 return;
-
             // prepare the subscription detail queries
-            PreparedStatement iGetRadius = iSubsDb.prepareStatement("SELECT lat, lng, radius FROM subs.subRadius WHERE subId = ?");
-            PreparedStatement iGetContrib = iSubsDb.prepareStatement("SELECT contribId FROM subs.subContrib WHERE subId = ?");
-            PreparedStatement iGetStation = iSubsDb.prepareStatement("SELECT stationId FROM subs.subStation WHERE subId = ?");
-
+				PreparedStatement iGetSubObs = iSubsDb.prepareStatement("SELECT obstypeid FROM subs.subobs WHERE subId = ?", ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
             // the result sets are stored in memory and can be passed to
             // other methods repeatedly
             PreparedStatement iSubsQuery = iSubsDb.prepareStatement(SUBS_QUERY);
             iSubsQuery.setTimestamp(1, oNowTs);
             ResultSet iSubsResults = iSubsQuery.executeQuery();
-            while (iSubsResults.next()) {
+            while (iSubsResults.next()) 
+				{
+					oSubObsList.clear();
                 // process all subscriptions for the current cycle
                 int nCycle = iSubsResults.getInt(12);
-                if (oNow.get(GregorianCalendar.MINUTE) % nCycle == 0) {
-                    oSubs.deserialize(iSubsResults, iGetRadius, iGetContrib, iGetStation);
-
+                if (oNow.get(GregorianCalendar.MINUTE) % nCycle == 0) 
+					 {
+                    oSubs.deserialize(iSubsResults, iGetSubObs);
+						  getObs(oSubObsList, oSubs);
                     // ensure the subscription destination exists
-                    String sPath = m_sSubsDir + oSubs.m_nId;
+                    String sPath = m_sSubsDir + -oSubs.m_nId;
                     File oFile = new File(sPath);
                     if (!oFile.exists() && !oFile.mkdirs())
                         continue;
@@ -447,7 +463,8 @@ public class Subscriptions implements Runnable {
                     OutputFormat oOutputFormat =
                             m_oFormatters.get(oSubs.m_sOutputFormat);
 
-                    if (oOutputFormat != null) {
+                    if (oOutputFormat != null) 
+						  {
                         String sFilename = m_oDateFormat.format(
                                 oNow.getTime()) + oOutputFormat.getSuffix();
                         oFile = new File(sPath + "/" + sFilename);
@@ -455,7 +472,7 @@ public class Subscriptions implements Runnable {
                         PrintWriter oPrintWriter = new PrintWriter(oFile);
                         oOutputFormat.fulfill(oPrintWriter, oSubObsList,
                                 oSubs, sFilename, oSubs.m_nId,
-                                oNow.getTimeInMillis() - (nCycle * 60000), true);
+                                oNow.getTimeInMillis() - (nCycle * 60000), false);
 
                         // finish writing the output
                         oPrintWriter.flush();
@@ -464,10 +481,8 @@ public class Subscriptions implements Runnable {
                 }
             }
             // free most of the subscription database resources
+				iGetSubObs.close();
             iSubsResults.close();
-            iGetRadius.close();
-            iGetContrib.close();
-            iGetStation.close();
             iSubsQuery.close();
 
             // clean up expired subscriptions
@@ -483,31 +498,23 @@ public class Subscriptions implements Runnable {
 
             // prepare the subscription delete queries
             iSubsQuery = iSubsDb.prepareStatement("DELETE FROM subs.subscription WHERE id = ?");
-            iGetRadius = iSubsDb.prepareStatement("DELETE FROM subs.subRadius WHERE subId = ?");
-            iGetContrib = iSubsDb.prepareStatement("DELETE FROM subs.subContrib WHERE subId = ?");
-            iGetStation = iSubsDb.prepareStatement("DELETE FROM subs.subStation WHERE subId = ?");
+				iGetSubObs = iSubsDb.prepareStatement("DELETE FROM subs.subobs WHERE subId = ?");
 
-            nIndex = oSubIds.size();
+            int nIndex = oSubIds.size();
             while (nIndex-- > 0) {
-                int m_nSubId = oSubIds.get(nIndex).intValue();
+                int nSubId = oSubIds.get(nIndex).intValue();
 
-                iGetRadius.setInt(1, m_nSubId);
-                iGetRadius.executeUpdate();
-
-                iGetContrib.setInt(1, m_nSubId);
-                iGetContrib.executeUpdate();
-
-                iGetStation.setInt(1, m_nSubId);
-                iGetStation.executeUpdate();
-
-                iSubsQuery.setInt(1, m_nSubId);
+					 iGetSubObs.setInt(1, nSubId);
+					 iGetSubObs.executeUpdate();
+					 
+                iSubsQuery.setInt(1, nSubId);
                 iSubsQuery.executeUpdate();
+					 
+
             }
 
             // free the remainder of the subscription database resources
-            iGetRadius.close();
-            iGetContrib.close();
-            iGetStation.close();
+				iGetSubObs.close();
             iSubsQuery.close();
             iSubsDb.close();
 
@@ -569,8 +576,28 @@ public class Subscriptions implements Runnable {
 	 * Gets and increments the next unique subscription id 
 	 * @return subscription id
 	 */ 
-	 public int getNextId()
+	public int getNextId()
 	{
-		return FcstSubscriptions.getInstance().getNextId();
+		synchronized(Subscription.g_oNextId)
+		{
+			return Subscription.g_oNextId.m_nNextId++;
+		}
+	}
+
+	
+	/**
+	 * Compares two roads by latitude then longitude
+	 * @param o1 road 1
+	 * @param o2 road 2
+	 * @return 
+	 */
+	@Override
+	public int compare(Road o1, Road o2)
+	{
+		int nReturn = o1.m_nYmid - o2.m_nYmid;
+		if (nReturn == 0)
+			nReturn = o1.m_nXmid - o2.m_nXmid;
+		
+		return nReturn;
 	}
 }

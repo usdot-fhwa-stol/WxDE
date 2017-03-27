@@ -227,7 +227,7 @@ public class CsMgr implements Runnable {
 							return (short)Math.round(dVal);
 					}
 				}
-				catch (IOException | NumberFormatException oException)
+				catch (Exception oException)
 				{
 				}
 			}

@@ -17,6 +17,7 @@ import javax.naming.NamingException;
 import javax.servlet.annotation.WebServlet;
 import org.apache.log4j.Logger;
 import org.codehaus.jackson.JsonGenerator;
+import wde.comp.MetroResults;
 import wde.cs.ext.NDFD;
 import wde.cs.ext.RTMA;
 import wde.dao.UnitConv;
@@ -41,6 +42,7 @@ public class RoadSegmentServlet extends LayerServlet
 
   private final NDFD m_Ndfd = NDFD.getInstance();
   private final RTMA m_Rtma = RTMA.getInstance();
+  private final MetroResults m_oMetroResults = MetroResults.getInstance();
 
   private String m_sAlertObsTypeCondition = "";
 
@@ -63,6 +65,11 @@ public class RoadSegmentServlet extends LayerServlet
     575, 5733, 581
   };
 
+  private final int[] m_nMetroResultsObstypes =
+  {
+	  51137, 51138, 51165
+  };
+  
   private static final Logger m_oLogger = Logger.getLogger(RoadSegmentServlet.class);
 
   /**
@@ -176,7 +183,8 @@ public class RoadSegmentServlet extends LayerServlet
     }
     catch (Exception oEx)
     {
-      m_oLogger.error("", oEx);
+		if (!oEx.getMessage().contains("relation ") && !oEx.getMessage().contains("does not exist"))
+			m_oLogger.error("", oEx);
     }
 
     Collections.sort(oWarningRoadIds);
@@ -390,9 +398,10 @@ public class RoadSegmentServlet extends LayerServlet
     }
     catch (Exception ex)
     {
-      m_oLogger.error("", ex);
+		if (!ex.getMessage().contains("relation ") && !ex.getMessage().contains("does not exist"))
+			m_oLogger.error("", ex);
     }
-
+	 
     //check if the request time is in the current hour
     Calendar oCal = Calendar.getInstance();
     oCal.set(Calendar.MILLISECOND, 0);
@@ -406,7 +415,7 @@ public class RoadSegmentServlet extends LayerServlet
       for (int nObstypeId : m_nRtmaObstypes)
       {
         double dValue = m_Rtma.getReading(nObstypeId, lCurrentHourStart, oRequestRoad.m_nYmid, oRequestRoad.m_nXmid);
-        if (Double.compare(dValue, Double.NaN) == 0)
+        if (Double.isNaN(dValue))
           continue;
 
         serializeObsRecord(oOutputGenerator, oObstypeIdList, oNumberFormatter, oConfFormat, oDateFormat, oDate, nObstypeId, dValue, oObsRequest.getRequestTimestamp(), -1, 0, -1, null);
@@ -415,13 +424,24 @@ public class RoadSegmentServlet extends LayerServlet
 
     for (int nObstypeId : m_nNdfdObstypes)
     {
-      double dValue = m_Ndfd.getReading(nObstypeId, lCurrentHourStart, oRequestRoad.m_nYmid, oRequestRoad.m_nXmid);
-      if (Double.compare(dValue, Double.NaN) == 0)
+      double dValue = m_Ndfd.getReading(nObstypeId, oObsRequest.getRequestTimestamp(), oRequestRoad.m_nYmid, oRequestRoad.m_nXmid);
+      if (Double.isNaN(dValue))
         continue;
 
       serializeObsRecord(oOutputGenerator, oObstypeIdList, oNumberFormatter, oConfFormat, oDateFormat, oDate, nObstypeId, dValue, oObsRequest.getRequestTimestamp(), -1, 0, -1, null);
     }
-    oOutputGenerator.writeEndObject();
+	 
+	 for (int nObstypeId : m_nMetroResultsObstypes)
+	 {
+		double dValue = m_oMetroResults.getReading(nObstypeId, oObsRequest.getRequestTimestamp(), oRequestRoad.m_nYmid, oRequestRoad.m_nXmid);
+		if (Double.isNaN(dValue) || (nObstypeId == 51137 && dValue == 1))  //skip when road condition is 1 (dry road)
+			continue; 
+		
+		serializeObsRecord(oOutputGenerator, oObstypeIdList, oNumberFormatter, oConfFormat, oDateFormat, oDate, nObstypeId, dValue, oObsRequest.getRequestTimestamp(), -1, 0, -1, null);
+	 }
+	 
+	 oOutputGenerator.writeEndArray();
+	 oOutputGenerator.writeEndObject();
   }
 
   @Override

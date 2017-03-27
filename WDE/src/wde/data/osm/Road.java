@@ -21,6 +21,7 @@ public class Road
 	public final int m_nXmid;
 	public final int m_nYmid;
 	public final int m_nSpeed = 27; // 27 m/s is approximately 60 mph
+	public final short m_tElev;
 	private int[] m_nPoints;
 
 
@@ -33,6 +34,7 @@ public class Road
 		m_nXmin = m_nYmin = m_nXmax = m_nYmax = 
 			m_nXmid = m_nYmid = m_nId = Integer.MIN_VALUE;
 		m_sName = "".intern();
+		m_tElev = Short.MIN_VALUE;
 	}
 
 
@@ -47,6 +49,9 @@ public class Road
 		m_sName = oOsmBin.readUTF().intern(); // intern to conserve memory
 		int nSize = oOsmBin.readShort(); // reuse point count
 		m_nPoints = new int[nSize * 2]; // copy coordinate pairs
+		m_nYmid = oOsmBin.readInt();
+		m_nXmid = oOsmBin.readInt();
+		m_tElev = oOsmBin.readShort();
 		for (int nIndex = 0; nIndex < m_nPoints.length;)
 		{
 			int nLat = oOsmBin.readInt(); // points are read in lat/lon order
@@ -73,36 +78,6 @@ public class Road
 		m_nYmin = nYmin;
 		m_nXmin = nXmin;
 		m_nId = nId; // assign sequential identifier
-
-		double dLen = 0.0; // accumulate total length
-		double[] dLens = new double[--nSize]; // individual segment lengths
-		int[] nSeg = null;
-		int nIndex = 0;
-		SegIterator oSegIt = iterator(); // derive midpoint
-		while (oSegIt.hasNext())
-		{
-			nSeg = oSegIt.next(); // there should always be at least one segment
-			double dDeltaX = nSeg[2] - nSeg[0];
-			double dDeltaY = nSeg[3] - nSeg[1];
-			double dSegLen = Math.sqrt(dDeltaX * dDeltaX + dDeltaY * dDeltaY);
-			dLen += dSegLen;
-			dLens[nIndex++] = dSegLen;
-		}
-
-		double dMidLen = dLen / 2.0; // half the length
-		dLen = 0.0; // reset total length
-		nIndex = 0;
-		while (nIndex < dLens.length && dLen < dMidLen)
-			dLen += dLens[nIndex++]; // find length immediately before the midpoint
-
-		dLen -= dLens[--nIndex]; // rewind one position
-		System.arraycopy(m_nPoints, nIndex * 2, nSeg, 0, nSeg.length);
-		double dRatio = (dMidLen - dLen) / dLens[nIndex];
-
-		int nDeltaX = (int)((nSeg[2] - nSeg[0]) * dRatio);
-		int nDeltaY = (int)((nSeg[3] - nSeg[1]) * dRatio);
-		m_nXmid = nSeg[0] + nDeltaX;
-		m_nYmid = nSeg[1] + nDeltaY;
 	}
 
 

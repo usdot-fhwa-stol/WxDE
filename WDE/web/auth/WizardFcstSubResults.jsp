@@ -1,7 +1,6 @@
-<%@page import="org.owasp.encoder.Encode"%>
 <%@page contentType="text/html; charset=UTF-8" language="java" import="java.io.*,java.sql.*,java.text.*,java.util.*,javax.sql.*,wde.*,wde.dao.*,wde.emc.*,wde.metadata.IPlatform,wde.qeds.*,wde.util.*" %>
-<jsp:useBean id="oSubscription" scope="session" class="wde.qeds.Subscription" />
-<jsp:setProperty name="oSubscription" property="*" />
+<jsp:useBean id="oFcstSubscription" scope="session" class="wde.qeds.FcstSubscription" />
+<jsp:setProperty name="oFcstSubscription" property="*" />
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <%
     Config oConfig = ConfigSvc.getInstance().getConfig("wde.qeds.QedsMgr");
@@ -37,19 +36,19 @@
 
     PreparedStatement oInsertSubscription = iConnection.prepareStatement("INSERT INTO subs.subscription (id, expires, cycle, name, description, owner_name, ispublic, guid) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
     oInsertSubscription.setTimestamp(2, new java.sql.Timestamp(oDate.getTime()));
-    oInsertSubscription.setInt(3, oSubscription.m_nCycle);
-    oInsertSubscription.setString(4, oSubscription.getName());
-    oInsertSubscription.setString(5, oSubscription.getDescription());
+    oInsertSubscription.setInt(3, oFcstSubscription.m_nCycle);
+    oInsertSubscription.setString(4, oFcstSubscription.getName());
+    oInsertSubscription.setString(5, oFcstSubscription.getDescription());
     oInsertSubscription.setString(6, request.getRemoteUser());
-    oInsertSubscription.setInt(7, ("private".equals(oSubscription.getSubScope()) ? 0 : 1));
+    oInsertSubscription.setInt(7, ("private".equals(oFcstSubscription.getSubScope()) ? 0 : 1));
     oInsertSubscription.setString(8, uuid);
-    nSubId = Subscriptions.getInstance().getNextId();
+    nSubId = -FcstSubscriptions.getInstance().getNextId();
     java.util.Date oToday = new java.util.Date();
     SimpleDateFormat oFormat = new SimpleDateFormat("yyyyMMdd");
     oFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
-    if (nSubId - (Integer.parseInt(oFormat.format(oToday)) * 100) > 99)
+    if (-nSubId - (Integer.parseInt(oFormat.format(oToday)) * 100) > 99)
     {
-       request.getRequestDispatcher("/auth/DailySubLimit.jsp").forward(request, response);
+       request.getRequestDispatcher("DailySubLimit.jsp").forward(request, response);
     }
     else
     {
@@ -68,12 +67,12 @@
 
         // this region is either set directly or calculated from the point radius
         // the bounding box is not set only when a contributor filter is specified
-        if (oSubscription.m_oContribIds.size() == 0)
+        if (oFcstSubscription.m_oContribIds.size() == 0)
         {
-            oUpdateSubscription.setInt(1, MathUtil.toMicro(oSubscription.m_dLat1));
-            oUpdateSubscription.setInt(2, MathUtil.toMicro(oSubscription.m_dLng1));
-            oUpdateSubscription.setInt(3, MathUtil.toMicro(oSubscription.m_dLat2));
-            oUpdateSubscription.setInt(4, MathUtil.toMicro(oSubscription.m_dLng2));
+            oUpdateSubscription.setInt(1, MathUtil.toMicro(oFcstSubscription.m_dLat1));
+            oUpdateSubscription.setInt(2, MathUtil.toMicro(oFcstSubscription.m_dLng1));
+            oUpdateSubscription.setInt(3, MathUtil.toMicro(oFcstSubscription.m_dLat2));
+            oUpdateSubscription.setInt(4, MathUtil.toMicro(oFcstSubscription.m_dLng2));
         }
         else
         {
@@ -84,47 +83,59 @@
         }
 
         // set the observation type
-        oUpdateSubscription.setInt(5, oSubscription.m_nObsType);
+        oUpdateSubscription.setInt(5, oFcstSubscription.m_nObsType);
 
-        // set the observation value acceptable range
-        if (oSubscription.m_dMin == Double.NEGATIVE_INFINITY) {
-            oUpdateSubscription.setNull(6, Types.DOUBLE);
-        } else {
-            oUpdateSubscription.setDouble(6, oSubscription.m_dMin);
+        if (oFcstSubscription.m_nObsType == 0)
+        {
+           PreparedStatement oInsertObsTypes = iConnection.prepareStatement("INSERT INTO subs.subobs (subid, obstypeid) VALUES (?, ?)");
+           oInsertObsTypes.setInt(1, nSubId);
+           for (int i = 0; i < oFcstSubscription.m_nObsTypes.length; i++)
+           {
+              oInsertObsTypes.setInt(2, oFcstSubscription.m_nObsTypes[i]);
+              oInsertObsTypes.execute();
+           }
+           oInsertObsTypes.close();
         }
 
-        if (oSubscription.m_dMax == Double.POSITIVE_INFINITY) {
+        // set the observation value acceptable range
+        if (oFcstSubscription.m_dMin == Double.NEGATIVE_INFINITY) {
+            oUpdateSubscription.setNull(6, Types.DOUBLE);
+        } else {
+            oUpdateSubscription.setDouble(6, oFcstSubscription.m_dMin);
+        }
+
+        if (oFcstSubscription.m_dMax == Double.POSITIVE_INFINITY) {
             oUpdateSubscription.setNull(7, Types.DOUBLE);
         } else {
-            oUpdateSubscription.setDouble(7, oSubscription.m_dMax);
+            oUpdateSubscription.setDouble(7, oFcstSubscription.m_dMax);
         }
 
         // set the quality checking flags
-        if (oSubscription.m_nRun == 0)
+        if (oFcstSubscription.m_nRun == 0)
         {
             oUpdateSubscription.setNull(8, Types.INTEGER);
             oUpdateSubscription.setNull(9, Types.INTEGER);
         }
         else
         {
-            oUpdateSubscription.setInt(8, oSubscription.m_nRun);
-            oUpdateSubscription.setInt(9, oSubscription.m_nFlag);
+            oUpdateSubscription.setInt(8, oFcstSubscription.m_nRun);
+            oUpdateSubscription.setInt(9, oFcstSubscription.m_nFlag);
         }
 
         // update the subscription record
-        oUpdateSubscription.setString(10, oSubscription.m_sOutputFormat);
+        oUpdateSubscription.setString(10, oFcstSubscription.m_sOutputFormat);
         oUpdateSubscription.setInt(11, nSubId);
         oUpdateSubscription.execute();
         oUpdateSubscription.close();  
 
         // set the point radius values if they were specified
-        if (oSubscription.m_oRadius != null)
+        if (oFcstSubscription.m_oRadius != null)
         {
             PreparedStatement oUpdateRadius = iConnection.prepareStatement("INSERT INTO subs.subRadius (subId, lat, lng, radius) VALUES (?, ?, ?, ?)");
             oUpdateRadius.setInt(1, nSubId);
-            oUpdateRadius.setInt(2, MathUtil.toMicro(oSubscription.m_oRadius.m_dLat));
-            oUpdateRadius.setInt(3, MathUtil.toMicro(oSubscription.m_oRadius.m_dLng));
-            oUpdateRadius.setInt(4, MathUtil.toMicro(oSubscription.m_oRadius.m_dRadius));
+            oUpdateRadius.setInt(2, MathUtil.toMicro(oFcstSubscription.m_oRadius.m_dLat));
+            oUpdateRadius.setInt(3, MathUtil.toMicro(oFcstSubscription.m_oRadius.m_dLng));
+            oUpdateRadius.setInt(4, MathUtil.toMicro(oFcstSubscription.m_oRadius.m_dRadius));
             oUpdateRadius.execute();
             oUpdateRadius.close();  
         }
@@ -133,7 +144,7 @@
         PreparedStatement oInsertContributor = iConnection.prepareStatement("INSERT INTO subs.subContrib (subId, contribId) VALUES(?, ?)");
         oInsertContributor.setInt(1, nSubId);
 
-        Iterator<Integer> oContributor = oSubscription.m_oContribIds.iterator();
+        Iterator<Integer> oContributor = oFcstSubscription.m_oContribIds.iterator();
         while (oContributor.hasNext())
         {
             oInsertContributor.setInt(2, oContributor.next().intValue());
@@ -145,7 +156,7 @@
         PreparedStatement oInsertStation = iConnection.prepareStatement("INSERT INTO subs.subStation (subId, stationId) VALUES(?, ?)");
         oInsertStation.setInt(1, nSubId);
 
-        Iterator<Integer> iterStation = oSubscription.m_oPlatformIds.iterator();
+        Iterator<Integer> iterStation = oFcstSubscription.m_oPlatformIds.iterator();
         while (iterStation.hasNext())
         {
             oInsertStation.setInt(2, iterStation.next().intValue());
@@ -157,7 +168,8 @@
         iConnection.close();
 
         // create the directory where the subscriptions will be delivered
-        File oDir = new File(sSubDir + nSubId);
+        int nSubIdPos = -nSubId;
+        File oDir = new File(sSubDir + nSubIdPos);
         oDir.mkdirs();
 
         String sUrl = "SubFolder.jsp?subId=" + nSubId;
@@ -168,12 +180,12 @@
         oWriter.write("\r\nSubscription Information:\r\n");
         oWriter.write("  DateCreated = " + oDateFormat.format(oDateToday) + "\r\n");
 
-        if (oSubscription.m_dLat1 != -Double.MAX_VALUE)
+        if (oFcstSubscription.m_dLat1 != -Double.MAX_VALUE)
         {
-            oWriter.write("  Lat1 = " + oSubscription.m_dLat1 + "\r\n");
-            oWriter.write("  Lon1 = " + oSubscription.m_dLng1 + "\r\n");
-            oWriter.write("  Lat2 = " + oSubscription.m_dLat2 + "\r\n");
-            oWriter.write("  Lon2 = " + oSubscription.m_dLng2 + "\r\n");
+            oWriter.write("  Lat1 = " + oFcstSubscription.m_dLat1 + "\r\n");
+            oWriter.write("  Lon1 = " + oFcstSubscription.m_dLng1 + "\r\n");
+            oWriter.write("  Lat2 = " + oFcstSubscription.m_dLat2 + "\r\n");
+            oWriter.write("  Lon2 = " + oFcstSubscription.m_dLng2 + "\r\n");
         }
         else
         {
@@ -183,11 +195,11 @@
             oWriter.write("  Lon2 = not used\r\n");
         }
 
-        if (oSubscription.m_oRadius != null)
+        if (oFcstSubscription.m_oRadius != null)
         {
-            oWriter.write("  PointRadiusLat    = " + oSubscription.m_oRadius.m_dLat + "\r\n");
-            oWriter.write("  PointRadiusLon    = " + oSubscription.m_oRadius.m_dLng + "\r\n");
-            oWriter.write("  PointRadiusRadius = " + oSubscription.m_oRadius.m_dRadius + "\r\n");
+            oWriter.write("  PointRadiusLat    = " + oFcstSubscription.m_oRadius.m_dLat + "\r\n");
+            oWriter.write("  PointRadiusLon    = " + oFcstSubscription.m_oRadius.m_dLng + "\r\n");
+            oWriter.write("  PointRadiusRadius = " + oFcstSubscription.m_oRadius.m_dRadius + "\r\n");
         }
         else
         {
@@ -196,39 +208,47 @@
             oWriter.write("  PointRadiusRadius = not used" + "\r\n");
         }
 
-        oWriter.write("  ObsType  = " + oSubscription.m_nObsType);
-        if (oSubscription.m_nObsType == 0) {
-            oWriter.write(" (all)");
-            }
+        oWriter.write("  ObsType  = ");
+        if (oFcstSubscription.m_nObsType == 0) 
+        {
+           for (int i = 0; i < oFcstSubscription.m_nObsTypes.length - 1; i++)
+           {
+                oWriter.write(Integer.toString(oFcstSubscription.m_nObsTypes[i]));
+                oWriter.write(", ");
+           }
+           oWriter.write(Integer.toString(oFcstSubscription.m_nObsTypes[oFcstSubscription.m_nObsTypes.length - 1]));
+        }
+        else
+           oWriter.write(oFcstSubscription.m_nObsType);
 
-            oWriter.write("\r\n");
+        oWriter.write("\r\n");
 
-        oWriter.write("  MinValue = " + oSubscription.m_dMin + "\r\n");
-        oWriter.write("  MaxValue = " + oSubscription.m_dMax + "\r\n");
+        oWriter.write("  MinValue = " + oFcstSubscription.m_dMin + "\r\n");
+        oWriter.write("  MaxValue = " + oFcstSubscription.m_dMax + "\r\n");
 
-        if (oSubscription.m_nObsType == 0)
+        if (oFcstSubscription.m_nObsType == 0)
         {
             oWriter.write("  RunFlags    = not applicable\r\n");
             oWriter.write("  PassNotPass = not applicable\r\n");
         }
         else
         {
-            oWriter.write("  RunFlags    = " + oSubscription.m_nRun + " (" + Integer.toString(oSubscription.m_nRun, 2) + ")\r\n");
-            oWriter.write("  PassNotPass = " + oSubscription.m_nFlag + " (" + Integer.toString(oSubscription.m_nFlag, 2) + ")\r\n");
+            oWriter.write("  RunFlags    = " + oFcstSubscription.m_nRun + " (" + Integer.toString(oFcstSubscription.m_nRun, 2) + ")\r\n");
+            oWriter.write("  PassNotPass = " + oFcstSubscription.m_nFlag + " (" + Integer.toString(oFcstSubscription.m_nFlag, 2) + ")\r\n");
         }
 
         oWriter.write("  Contributors = ");
-        if (oSubscription.m_oContribIds.size() > 0)
+        if (oFcstSubscription.m_oContribIds.size() > 0)
         {
                     Contribs oContribs = Contribs.getInstance();
-                    for (int nIndex = 0; nIndex < oSubscription.m_oContribIds.size(); nIndex++)
+                    for (int nIndex = 0; nIndex < oFcstSubscription.m_oContribIds.size(); nIndex++)
             {
                             if (nIndex > 0) {
                                     oWriter.write(", ");
                             }
 
                     Contrib oContrib = oContribs.
-                                    getContrib(oSubscription.m_oContribIds.get(nIndex).intValue());
+                                    getContrib(oFcstSubscription.m_oContribIds.get(nIndex).intValue());
                             if (oContrib != null) {
                         oWriter.write(oContrib.getName());
                     }
@@ -241,17 +261,17 @@
             oWriter.write("\r\n");
 
         oWriter.write("  StationCodes = ");
-        if (oSubscription.m_oPlatformIds.size() > 0)
+        if (oFcstSubscription.m_oPlatformIds.size() > 0)
         {
                     PlatformDao platformDao = PlatformDao.getInstance();
-                    for (int nIndex = 0; nIndex < oSubscription.m_oPlatformIds.size(); nIndex++)
+                    for (int nIndex = 0; nIndex < oFcstSubscription.m_oPlatformIds.size(); nIndex++)
             {
                             if (nIndex > 0) {
                                     oWriter.write(", ");
                             }
 
                     IPlatform iStation = platformDao.
-                                    getPlatform(oSubscription.m_oPlatformIds.get(nIndex).intValue());
+                                    getPlatform(oFcstSubscription.m_oPlatformIds.get(nIndex).intValue());
                             if (iStation != null) {
                         oWriter.write(iStation.getPlatformCode());
                     }
@@ -293,8 +313,8 @@
     	<div class="col-5" style="margin-top:-15px;">
 			<h3>Subscription Info</h3>
 			<div style="margin-left:10px;"> 
-        <b>Name: </b><%= Encode.forHtml( oSubscription.getName()) %><br/>
-		        <b>Description: </b><%= Encode.forHtml(oSubscription.getDescription() )%><br/>
+		        <b>Name: </b><%= oFcstSubscription.getName() %><br/>
+		        <b>Description: </b><%= oFcstSubscription.getDescription() %><br/>
 				<b>Subscription Identifier: </b><%= nSubId %><br/>
 	            <b>Expires On: </b><%= oDateFormat.format(oDate) %><br/>
 		        <b>Direct URL: </b><%= request.getScheme() + "://" + request.getServerName() + ":" + request.getServerPort() + "/downloadSubscription?uuid=" + uuid + "&amp;file=&lt;filename&gt;" %><br/>

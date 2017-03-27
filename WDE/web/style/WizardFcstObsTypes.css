@@ -1,0 +1,52 @@
+#obsArea
+{
+}
+
+#hdrTestArea
+{
+    padding-left: 20px;
+}
+
+#tblObs td *
+{
+	margin: auto 5px;
+}
+
+#tblObs th
+{
+    font-size: 100%;
+    font-weight: bold;
+    padding-top: 20px;
+    padding-bottom: 10px;
+    text-align: center;
+}
+
+#tblObs select
+{
+}
+
+#tblTests
+{
+    padding-top: -25px;
+}
+
+.container a {
+	color:#006699;
+	text-decoration:none;
+}
+.container a:hover {
+	text-decoration:underline;
+}
+.tblHdr, .tblFld{
+	text-align: justify !important;
+	padding:10px 5px 10px 15px !important;
+	font-size: 1.1em !important;
+}
+table{
+	border-collapse: separate !important;
+	margin: auto !important;
+}
+.btnNext{
+	padding-left: 0px !important;
+}
+
