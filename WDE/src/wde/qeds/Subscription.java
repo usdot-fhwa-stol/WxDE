@@ -13,13 +13,16 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.TimeZone;
 import javax.sql.DataSource;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import wde.WDEMgr;
 import wde.util.MathUtil;
 import wde.util.QualityCheckFlagUtil;
-import java.util.StringTokenizer;
+import wde.util.Region;
+import wde.util.Scheduler;
+import wde.util.Text;
 
 
 /**
@@ -40,7 +43,7 @@ public class Subscription {
      * The default format
      */
     public static final int DEFAULT_FORMAT_INDEX = 1;
-    
+
     /**
      * Subscription id.
      */
@@ -794,15 +797,15 @@ public class Subscription {
 
         m_sOutputFormat = FORMATS[nFormatIndex];
     }
-	 
+
 	 public static class NextId implements Runnable
 	 {
 		 public int m_nNextId = 0;
-		 
+
 		 NextId()
 		 {
 			 run();
-			 Scheduler.getInstance().schedule(this, 0, 86400, true);
+			    Scheduler.getInstance().schedule(this, 0, 86400, true);
 		 }
 		 @Override
 		 public final void run()
@@ -818,7 +821,7 @@ public class Subscription {
 				m_nNextId = Integer.parseInt(oFormat.format(oToday)) * 100;
 			}
 			Connection iConnection = null;
-			try 
+			try
 			{
             DataSource iDataSource = WDEMgr.getInstance().getDataSource("java:comp/env/jdbc/wxde");
             if (iDataSource == null)
@@ -855,7 +858,7 @@ public class Subscription {
 				else if (bFoundMin)
 					m_nNextId = -nMin + 1;
 				else
-					m_nNextId = Integer.parseInt(oFormat.format(oToday)) * 100;	
+					m_nNextId = Integer.parseInt(oFormat.format(oToday)) * 100;
 			}
 			catch (Exception oException)
 			{

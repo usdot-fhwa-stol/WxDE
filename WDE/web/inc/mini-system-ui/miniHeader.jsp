@@ -281,7 +281,7 @@
                         <li><a href="<%= response.encodeURL("/auth/wizardGeospatial.jsp")%>" class="ie-fix-li-2" style="width: 130px;">
                             Coordinates
                         </a></li>
-                        <li><a href="<%= response.encodeURL("/auth/WizardFcstGeospatial.jsp" %>" class="ie-fix-li-2" style="width: 130px;">
+                        <li><a href="<%= response.encodeURL("/auth/WizardFcstGeospatial.jsp") %>" class="ie-fix-li-2" style="width: 130px;">
                             Forecast
                         </a></li>
                     </ul>
