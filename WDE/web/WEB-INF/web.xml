@@ -217,16 +217,47 @@
     
     <filter>
       <filter-name>httpHeaderSecurity</filter-name>
-      <filter-class>org.apache.catalina.filters.HttpHeaderSecurityFilter</filter-class>
+      <filter-class>wde.security.filters.HttpHeaderSecurityFilter</filter-class>
+      <init-param>
+        <param-name>hstsEnabled</param-name>
+        <param-value>true</param-value>
+      </init-param>
+      <init-param>
+        <param-name>hstsMaxAgeSeconds</param-name>
+        <param-value>7776000</param-value>
+      </init-param>
+      <init-param>
+        <param-name>hstsIncludeSubDomains</param-name>
+        <param-value>true</param-value>
+      </init-param>      
+      <init-param>
+        <param-name>antiClickJackingEnabled</param-name>
+        <param-value>true</param-value>
+      </init-param>     
       <init-param>
         <param-name>antiClickJackingOption</param-name>
-        <param-value>SAMEORIGIN</param-value>
+        <param-value>DENY</param-value>
+      </init-param>  
+      <init-param>
+        <param-name>blockContentTypeSniffingEnabled</param-name>
+        <param-value>true</param-value>
+      </init-param>  
+      <init-param>
+        <param-name>xssProtectionEnabled</param-name>
+        <param-value>true</param-value>
+      </init-param>
+      <init-param>
+        <param-name>contentSecurityEnabled</param-name>
+        <param-value>true</param-value>
+      </init-param>
+      <init-param>
+        <param-name>contentSecurityHeaderValue</param-name>
+        <param-value>frame-ancestors 'self'; default-src http://fonts.gstatic.com 'none'; script-src http://www.google-analytics.com ajax.googleapis.com maps.googleapis.com http://gmaps-utility-gis.googlecode.com http://api.imapbuilder.net maps.google.com code.jquery.com 'self' 'unsafe-eval'  'unsafe-inline'; style-src 'self'  'unsafe-inline' fonts.googleapis.com; img-src *.openstreetmap.org *.mqcdn.com https://maps.gstatic.com https://csi.gstatic.com https://maps.google.com http://www.google-analytics.com 'self' data:; connect-src 'self'</param-value>
       </init-param>
     </filter>
     <filter-mapping>
-    <filter-name>httpHeaderSecurity</filter-name>
-        <url-pattern>/*</url-pattern>
-        <dispatcher>REQUEST</dispatcher>
+      <filter-name>httpHeaderSecurity</filter-name>
+      <url-pattern>/*</url-pattern>
     </filter-mapping>
     
   <filter>
