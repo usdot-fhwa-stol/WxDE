@@ -1,3 +1,4 @@
+<%@page import="org.owasp.encoder.Encode"%>
 <%@page contentType="text/html; charset=UTF-8" language="java" import="wde.qeds.FcstSubscription"%>
 <jsp:useBean id="oFcstSubscription" scope="session" class="wde.qeds.FcstSubscription" />
 <jsp:setProperty name="oFcstSubscription" property="*" />
@@ -79,7 +80,7 @@
 		<h1 id="pageTitle">Create Forecast Subscription</h1>
 		<br>
 		<div id="linkArea2" class="col-5" style="margin-top: -15px;">
-		<form name="subscriptionForm" id="subscriptionForm" method="POST" action="WizardFcstSubResults.jsp">
+		<form name="subscriptionForm" id="subscriptionForm" method="POST" action="<%= response.encodeURL("WizardFcstSubResults.jsp")%>">
 		<div>
 			<label for="name" style="width:120px;font-weight:bold;">Name *</label> 
 			<input id="name" name="name" type="text" style="width:300px;">
@@ -94,7 +95,7 @@
 		</div>
 		<div align="center">
 			<button class="btn-dark" id="btnNext" type="submit"> Subscribe</button>
-			<input id="jsessionid" type="hidden" value="<%=request.getSession().getId()%>" />
+			<input id="jsessionid" type="hidden" value="<%=Encode.forHtmlAttribute(request.getSession().getId())%>" />
 		</div>
 		</form>
 		<br>
