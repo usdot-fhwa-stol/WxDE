@@ -267,7 +267,7 @@
     <filter-class>org.apache.catalina.filters.CsrfPreventionFilter</filter-class>
     <init-param>
       <param-name>entryPoints</param-name>
-      <param-value>/auth/loginRedirect.jsp,/userLogin.jsp,/userLoginFailed.jsp,/index.jsp,/downloadSubscription,/userAccountRetrieval.jsp</param-value>
+      <param-value>/auth/j_security_check,/auth/loginRedirect.jsp,/userLogin.jsp,/userLoginFailed.jsp,/index.jsp,/downloadSubscription,/userAccountRetrieval.jsp</param-value>
     </init-param>
     <init-param>
       <param-name>nonceCacheSize</param-name>
@@ -280,23 +280,14 @@
   <filter-mapping>
     <filter-name>CsrfFilter</filter-name>
     <url-pattern>*.jsp</url-pattern>
-  </filter-mapping>
-  <filter-mapping>
-    <filter-name>CsrfFilter</filter-name>
-    <url-pattern>/auth/*</url-pattern>
-  </filter-mapping>
-  <filter-mapping>
-    <filter-name>CsrfFilter</filter-name>
     <url-pattern>/auth2/*</url-pattern>
-  </filter-mapping>
-  <filter-mapping>
-    <filter-name>CsrfFilter</filter-name>
     <url-pattern>/admin/*</url-pattern>
-  </filter-mapping>
-  <filter-mapping>
-    <filter-name>CsrfFilter</filter-name>
     <url-pattern>/resources/*</url-pattern>
+    <url-pattern>/auth/*</url-pattern>
+    <dispatcher>REQUEST</dispatcher>
+    <dispatcher>FORWARD</dispatcher>
   </filter-mapping>
+ 
 
 	<!-- Only Allow GET and POST methods to access JSPs -->
   <security-constraint>
