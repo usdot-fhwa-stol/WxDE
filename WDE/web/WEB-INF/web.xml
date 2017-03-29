@@ -218,6 +218,22 @@
     </error-page>
     
     <filter>
+      <filter-name>CachControl</filter-name>
+      <filter-class>wde.security.filters.CacheControlFilter</filter-class>
+      <init-param>
+        <param-name>disableCache</param-name>
+        <param-value>true</param-value>
+      </init-param>
+    </filter>
+    <filter-mapping>
+      <filter-name>CachControl</filter-name>
+      <url-pattern>*.jsp</url-pattern>
+      <url-pattern>/resources/*</url-pattern>
+      <dispatcher>REQUEST</dispatcher>
+      <dispatcher>FORWARD</dispatcher>
+    </filter-mapping>
+
+    <filter>
       <filter-name>httpHeaderSecurity</filter-name>
       <filter-class>wde.security.filters.HttpHeaderSecurityFilter</filter-class>
       <init-param>
