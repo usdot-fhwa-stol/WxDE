@@ -2,7 +2,7 @@
 
     <h1>User Login</h1>
 
-    <form action="j_security_check" method="POST" name="loginForm" id="loginForm" style="padding: 0;">
+    <form action="<%= response.encodeURL("j_security_check")%>" method="POST" name="loginForm" id="loginForm" style="padding: 0;">
 
         <div id="container" style="border:none;">
 
@@ -39,7 +39,7 @@
                     </div>
 
                     <div style="width:auto; float:left;">
-                        <a href="/userAccountRetrieval.jsp" class="cant-access-account">Can't access your account?</a>
+                      <a href="<%= response.encodeURL("/userAccountRetrieval.jsp") %>" class="cant-access-account">Can't access your account?</a>
                     </div>
 
                 </fieldset>

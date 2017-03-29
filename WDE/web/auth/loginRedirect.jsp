@@ -2,5 +2,5 @@
     pageEncoding="UTF-8"%>
 
 <%
-	response.sendRedirect("/index.jsp");
+	response.sendRedirect(response.encodeRedirectURL("/index.jsp"));
 %>

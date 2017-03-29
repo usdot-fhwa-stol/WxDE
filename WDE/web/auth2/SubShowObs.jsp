@@ -16,6 +16,6 @@
 
 </head>
 <%
-	response.sendRedirect("SubShowObs2.jsp?" + request.getQueryString());
+	response.sendRedirect(response.encodeRedirectURL("SubShowObs2.jsp?" + request.getQueryString()));
 %>
 </html>
