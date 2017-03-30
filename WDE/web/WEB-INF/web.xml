@@ -234,6 +234,36 @@
     </filter-mapping>
 
     <filter>
+      <filter-name>RefererValidationFilter</filter-name>
+      <filter-class>wde.security.filters.RefererValidationFilter</filter-class>
+    <init-param>
+      <param-name>entryPoints</param-name>
+      <param-value>/index.jsp,/downloadSubscription,/wdeMap.jsp</param-value>
+    </init-param>
+    <init-param>
+      <param-name>allowedReferersPattern</param-name>
+      <param-value>^(?:(?:http|https)://)?(?:localhost|99\.198\.128\.113|wxde\.fhwa\.dot\.gov)(?::[0-9]{1,5})?.*$</param-value>
+    </init-param>
+    <init-param>
+      <param-name>allowMissingReferer</param-name>
+      <param-value>true</param-value>
+    </init-param>
+    <init-param>
+      <param-name>rejectRedirectUrl</param-name>
+      <param-value>/</param-value>
+    </init-param>
+  </filter>
+  
+  <filter-mapping>
+    <filter-name>RefererValidationFilter</filter-name>
+    <url-pattern>*.jsp</url-pattern>
+    <url-pattern>/auth2/*</url-pattern>
+    <url-pattern>/admin/*</url-pattern>
+    <url-pattern>/resources/*</url-pattern>
+    <url-pattern>/auth/*</url-pattern>
+  </filter-mapping>
+
+    <filter>
       <filter-name>httpHeaderSecurity</filter-name>
       <filter-class>wde.security.filters.HttpHeaderSecurityFilter</filter-class>
       <init-param>
