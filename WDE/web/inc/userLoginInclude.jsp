@@ -19,7 +19,7 @@
 
                     <div>
                         <label for="j_password" style="width: 96px;">Password:</label>
-                        <input type="password" class="ui-corner-all" id="j_password" name="j_password"
+                        <input type="password" autocomplete="off" class="ui-corner-all" id="j_password" name="j_password"
                                style="width:250px;">
                     </div>
 

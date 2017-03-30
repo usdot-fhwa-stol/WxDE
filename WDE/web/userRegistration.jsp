@@ -203,13 +203,13 @@
 						
 						<div>
 							<label for="password" style="width: 120px;">Password: </label>
-							<input type="password" id="password" name="password" size="41"
+							<input type="password" autocomplete="off" id="password" name="password" size="41"
 						       class="ui-corner-all" style="width: 297px;">
 						</div>
 						
 						<div>
 							<label for="password2" style="width: 120px;">Verify Password: </label>
-						<input type="password" id="password2" name="password2" size="41"
+						<input type="password" autocomplete="off" id="password2" name="password2" size="41"
 						       class="ui-corner-all" style="width: 297px;">
 						</div>
 						
