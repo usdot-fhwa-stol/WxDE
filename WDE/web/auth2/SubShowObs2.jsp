@@ -15,14 +15,16 @@
 		sSubDir += "/";
 	}
 
+String sRequestFile = request.getParameter("file");
+
 	String subId = request.getParameter("subId");
-	if (!SubscriptionHelper.isAuthorized(request.getRemoteUser(), subId)) {
+	if (!SubscriptionHelper.isAuthorized(request.getRemoteUser(), subId) || sRequestFile == null || !sRequestFile.matches("^[0-9_]*$")) {
 		response.sendError(401, "Unauthorized!" );
 	}
 
         String sFilename;
         if (Integer.parseInt(request.getParameter("subId")) >= 0)
-            sFilename = subId + "/" + request.getParameter("file");
+            sFilename = subId + "/" + sRequestFile;
         else
             sFilename = subId.substring(1) + "/" + request.getParameter("file");
     try
