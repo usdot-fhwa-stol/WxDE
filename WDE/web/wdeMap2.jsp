@@ -152,17 +152,17 @@
         }
     </script>
      
-
+    
+<!--
   <script type="text/javascript" src="//code.jquery.com/jquery-2.2.0.min.js"></script>
-
+-->
  
-    <!--
+    
    
     
        <script src="script/jquery/jquery-2.2.0.js"></script>
     
--->
-	
+
     <!--[if IE 8]>
     <link href="/style/IE-styles-mini.css" type="text/css" rel="stylesheet">
     <link href="/style/obs-table-ie82.css" type="text/css" rel="stylesheet">
@@ -207,6 +207,7 @@
         <td class="summary-legend-text">no data sharing agreement + sensor metadata only</td>
       </tr>
     </table>
+    Click the <img class="DialogButton" src="image/icons/doc.png" /> button on the left side of the control bar at the bottom of the page to restore these instructions.      
   </div>
   
   
@@ -232,18 +233,24 @@
       </tr>
         <td colspan ="2" class="summary-legend-text">* Hazardous conditions could be ice on roads, low visibility, heavy rains or hail.</td>
     </table>
+    Click the <img class="DialogButton" src="image/icons/doc.png" /> button on the left side of the control bar at the bottom of the page to restore these instructions.
   </div>
   
   
   <div id="details-form" style="display:none;" title="Map Controls">
+    <p>
     Layers can be turned on or off using the Layers button. Most layers are enabled by default, but are gray when no data are available 
-    or the map is not zoomed in enough to display the layer detail. The Road Obs layer contains a lot of data and you must 
+    or the map is not zoomed in enough to display the layer detail. The Segment Obs layer contains a lot of data and you must 
     zoom in four more times to view them.<br/><br/>
     Click the time control on the bottom right to select historic or forecast observations. It defaults to the current time. Click on the home button on the top left of the time control window to return to current date, or double click on the home button to set map to current date and time.<br/><br/>
     Selecting a specific observation type from the list next to the layer button displays the values for the selected observation type across all ESS and mobile stations. 
     Switch between Metric or English units with the radio buttons.<br/><br/>
     Click on an ESS or mobile station to display a dialog with the observation details most recent to the selected time and station. 
     Clicking on a sensor icon will display a dialog containing sensor metadata for the selected station.
+    </p>
+    <p>
+    Click the <img class="DialogButton" src="image/icons/doc.png" /> button on the left side of the control bar at the bottom of the page to restore these instructions.
+    </p>
   </div>
    
 <div id="dialog-form" style="display:none;">
@@ -307,7 +314,7 @@
   <ul id="LayersMenu">
     <li><label for="chkRwisLayer">ESS Obs</label><input type="checkbox" id="chkRwisLayer" /></li>
     <li><label for="chkMobileLayer">Mobile Obs</label><input type="checkbox" id="chkMobileLayer" /></li>
-    <li><label for="chkRoadLayer">Road Obs</label><input type="checkbox" id="chkRoadLayer" /></li>
+    <li><label for="chkRoadLayer">Segment Obs</label><input type="checkbox" id="chkRoadLayer" /></li>
     <li><label for="chkMetaDataLayer">ESS Metadata</label><input type="checkbox" id="chkMetaDataLayer" /></li>
 </ul></div>
     <div id="map_canvas" > </div>
@@ -318,7 +325,7 @@
 <!-- 	BUTTOM TOOLBAR -->
 <div class="bottom-toolbar-container" id="bottom-tools">
   
-  <div id="layerControlContainer"><button id="DialogButton" ><img id="DialogButtonImg" src="image/icons/doc.png" /></button> <input id="LayersMenuButton" type="button" value="Layers" /><select class="disableOnSummary" id="obstypes"><option value="0">Select an obs type</option></select>
+  <div id="layerControlContainer"><button id="DialogButton" class="DialogButton" ><img class="DialogButton" src="image/icons/doc.png" /></button> <input id="LayersMenuButton" type="button" value="Layers" /><select class="disableOnSummary" id="obstypes"><option value="0">Select an obs type</option></select>
     
     <fieldset id="unitsFieldSet" title="Units">
           <legend style="display: none;">Units</legend>
@@ -330,7 +337,7 @@
     </div>
   <div id="timeUTC"  class="disableOnSummary" ><input class="disableOnSummary" type="text" value="" id="datetimepicker"/>UTC</div>
   <div id="latlong" >Lat, Lon: <span id="latValue"></span>, <span id="lngValue"></span></div>
-  <div id="stationCode" >Station Code: <span id="stationCodeValue"></span></div>
+  <div id="stationCode" >Name: <span id="stationCodeValue"></span></div>
 </div>
 <!-- 	END OF BOTTOM TOOLBAR -->
 <!--    /////// -->
@@ -463,20 +470,19 @@ function setStandardPolylineStyleProperties(style)
 }
 
 
-    var tileLayer = L.tileLayer('http://otile{s}.mqcdn.com/tiles/1.0.0/map/{z}/{x}/{y}.png', {
- 
- 
+var tileLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
 /**
-
-  
+    var tileLayer = L.tileLayer('http://otile{s}.mqcdn.com/tiles/1.0.0/map/{z}/{x}/{y}.png', {
 var tileLayer = L.tileLayer('http://localhost:8080/tiles/cache/{z}/{x}/{y}.png', {
-  
-  
- 
  */
   
+  
+ 
+ 
+  
     maxZoom: 17,
-  subdomains: ['1', '2', '3', '4'] ,
+//  subdomains: ['1', '2', '3', '4'] ,
+  subdomains: ['a', 'b', 'c'] ,
   attribution: '',
   id: 'mapbox.streets'
 });
@@ -686,6 +692,7 @@ highlightRoadStyle.weight = 16;
 var roadOptions = {checkbox: document.getElementById("chkRoadLayer"), 
   highlighter: new RoadHighlighter(highlightRoadStyle, map),
   showObsLabels: false,
+  isForecastOnly: true,
   enabledForTime: function(time)
   {
       var now = new Date();
@@ -709,7 +716,6 @@ roadStyles["1"] = setStandardPolylineStyleProperties({ color: "#DA03F1"});
 roadStyles["2"] = setStandardPolylineStyleProperties({ color: "#71017D"});
 
 var roadStyler = new RoadStatusStyler(roadStyles, map, roadOptions.highlighter);
-
 
 map.registerWxdeLayer(L.wxdeLayer('RoadLayer', processPolylineData, roadStyler, roadOptions));
 
@@ -774,6 +780,11 @@ $('#datetimepicker').datetimepicker({
 $('#DialogButton').click(function() {
          map.showDialog(true);
   });
+           
+map.on('mousedown', function (e)
+{
+  $('#datetimepicker').datetimepicker('hide');
+});
     })(jQuery);
 </script>
 </body>

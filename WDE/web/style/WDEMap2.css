@@ -244,12 +244,13 @@ div.summary-legend-icon
    padding:8px;
  }
  
- #DialogButtonImg {
+ button.DialogButton > img, img.DialogButton
+ {
     width: 16px;
     height: 16px;
 }
 
-#DialogButton
+.DialogButton
 {
   padding: 0px;
 }

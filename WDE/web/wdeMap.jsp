@@ -1,3 +1,4 @@
+<%@page import="org.owasp.encoder.Encode"%>
 <!DOCTYPE html>
 <html>
 <head>
@@ -150,16 +151,18 @@
             imgTestBlank.alt = "Blank";
         }
     </script>
-  
+     
     
-    <script type="text/javascript" src="//code.jquery.com/jquery-1.11.0.min.js"></script>
-
-
-    <!--
-    
-    <script src="script/jquery/jquery-2.2.0.js"></script>
+<!--
+  <script type="text/javascript" src="//code.jquery.com/jquery-2.2.0.min.js"></script>
 -->
-	
+ 
+    
+   
+    
+       <script src="script/jquery/jquery-2.2.0.js"></script>
+    
+
     <!--[if IE 8]>
     <link href="/style/IE-styles-mini.css" type="text/css" rel="stylesheet">
     <link href="/style/obs-table-ie82.css" type="text/css" rel="stylesheet">
@@ -181,9 +184,77 @@
 <!-- 	MAP CONTAINER -->
 <div id="map-container">
    
+  <div id="summary-legend-form" style="display:none;" title="Map Summary View">
+    <table>
+      <tr>
+        <td colspan ="2" class="summary-legend-text">Click on a state to zoom into that region.<br/><br/>
+		Click on the Layers button to toggle observation and sensor views.<br/><br/>
+		Click on the time control to select historic or forecast observations.
+      </tr>
+      <tr>
+        <td colspan="2" class="summary-legend-text">States without shading have not provided metadata or signed a data sharing agreement.</td>
+      </tr>
+      <tr>
+        <td ><div class="summary-legend-icon" style="background-color: #FF8822"></div></td>
+        <td class="summary-legend-text">data sharing agreement in place + sensor metadata + data available</td>
+      </tr>
+      <tr>
+        <td ><div class="summary-legend-icon" style="background-color: #7722FF"></div></td>
+        <td class="summary-legend-text">data sharing agreement in place + sensor metadata + data temporarily unavailable</td>
+      </tr>
+      <tr>
+        <td ><div class="summary-legend-icon" style="background-color: #555555"></div></td>
+        <td class="summary-legend-text">no data sharing agreement + sensor metadata only</td>
+      </tr>
+    </table>
+    Click the <img class="DialogButton" src="image/icons/doc.png" /> button on the left side of the control bar at the bottom of the page to restore these instructions.      
+  </div>
+  
+  
+  <div id="road-legend-form" style="display:none;" title="Road Segment Controls">
+    <table>
+      <tr>
+        <td colspan ="2" class="summary-legend-text">Click on a road segment to display a dialog with the observation details most recent to the selected time for that road segment. The time control can also be used to select historic or forecast observations for road segments.</td>
+      </tr>
+      <tr>
+        <td colspan="2" class="summary-legend-text">States without shading have not provided metadata or signed a data sharing agreement.</td>
+      </tr>
+      <tr>
+        <td ><div class="summary-legend-icon" style="background-color: #F494FE"></div></td>
+        <td class="summary-legend-text">road segment has no advisories or warnings in effect</td>
+      </tr>
+      <tr>
+        <td ><div class="summary-legend-icon" style="background-color: #DA03F1"></div></td>
+        <td class="summary-legend-text">road segment has potential for future hazardous conditions* (advisory)</td>
+      </tr>
+      <tr>
+        <td ><div class="summary-legend-icon" style="background-color: #71017D"></div></td>
+        <td class="summary-legend-text">road segment currently displays indicators of hazardous conditions* (warning)</td>
+      </tr>
+        <td colspan ="2" class="summary-legend-text">* Hazardous conditions could be ice on roads, low visibility, heavy rains or hail.</td>
+    </table>
+    Click the <img class="DialogButton" src="image/icons/doc.png" /> button on the left side of the control bar at the bottom of the page to restore these instructions.
+  </div>
+  
+  
+  <div id="details-form" style="display:none;" title="Map Controls">
+    <p>
+    Layers can be turned on or off using the Layers button. Most layers are enabled by default, but are gray when no data are available 
+    or the map is not zoomed in enough to display the layer detail. The Segment Obs layer contains a lot of data and you must 
+    zoom in four more times to view them.<br/><br/>
+    Click the time control on the bottom right to select historic or forecast observations. It defaults to the current time. Click on the home button on the top left of the time control window to return to current date, or double click on the home button to set map to current date and time.<br/><br/>
+    Selecting a specific observation type from the list next to the layer button displays the values for the selected observation type across all ESS and mobile stations. 
+    Switch between Metric or English units with the radio buttons.<br/><br/>
+    Click on an ESS or mobile station to display a dialog with the observation details most recent to the selected time and station. 
+    Clicking on a sensor icon will display a dialog containing sensor metadata for the selected station.
+    </p>
+    <p>
+    Click the <img class="DialogButton" src="image/icons/doc.png" /> button on the left side of the control bar at the bottom of the page to restore these instructions.
+    </p>
+  </div>
+   
 <div id="dialog-form" style="display:none;">
 
-  <div id="dialog-form">
   <table id="obs-data" class="qualityChecks" >
 	<thead class="obs-table-head">  
 		<tr align="center">    
@@ -238,14 +309,13 @@
 </tr>
 
 </tbody></table>
-  </div>
 </div>
   <div id="LayersMenuContainer">
   <ul id="LayersMenu">
-    <li><label for="chkRwisLayer">RWIS Obs</label><input type="checkbox" id="chkRwisLayer" /></li>
+    <li><label for="chkRwisLayer">ESS Obs</label><input type="checkbox" id="chkRwisLayer" /></li>
     <li><label for="chkMobileLayer">Mobile Obs</label><input type="checkbox" id="chkMobileLayer" /></li>
-    <li><label for="chkRoadLayer">Road Obs</label><input type="checkbox" id="chkRoadLayer" /></li>
-    <li><label for="chkMetaDataLayer">Sensors</label><input type="checkbox" id="chkMetaDataLayer" /></li>
+    <li><label for="chkRoadLayer">Segment Obs</label><input type="checkbox" id="chkRoadLayer" /></li>
+    <li><label for="chkMetaDataLayer">ESS Metadata</label><input type="checkbox" id="chkMetaDataLayer" /></li>
 </ul></div>
     <div id="map_canvas" > </div>
 </div>
@@ -255,19 +325,19 @@
 <!-- 	BUTTOM TOOLBAR -->
 <div class="bottom-toolbar-container" id="bottom-tools">
   
-  <div id="layerControlContainer"> <input id="LayersMenuButton" type="button" value="Layers" /><select  id="obstypes"><option value="0">Select an obs type</option></select>
+  <div id="layerControlContainer"><button id="DialogButton" class="DialogButton" ><img class="DialogButton" src="image/icons/doc.png" /></button> <input id="LayersMenuButton" type="button" value="Layers" /><select class="disableOnSummary" id="obstypes"><option value="0">Select an obs type</option></select>
     
     <fieldset id="unitsFieldSet" title="Units">
           <legend style="display: none;">Units</legend>
           <input type="radio" name="UNIT" checked="checked" id="englishUnits" />
-          <label  for="englishUnits">English</label>
-          <input type="radio" name="UNIT" id="metricUnits" />
+          <label  class="disableOnSummary" for="englishUnits">English</label>
+          <input  class="disableOnSummary" type="radio" name="UNIT" id="metricUnits" />
           <label for="metricUnits">Metric</label>
         </fieldset>
     </div>
-  <div id="timeUTC" ><input type="text" value="" id="datetimepicker"/></div>
+  <div id="timeUTC"  class="disableOnSummary" ><input class="disableOnSummary" type="text" value="" id="datetimepicker"/>UTC</div>
   <div id="latlong" >Lat, Lon: <span id="latValue"></span>, <span id="lngValue"></span></div>
-  <div id="stationCode" >Station Code: <span id="stationCodeValue"></span></div>
+  <div id="stationCode" >Name: <span id="stationCodeValue"></span></div>
 </div>
 <!-- 	END OF BOTTOM TOOLBAR -->
 <!--    /////// -->
@@ -297,12 +367,10 @@
 
   
 <script type="text/javascript">
-    (function ($) {
-      
-      
+    	
       $.ajax({
         type: "GET",
-        url: "ResetSession"
+        url: "ResetSession?roads=<%= Encode.forJavaScript( request.getParameter("roads")) %>"
       });
       
        $( "#LayersMenu" ).menu();
@@ -356,6 +424,30 @@ $("#LayersMenu").find("input:checkbox").each(function (i) {
     
   var statesGroup;
   
+  function getHighlightStyle(style)
+  {
+    var highlightStyle = {};
+      for (var styleAttr in style)
+      {
+        if (style.hasOwnProperty(styleAttr))
+          highlightStyle[styleAttr] = style[styleAttr];
+      }
+      highlightStyle.color = "#CFF";
+      
+      return highlightStyle;
+  }
+    
+    
+  function getPolylineHighlightStyle(style)
+  {
+    var highlightStyle = {};
+      for (var styleAttr in style)
+      {
+        if (style.hasOwnProperty(styleAttr))
+          highlightStyle[styleAttr] = style[styleAttr];
+      }
+      return highlightStyle;
+    }
   
 function setStandardStyleProperties(style)
 {
@@ -373,39 +465,46 @@ function setStandardPolylineStyleProperties(style)
 {
   style.weight = 5;
   style.opacity = 1;
-  style.fillOpacity = 0.8;
+  style.fillOpacity = 1;
   return style;
 }
 
 
+var tileLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
 /**
- * 
- * Real URL: http://otile{s}.mqcdn.com/tiles/1.0.0/map/{z}/{x}/{y}.png 
- * Local URL: http://localhost:8080/tiles/cache/{z}/{x}/{y}.png
- * 
+    var tileLayer = L.tileLayer('http://otile{s}.mqcdn.com/tiles/1.0.0/map/{z}/{x}/{y}.png', {
+var tileLayer = L.tileLayer('http://localhost:8080/tiles/cache/{z}/{x}/{y}.png', {
  */
-
-var tileLayer = L.tileLayer('http://otile{s}.mqcdn.com/tiles/1.0.0/map/{z}/{x}/{y}.png', {
-  maxZoom: 18,
-  subdomains: ['1', '2', '3', '4'] ,
+  
+  
+ 
+ 
+  
+    maxZoom: 17,
+//  subdomains: ['1', '2', '3', '4'] ,
+  subdomains: ['a', 'b', 'c'] ,
   attribution: '',
   id: 'mapbox.streets'
 });
+
+  
+      
 
 function onEachFeature(feature, layer)
 {
   layer.on({
     mouseover: highlightFeature,
-    mouseout: resetHighlight
+    mouseout: resetHighlight,
+    click: resetHighlight
   });
   function highlightFeature(e)
   {
     var layer = e.target;
     layer.setStyle({
       weight: 5,
-      color: '#666',
       dashArray: '',
-      fillOpacity: 0.5
+      opacity: 0.8,
+      fillOpacity: 0.8
     });
     if (!L.Browser.ie && !L.Browser.opera)
     {
@@ -420,16 +519,55 @@ function onEachFeature(feature, layer)
 }
 
 
-
-var style = {
-    fillColor: 'blue',
+var statusStyles = [];
+statusStyles["1"] = {
+    fillColor: '#FF8822',
     weight: 2,
-    opacity: 1,
+      opacity: 0.5,
+      fillOpacity: 0.5,
     color: 'white',
     dashArray: '3'
   };
 
-statesGroup = L.geoJson(statesData, {style: style, onEachFeature: onEachFeature});
+statusStyles["2"] = {
+    fillColor: '#7722FF',
+    weight: 2,
+      opacity: 0.5,
+      fillOpacity: 0.5,
+    color: 'white',
+    dashArray: '3'
+  };
+
+statusStyles["3"] = {
+    fillColor: '#555555',
+      opacity: 0.5,
+      fillOpacity: 0.5,
+    color: 'white',
+    dashArray: '3'
+  };
+
+var style = {
+    fillColor: 'green',
+    weight: 2,
+      opacity: 0.5,
+      fillOpacity: 0.5,
+    color: 'white',
+    dashArray: '3'
+  };
+  
+var styleState = function(feature) {
+        
+        var stateStatus = feature.properties.status;
+        if(!stateStatus)
+          return style;
+        if(stateStatus) 
+          return statusStyles[stateStatus];
+        else
+          return style;
+        };
+
+
+
 
   var  dialog = $( "#dialog-form" ).dialog({
       autoOpen: false,
@@ -437,12 +575,54 @@ statesGroup = L.geoJson(statesData, {style: style, onEachFeature: onEachFeature}
       draggable:false,
       resizable: false,
       width:"auto",
-      height:"auto"
+      minHeight:"380",
+      dialogClass : "no-title-form"
       
     });
     
+    
     $(window).resize(function() {
     $("#dialog-form").dialog("option", "position", "center");
+});
+
+(function ($) {
+      
+      $('.disableOnSummary').each(function (idx, el)
+        {
+          el.disabled = true;
+          $(el).addClass('DisabledElement');
+        });
+        
+     $.getJSON('states/status', function(response) {
+     var stateStatuses = response;
+     
+     var statesData = {};
+     statesData.type = "FeatureCollection";
+     statesData.features = [];
+     
+     for(var state in statePolygonPoints)
+     {
+       var stateStatus = stateStatuses[state];
+       if(!stateStatus)
+         continue;
+       
+       
+       var stateFeature = {};
+       stateFeature.type="Feature";
+       stateFeature.properties = {};
+       stateFeature.properties.code = state;
+       stateFeature.properties.status = stateStatus;
+       stateFeature.geometry = {};
+       stateFeature.geometry.type = "Polygon";
+       stateFeature.geometry.coordinates = statePolygonPoints[state];
+       
+       statesData.features.push(stateFeature);
+     }
+   
+   
+statesGroup = L.geoJson(statesData, {style: styleState, onEachFeature: onEachFeature});
+
+map.setStatesLayer(statesGroup);
 });
 
 map = L.wxdeSummaryMap('map_canvas', {
@@ -450,7 +630,6 @@ map = L.wxdeSummaryMap('map_canvas', {
   attributionControl:false,
   zoom: 4,
   layers: [tileLayer],
-  statesLayer: statesGroup,
   stationCodeDiv: document.getElementById('stationCodeValue'),
   latDiv: document.getElementById('latValue'),
   lngDiv: document.getElementById('lngValue'),
@@ -463,7 +642,11 @@ map = L.wxdeSummaryMap('map_canvas', {
   },
   selectedTimeFunction : function()
   {
-    return $('#datetimepicker').datetimepicker('getValue').getTime();
+    var date = $('#datetimepicker').datetimepicker('getValue');
+    //time was shifted so it would display UTC time, so it needs to be shifted back
+    // to get the right milliseconds value
+    return date.getTime() - (date.getTimezoneOffset()*60*1000);
+    //return date.getTime();
   },
   useMetricUnitsFunction:function()
   {
@@ -471,29 +654,71 @@ map = L.wxdeSummaryMap('map_canvas', {
   },
   selectedObsTypeFunction : function()
   {
-    return $('#obstypes').val();
+    var obstype = $('#obstypes').val();
+    
+    if(obstype === 'StationCode')
+      return "0";
+    else
+      return obstype;
   }
 });
 
+
+map.showDialog();
+
+
   
-var rwisOptions = {checkbox: document.getElementById("chkRwisLayer")};
-map.registerWxdeLayer(L.wxdeLayer('RwisLayer', createCircleMarkers, setStandardStyleProperties({ color: "#d819d8"}), rwisOptions));
+var rwisStyle =   setStandardStyleProperties({ color: "#d819d8"});
+var rwisHighlightStyle = getHighlightStyle(rwisStyle);
+var rwisOptions = {checkbox: document.getElementById("chkRwisLayer"), highlighter: new StaticLayerStyler(rwisHighlightStyle)};
+map.registerWxdeLayer(L.wxdeLayer('RwisLayer', createCircleMarkers, new StaticLayerStyler(rwisStyle),  rwisOptions));
 
-var mobileOptions = {checkbox: document.getElementById("chkMobileLayer")};
-map.registerWxdeLayer(L.wxdeLayer('MobileRwisLayer', createCircleMarkers, setStandardStyleProperties({color: "blue"}), mobileOptions));
+var mobileStyle = setStandardStyleProperties({color: "blue"});
+var mobileHighlightStyle = getHighlightStyle(mobileStyle);
+var mobileOptions = {checkbox: document.getElementById("chkMobileLayer"), highlighter: new StaticLayerStyler(mobileHighlightStyle)};
+map.registerWxdeLayer(L.wxdeLayer('MobileRwisLayer', createCircleMarkers, new StaticLayerStyler(mobileStyle), mobileOptions));
 
-var metaDataOptions = {hasObs: false, checkbox: document.getElementById("chkMetaDataLayer")};
+
 var metaDataStyle = setStandardStyleProperties({ color: "grey"});
+metaDataStyle.radius = 8;
+var metaHighlightStyle = getHighlightStyle(metaDataStyle);
+var metaDataOptions = {hasObs: false, checkbox: document.getElementById("chkMetaDataLayer"), highlighter: new StaticLayerStyler(metaHighlightStyle)};
+map.registerWxdeLayer(L.wxdeLayer('MetaDataLayer', createCircleMarkers, new StaticLayerStyler(metaDataStyle), metaDataOptions));
 
-map.registerWxdeLayer(L.wxdeLayer('MetaDataLayer', createCircleMarkers, metaDataStyle, metaDataOptions));
 
 
+var highlightRoadStyle = setStandardPolylineStyleProperties({ color: '#CFF'});
+highlightRoadStyle.weight = 16;
 var roadOptions = {checkbox: document.getElementById("chkRoadLayer"), 
+  highlighter: new RoadHighlighter(highlightRoadStyle, map),
+  showObsLabels: false,
+  isForecastOnly: true,
+  enabledForTime: function(time)
+  {
+      var now = new Date();
+
+    //  now.setTime(now.getTime() + (now.getTimezoneOffset() * 60 * 1000));
+      now.setMinutes(0);
+      now.setSeconds(0);
+      now.setMilliseconds(0);
+
+
+      return time > now.getTime();
+  },
   obsRequestBoundsFunction: function(layer)
   {
-    return layer.getBounds();
+    return L.latLngBounds(layer.getLatLng(), layer.getLatLng()) ;
   }}; 
-map.registerWxdeLayer(L.wxdeLayer('RoadLayer', processPolylineData, setStandardPolylineStyleProperties({ color: "green"}), roadOptions));
+
+var roadStyles = [];
+roadStyles["0"] = setStandardPolylineStyleProperties({ color: "#F494FE"});
+roadStyles["1"] = setStandardPolylineStyleProperties({ color: "#DA03F1"});
+roadStyles["2"] = setStandardPolylineStyleProperties({ color: "#71017D"});
+
+var roadStyler = new RoadStatusStyler(roadStyles, map, roadOptions.highlighter);
+
+map.registerWxdeLayer(L.wxdeLayer('RoadLayer', processPolylineData, roadStyler, roadOptions));
+
 
 
 var minuteInterval = 20;
@@ -507,21 +732,40 @@ for(var hour = 0; hour< 24; ++hour)
 }
 
 var startDate = new Date();
-startDate.setMinutes(startDate.getMinutes()- startDate.getMinutes() % minuteInterval);
+//startDate.setMinutes(startDate.getMinutes()- startDate.getMinutes() % minuteInterval);
+//shift time to display as UTC
+startDate.setSeconds(0);
+startDate.setMilliseconds(0);
+startDate.setTime(startDate.getTime() + (startDate.getTimezoneOffset()*60*1000));
 
+//set max time to the next 20-minute interval + 6 hours
+var maxTime = new Date(startDate.getTime() + (1000 * 60 * 60 * 6) + (1000 * 60 * 20));
+maxTime.setMinutes(maxTime.getMinutes()- maxTime.getMinutes() % minuteInterval);
 
 $('#datetimepicker').datetimepicker({
-	allowTimes: allowTimes,
+	step: 20,
   value: startDate,
-    onClose : function()
+    onSelectTime : function()
     {
       //alert('close');
       map.refreshLayers();
-    }
+    },
+    yearStart: 2005,
+    yearEnd: maxTime.getUTCFullYear(),
+    maxTime: maxTime,
+    maxDate: maxTime
 });
 
     $('#obstypes').change(function() {
-      map.refreshLayers();
+      if(this.value === 'StationCode')
+        map.showStationCodeLabels();
+      else
+      {
+        if(this.value === "0" && map.hasStationCodeLabels)
+          map.hideLayerDivs();
+          
+        map.refreshLayers();
+      }
     });
     
     $('input[name="UNIT"]').change(function(){
@@ -533,6 +777,14 @@ $('#datetimepicker').datetimepicker({
     $('#datetimepicker').datetimepicker('setDate', startDate );
 
 
+$('#DialogButton').click(function() {
+         map.showDialog(true);
+  });
+           
+map.on('mousedown', function (e)
+{
+  $('#datetimepicker').datetimepicker('hide');
+});
     })(jQuery);
 </script>
 </body>

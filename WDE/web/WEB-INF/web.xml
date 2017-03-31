@@ -5,7 +5,7 @@
 	      http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd"
 	      version="3.0">
 
-
+  
     <display-name>WXDE</display-name>
     <welcome-file-list>
         <welcome-file>index.html</welcome-file>
@@ -16,63 +16,18 @@
         <welcome-file>default.jsp</welcome-file>
     </welcome-file-list>
 
+
     <servlet>
-        <servlet-name>CsHttp</servlet-name>
-        <servlet-class>wde.cs.CsHttp</servlet-class>
-        <init-param>
-            <description>millisecond startup delay</description>
-            <param-name>delay</param-name>
-            <param-value>0</param-value>
-        </init-param>
-        <load-on-startup>1</load-on-startup>
+        <servlet-name>ExtStarter</servlet-name>
+        <servlet-class>wde.cs.ext.ExtStarter</servlet-class>
+        <load-on-startup>0</load-on-startup>
     </servlet>
 
     <servlet-mapping>
-        <servlet-name>CsHttp</servlet-name>
-        <url-pattern>/CsHttp</url-pattern>
+        <servlet-name>ExtStarter</servlet-name>
+        <url-pattern>/ExtStarter</url-pattern>
     </servlet-mapping>
 
-    <servlet>
-        <servlet-name>csvc</servlet-name>
-        <servlet-class>wde.cs.HttpPush</servlet-class>
-
-        <init-param>
-            <description>REQUIRED: destination directory for uploaded files</description>
-            <param-name>dest-dir</param-name>
-            <param-value>/opt/collectors/DE/data/</param-value>
-        </init-param>
-
-        <init-param>
-            <description>REQUIRED: semicolon separated network address filters</description>
-            <param-name>addresses</param-name>
-            <param-value>167.21.</param-value>
-        </init-param>
-
-        <init-param>
-            <description>REQUIRED: semicolon separated filename filters</description>
-            <param-name>files</param-name>
-            <param-value>atmospheric.txt;subsurface.txt;surface.txt</param-value>
-        </init-param>
-
-        <init-param>
-            <description>OPTIONAL: minimum milliseconds between upload attempts, 5 minute default</description>
-            <param-name>min-interval</param-name>
-            <param-value>300000</param-value>
-        </init-param>
-
-        <init-param>
-            <description>OPTIONAL: maximum bytes allowed for each file, 4KB default</description>
-            <param-name>max-filesize</param-name>
-            <param-value>4096</param-value>
-        </init-param>
-
-        <load-on-startup>1</load-on-startup>
-    </servlet>
-
-    <servlet-mapping>
-        <servlet-name>csvc</servlet-name>
-        <url-pattern>/csvc</url-pattern>
-    </servlet-mapping>
 
     <servlet>
         <servlet-name>QedsMgr</servlet-name>
@@ -85,16 +40,18 @@
         <url-pattern>/QedsMgr</url-pattern>
     </servlet-mapping>
 
+
     <servlet>
         <servlet-name>ListObsTypes</servlet-name>
         <servlet-class>wde.qeds.ListObsTypes</servlet-class>
-        <load-on-startup>1</load-on-startup>
+        <load-on-startup>2</load-on-startup>
     </servlet>
 
     <servlet-mapping>
         <servlet-name>ListObsTypes</servlet-name>
         <url-pattern>/ListObsTypes</url-pattern>
     </servlet-mapping>
+
 
     <servlet>
         <servlet-name>GetPlatformsForRegion</servlet-name>
@@ -108,8 +65,9 @@
             <param-value>true</param-value>
         </init-param>
 
-        <load-on-startup>1</load-on-startup>
+        <load-on-startup>3</load-on-startup>
     </servlet>
+
 
     <servlet-mapping>
         <servlet-name>GetPlatformsForRegion</servlet-name>
@@ -119,7 +77,7 @@
     <servlet>
         <servlet-name>ApplicationInterfaceServlet</servlet-name>
         <servlet-class>wde.qeds.ApplicationInterfaceServlet</servlet-class>
-        <load-on-startup>1</load-on-startup>
+        <load-on-startup>4</load-on-startup>
     </servlet>
 
     <servlet-mapping>
@@ -127,16 +85,77 @@
         <url-pattern>/downloadSubscription</url-pattern>
     </servlet-mapping>
 
+
+    <servlet>
+        <servlet-name>DataTime</servlet-name>
+        <servlet-class>wde.ws.EmdssDataTime</servlet-class>
+    </servlet>
+
+    <servlet-mapping>
+        <servlet-name>DataTime</servlet-name>
+        <url-pattern>/datatime</url-pattern>
+    </servlet-mapping>
+
+
+    <servlet>
+        <servlet-name>DistrictAlerts</servlet-name>
+        <servlet-class>wde.ws.EmdssAlerts</servlet-class>
+    </servlet>
+
+    <servlet-mapping>
+        <servlet-name>DistrictAlerts</servlet-name>
+        <url-pattern>/district_alerts</url-pattern>
+    </servlet-mapping>
+
+
+    <servlet>
+        <servlet-name>LatestVehicles</servlet-name>
+        <servlet-class>wde.ws.EmdssVehicles</servlet-class>
+    </servlet>
+
+    <servlet-mapping>
+        <servlet-name>LatestVehicles</servlet-name>
+        <url-pattern>/latest_vehicles</url-pattern>
+    </servlet-mapping>
+
+
+    <servlet>
+        <servlet-name>Plots</servlet-name>
+        <servlet-class>wde.ws.EmdssPlots</servlet-class>
+    </servlet>
+
+    <servlet-mapping>
+        <servlet-name>Plots</servlet-name>
+        <url-pattern>/plots</url-pattern>
+    </servlet-mapping>
+
+
     <servlet>
         <servlet-name>ServletAdaptor</servlet-name>
         <servlet-class>com.sun.jersey.spi.container.servlet.ServletContainer</servlet-class>
-        <load-on-startup>1</load-on-startup>
+        <load-on-startup>5</load-on-startup>
     </servlet>
 
     <servlet-mapping>
         <servlet-name>ServletAdaptor</servlet-name>
         <url-pattern>/resources/*</url-pattern>
     </servlet-mapping>
+
+
+  <servlet>
+    <servlet-name>AltitudeLookup</servlet-name>
+    <servlet-class>wde.cs.ext.NED</servlet-class>
+    <init-param>
+      <param-name>dir</param-name>
+      <param-value>/opt/NED/</param-value>
+    </init-param>
+  </servlet>
+
+  <servlet-mapping>
+    <servlet-name>AltitudeLookup</servlet-name>
+    <url-pattern>/elev/*</url-pattern>
+  </servlet-mapping>
+
 
     <resource-ref>
         <description>wxde</description>

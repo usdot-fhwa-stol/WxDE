@@ -120,6 +120,27 @@ var processPolylineData = function (groupData)
   }
   return platformFeatureGroup;
 };
+
+/**
+ function LayerDetailsManager(thead)
+ {
+ this.thead = thead;
+ }
+
+ LayerDetailsManager.prototype.getThead = function()
+ {
+ return this.thead;
+ };
+
+
+
+ LayerDetailsManager.prototype.generateDetailRows = function(layerDetails)
+ {
+
+ };
+ **/
+
+
 L.WxdeSummaryMap = L.Map.extend({
   options: {
     latDiv: null,
@@ -482,6 +503,7 @@ L.WxdeLayer = L.LayerGroup.extend({
     checkbox: null, // checkbox input used to enable/disable layer
     hasObs: true,
     showObsLabels: true,
+    isForecastOnly: false,
     platformDetailsFunction: function (marker)
     {
       var details = [];
@@ -526,6 +548,10 @@ L.WxdeLayer = L.LayerGroup.extend({
       });
     }
 
+  },
+  isForecastOnly: function ()
+  {
+    return this.options.isForecastOnly;
   },
   showObsLabels: function ()
   {
@@ -666,6 +692,17 @@ L.WxdeLayer = L.LayerGroup.extend({
                 '<td class="unit"><b>Unit</b></td>\n' +
                 '<td class="conf webkit-td-conf-fix"><b>Conf</b></td>\n' +
                 '</tr>';
+        var forecastThead =
+                '\n<tr align="center">\n' +
+                '<td class="td-title"><div id="platform-details"> </div>\n' +
+                '</td>\n' +
+                '</tr>\n' +
+                '<tr class="last-tr">\n' +
+                '<td class="timestamp"><b>Timestamp</b></td>\n' +
+                '<td class="obsType"><b>Observation Type</b></td>\n' +
+                '<td class="td-value"><b>Value</b></td>\n' +
+                '<td class="unit"><b>Unit</b></td>\n' +
+                '</tr>';
         var sensorThead =
                 '\n<tr align="center">\n' +
                 '<td class="td-title" colspan="2"><div id="platform-details"> </div>\n' +
@@ -681,7 +718,13 @@ L.WxdeLayer = L.LayerGroup.extend({
         var colCount;
         if (thisLayer._hasObs())
         {
-          obsTable.find('thead').append(obsThead);
+          var thead;
+          if (thisLayer.isForecastOnly())
+            thead = forecastThead;
+          else
+            thead = obsThead;
+
+          obsTable.find('thead').append(thead);
           colCount = QCH_MAX + 6;
         }
         else
@@ -720,6 +763,7 @@ L.WxdeLayer = L.LayerGroup.extend({
               return;
             }
             var additionalDetails = $.parseJSON(data.responseText);
+
             detailsContent = buttonElement + '<br />';
             detailsContent += platformDetails.sc + '<br />';
             if (additionalDetails.tnm)
@@ -754,7 +798,9 @@ L.WxdeLayer = L.LayerGroup.extend({
                   newRows += '<tr>';
                   newRows += "<td class=\"timestamp\">" + iObs.ts + "</td>\n";
                   newRows += "<td class=\"obsType\">" + iObs.ot + "</td>\n";
-                  newRows += "<td class=\"td-ind\">" + iObs.si + "</td>\n";
+
+                  if (!thisLayer.isForecastOnly())
+                    newRows += "<td class=\"td-ind\">" + iObs.si + "</td>\n";
                   newRows += "<td class=\"td-value\">";
                   if (thisLayer._wxdeMap.useMetricValue())
                     newRows += iObs.mv;
@@ -770,24 +816,28 @@ L.WxdeLayer = L.LayerGroup.extend({
                   if (unit)
                     newRows += unit;
                   newRows += "</td>\n";
-                  newRows += "<td class=\"conf\">" + iObs.cv + "%</td>\n";
-                  var sRun = Number(iObs.rf).toString(2);
-                  while (sRun.length < QCH_MAX)
-                    sRun = "0" + sRun;
-                  var sPass = Number(iObs.pf).toString(2);
-                  while (sPass.length < QCH_MAX)
-                    sPass = "0" + sPass;
-                  var nIndex = QCH_MAX;
-                  while (--nIndex >= 0)
+
+                  if (!thisLayer.isForecastOnly())
                   {
-                    var nRow = Number(sRun.charAt(nIndex));
-                    var nCol = Number(sPass.charAt(nIndex));
-                    var oFlag = m_oQCh[nRow][nCol];
-                    newRows += "    <td><img alt='Icon' src=\"image/";
-                    newRows += oFlag.im;
-                    newRows += ".png\" alt=\"";
-                    newRows += oFlag.tx;
-                    newRows += "\"/></td>\n";
+                    newRows += "<td class=\"conf\">" + iObs.cv + "%</td>\n";
+                    var sRun = Number(iObs.rf).toString(2);
+                    while (sRun.length < QCH_MAX)
+                      sRun = "0" + sRun;
+                    var sPass = Number(iObs.pf).toString(2);
+                    while (sPass.length < QCH_MAX)
+                      sPass = "0" + sPass;
+                    var nIndex = QCH_MAX;
+                    while (--nIndex >= 0)
+                    {
+                      var nRow = Number(sRun.charAt(nIndex));
+                      var nCol = Number(sPass.charAt(nIndex));
+                      var oFlag = m_oQCh[nRow][nCol];
+                      newRows += "    <td class='td-qch'><img alt='Icon' src=\"image/";
+                      newRows += oFlag.im;
+                      newRows += ".png\" alt=\"";
+                      newRows += oFlag.tx;
+                      newRows += "\"/></td>\n";
+                    }
                   }
 
                   newRows += '</tr>';
