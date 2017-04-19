@@ -60,7 +60,7 @@
 		        	console.log(document.forms[0].action);
 		        	var a = document.forms[0].action;
 		        	var tok = a.split("/");
-		        	if (tok[tok.length - 1] == "WizardFcstSubResults.jsp") {
+		        	if (tok[tok.length - 1] .startsWith( "WizardFcstSubResults.jsp")) {
 			        	Validate();
 		        	}
 		        }

@@ -319,7 +319,7 @@
       </init-param>
       <init-param>
         <param-name>contentSecurityHeaderValue</param-name>
-        <param-value>frame-ancestors 'self'; default-src http://fonts.gstatic.com 'none'; script-src http://www.google-analytics.com ajax.googleapis.com maps.googleapis.com http://gmaps-utility-gis.googlecode.com http://api.imapbuilder.net maps.google.com code.jquery.com 'self' 'unsafe-eval'  'unsafe-inline'; style-src 'self'  'unsafe-inline' fonts.googleapis.com; img-src *.openstreetmap.org *.mqcdn.com https://maps.gstatic.com https://csi.gstatic.com https://maps.google.com http://www.google-analytics.com 'self' data:; connect-src 'self'</param-value>
+        <param-value>frame-ancestors 'self'; default-src http://fonts.gstatic.com ; script-src http://www.google-analytics.com ajax.googleapis.com maps.googleapis.com http://gmaps-utility-gis.googlecode.com http://api.imapbuilder.net maps.google.com code.jquery.com 'self' 'unsafe-eval'  'unsafe-inline'; style-src 'self'  'unsafe-inline' fonts.googleapis.com; img-src *.openstreetmap.org *.mqcdn.com https://maps.gstatic.com https://csi.gstatic.com https://maps.google.com http://www.google-analytics.com 'self' data:; connect-src 'self'</param-value>
       </init-param>
     </filter>
     <filter-mapping>
