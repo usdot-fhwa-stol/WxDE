@@ -84,9 +84,12 @@
         }
 
         // set the observation type
-        oUpdateSubscription.setInt(5, oFcstSubscription.m_nObsType);
+        if(oFcstSubscription.m_nObsTypes == null)
+          oUpdateSubscription.setInt(5, 0);
+        else
+          oUpdateSubscription.setNull(5, Types.INTEGER);
 
-        if (oFcstSubscription.m_nObsType == 0)
+        if (oFcstSubscription.m_nObsTypes != null )
         {
            PreparedStatement oInsertObsTypes = iConnection.prepareStatement("INSERT INTO subs.subobs (subid, obstypeid) VALUES (?, ?)");
            oInsertObsTypes.setInt(1, nSubId);
@@ -203,14 +206,14 @@
             oWriter.write("  PointRadiusRadius = " + oFcstSubscription.m_oRadius.m_dRadius + "\r\n");
         }
         else
-        {
+        { 
             oWriter.write("  PointRadiusLat    = not used" + "\r\n");
             oWriter.write("  PointRadiusLon    = not used" + "\r\n");
             oWriter.write("  PointRadiusRadius = not used" + "\r\n");
         }
 
         oWriter.write("  ObsType  = ");
-        if (oFcstSubscription.m_nObsType == 0) 
+        if (oFcstSubscription.m_nObsTypes != null) 
         {
            for (int i = 0; i < oFcstSubscription.m_nObsTypes.length - 1; i++)
            {
@@ -220,14 +223,14 @@
            oWriter.write(Integer.toString(oFcstSubscription.m_nObsTypes[oFcstSubscription.m_nObsTypes.length - 1]));
         }
         else
-           oWriter.write(oFcstSubscription.m_nObsType);
+           oWriter.write("( all )");
 
         oWriter.write("\r\n");
 
         oWriter.write("  MinValue = " + oFcstSubscription.m_dMin + "\r\n");
         oWriter.write("  MaxValue = " + oFcstSubscription.m_dMax + "\r\n");
 
-        if (oFcstSubscription.m_nObsType == 0)
+        if (oFcstSubscription.m_nObsTypes == null)
         {
             oWriter.write("  RunFlags    = not applicable\r\n");
             oWriter.write("  PassNotPass = not applicable\r\n");

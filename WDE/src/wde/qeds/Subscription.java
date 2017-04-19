@@ -100,7 +100,7 @@ public class Subscription {
     /**
      * Observation type of interest.
      */
-    public int m_nObsType = 0;
+    public int[] m_nObsTypes;
     /**
      * Lower bound observation value.
      */
@@ -172,7 +172,7 @@ public class Subscription {
         m_dLat1 = m_dLng1 = -Double.MAX_VALUE;
         m_dLat2 = m_dLng2 = Double.MAX_VALUE;
 
-        m_nObsType = 0;
+        m_nObsTypes = null;
         m_dMin = Double.NEGATIVE_INFINITY;
         m_dMax = Double.POSITIVE_INFINITY;
 
@@ -353,38 +353,40 @@ public class Subscription {
         m_dLng2 = coordinates[3];
     }
 
+
     /**
-     * Sets the observation-type, and observation-bound filters. The string
-     * should be comma-delimited of the form:
-     * <blockquote>
-     * observation-type, observation-min-value, observation-max-value
-     * </blockquote>
+     * Sets the observation types
      *
-     * @param sObs comma-delimited string containing observation filters.
+     * @param sObs comma-delimited list of obstypes.
      */
-    public void setObs(String sObs) {
-        logger.debug("setObs(" + sObs + ")");
-        m_nObsType = 0;
-        m_dMin = Double.NEGATIVE_INFINITY;
-        m_dMax = Double.POSITIVE_INFINITY;
+    public void setObsType(String sObs)
+    {
+      logger.debug("setObs(" + sObs + ")");
 
-        String[] sObsFilters = sObs.split(",");
+      if(sObs == null || sObs.trim().isEmpty())
+        m_nObsTypes = null;
 
-        try
-        {
-        if (sObsFilters.length > 0 && sObsFilters[0] != null && sObsFilters[0].length() > 0)
-            m_nObsType = Integer.parseInt(sObsFilters[0]);
+      String[] sObsFilters = sObs.split(",");
+		  m_nObsTypes = new int[sObsFilters.length];
 
-        if (sObsFilters.length > 1 && sObsFilters[1] != null && sObsFilters[1].length() > 0)
-            m_dMin = Double.parseDouble(sObsFilters[1]);
+		  for (int i = 0; i < sObsFilters.length; i++)
+			  m_nObsTypes[i] = Integer.parseInt(sObsFilters[i]);
+    }
 
-        if (sObsFilters.length > 2 && sObsFilters[2] != null && sObsFilters[2].length() > 0)
-            m_dMax = Double.parseDouble(sObsFilters[2]);
-        }
-        catch(Exception ex)
-        {
-          logger.error("Unable to set obs types", ex);
-        }
+    public void setMaxObsValue(String sValue)
+    {
+      if (sValue != null && sValue.trim().length() > 0)
+        m_dMin = Double.parseDouble(sValue);
+      else
+        m_dMin = Double.MIN_VALUE;
+    }
+
+    public void setMinObsValue(String sValue)
+    {
+      if (sValue != null && sValue.trim().length() > 0)
+        m_dMax = Double.parseDouble(sValue);
+      else
+        m_dMax = Double.MAX_VALUE;
     }
 
     /**
@@ -499,7 +501,7 @@ public class Subscription {
      * falls within the observation-value range. false otherwise.
      */
     public boolean inRange(double dValue) {
-        if (m_nObsType == 0)
+        if (m_nObsTypes == null)
             return true;
 
         return (dValue >= m_dMin && dValue <= m_dMax);
@@ -517,7 +519,7 @@ public class Subscription {
      * don't match.
      */
     public boolean wasChecked(int sourceId, char[] _nFlag) {
-        if (m_nObsType == 0)
+        if (m_nObsTypes == null)
             return true;
 
         if (m_nRun == 0)
@@ -555,10 +557,7 @@ public class Subscription {
      * interest.
      */
     public boolean isObs(int nObsType) {
-        if (m_nObsType == 0)
-            return true;
-
-        return (m_nObsType == nObsType);
+      return m_nObsTypes == null ? true : Arrays.binarySearch(m_nObsTypes, nObsType) >= 0;
     }
 
     /**
@@ -570,11 +569,14 @@ public class Subscription {
      * @param oGetRadius    prepared radius database query, ready to execute.
      * @param oGetContrib   prepared contributor db query, ready to execute.
      * @param oGetStation   prepared station database query, ready to execute.
+     * @param oGetSubObs    prepared subs obstype query, ready to execute.
      * @throws java.lang.Exception
      */
     public void deserialize(ResultSet oSubscription,
                             PreparedStatement oGetRadius, PreparedStatement oGetContrib,
-                            PreparedStatement oGetStation) throws Exception {
+                            PreparedStatement oGetStation,
+                            PreparedStatement oGetSubObs) throws Exception
+    {
         m_nId = oSubscription.getInt(1);
 
         // set the subscription parameters
@@ -594,7 +596,29 @@ public class Subscription {
         if (oSubscription.wasNull())
             m_dLng2 = Double.MAX_VALUE;
 
-        m_nObsType = oSubscription.getInt(6);
+        int nObstype = oSubscription.getInt(6);
+        if (oSubscription.wasNull())
+        {
+          oGetSubObs.setInt(1, m_nId);
+          int nRows = 0;
+          try(ResultSet oRs = oGetSubObs.executeQuery())
+          {
+            oRs.last();
+            nRows = oRs.getRow();
+            oRs.beforeFirst();
+            int nCount = 0;
+            m_nObsTypes = new int[nRows];
+            while (oRs.next())
+              m_nObsTypes[nCount++] = oRs.getInt(1);
+          }
+        }
+        else if(nObstype == 0)
+          m_nObsTypes = null;
+        else // old record created before support for multiple obstypes
+        {
+          m_nObsTypes = new int[1];
+          m_nObsTypes[0] = nObstype;
+        }
 
         m_dMin = oSubscription.getDouble(7);
         if (oSubscription.wasNull())
@@ -611,26 +635,29 @@ public class Subscription {
 
         m_oRadius = null;
         oGetRadius.setInt(1, m_nId);
-        ResultSet rs = oGetRadius.executeQuery();
-        if (rs.next())
+        try(ResultSet rs = oGetRadius.executeQuery())
+        {
+          if (rs.next())
             m_oRadius = new PointRadius(rs.getInt(1),
                     rs.getInt(2),
                     rs.getInt(3));
-        rs.close();
+        }
 
         m_oContribIds.clear();
         oGetContrib.setInt(1, m_nId);
-        rs = oGetContrib.executeQuery();
-        while (rs.next())
+        try(ResultSet rs = oGetContrib.executeQuery())
+        {
+          while (rs.next())
             m_oContribIds.add(new Integer(rs.getInt(1)));
-        rs.close();
+        }
 
         m_oPlatformIds.clear();
         oGetStation.setInt(1, m_nId);
-        rs = oGetStation.executeQuery();
-        while (rs.next())
-            m_oPlatformIds.add(new Integer(rs.getInt(1)));
-        rs.close();
+        try(ResultSet rs = oGetStation.executeQuery())
+        {
+          while (rs.next())
+              m_oPlatformIds.add(new Integer(rs.getInt(1)));
+        }
     }
 
     /**

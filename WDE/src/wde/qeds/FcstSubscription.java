@@ -1,9 +1,9 @@
 package wde.qeds;
 
-import org.apache.log4j.Logger;
-import wde.util.MathUtil;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import org.apache.log4j.Logger;
+import wde.util.MathUtil;
 
 
 /**
@@ -14,44 +14,16 @@ import java.sql.ResultSet;
  */
 public class FcstSubscription extends Subscription{
     private static final Logger logger = Logger.getLogger(FcstSubscription.class);
-	 
-	 public int[] m_nObsTypes;
 
     /**
-     * Creates a new default instance of {@code Subscription}.
+     * Creates a new default inssrtance of {@code Subscription}.
      */
-    public FcstSubscription() 
+    public FcstSubscription()
 	 {
 		 m_nCycle = 60;
-		 m_sOutputFormat = "CSV";
     }
 
 
-    /**
-     * Sets the observation-type, and observation-bound filters. The string
-     * should be comma-delimited of the form:
-     * <blockquote>
-     * observation-type, observation-min-value, observation-max-value
-     * </blockquote>
-     *
-     * @param sObs comma-delimited string containing observation filters.
-     */
-	 @Override
-    public void setObs(String sObs) 
-	 {
-        logger.debug("setObs(" + sObs + ")");
-        m_nObsType = 0;
-
-        String[] sObsFilters = sObs.split(",");
-		  m_nObsTypes = new int[sObsFilters.length];
-		  if (m_nObsTypes.length == 1)
-			  m_nObsType = m_nObsTypes[0];
-		  
-		  for (int i = 0; i < sObsFilters.length; i++)
-			  m_nObsTypes[i] = Integer.parseInt(sObsFilters[i]);
-    }
-
-    
 
     /**
      * Extracts the data associated with the subscription id specified by the
@@ -83,8 +55,9 @@ public class FcstSubscription extends Subscription{
         if (oSubscription.wasNull())
             m_dLng2 = Double.MAX_VALUE;
 
-        m_nObsType = oSubscription.getInt(6);
-		  if (m_nObsType == 0)
+        int nObsType = oSubscription.getInt(6);
+
+      if (nObsType == 0)
 		  {
 			  oGetSubObs.setInt(1, m_nId);
 			  int nRows = 0;

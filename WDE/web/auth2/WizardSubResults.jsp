@@ -84,7 +84,22 @@
         }
 
         // set the observation type
-        oUpdateSubscription.setInt(5, oSubscription.m_nObsType);
+        if(oSubscription.m_nObsTypes == null)
+          oUpdateSubscription.setInt(5, 0);
+        else
+        {
+          oUpdateSubscription.setNull(5, Types.INTEGER);
+        
+            
+          PreparedStatement oInsertObsTypes = iConnection.prepareStatement("INSERT INTO subs.subobs (subid, obstypeid) VALUES (?, ?)");
+          oInsertObsTypes.setInt(1, nSubId);
+          for (int i = 0; i < oSubscription.m_nObsTypes.length; i++)
+          {
+            oInsertObsTypes.setInt(2, oSubscription.m_nObsTypes[i]);
+            oInsertObsTypes.execute();
+          }
+          oInsertObsTypes.close();      
+        }
 
         // set the observation value acceptable range
         if (oSubscription.m_dMin == Double.NEGATIVE_INFINITY) {
@@ -196,8 +211,8 @@
             oWriter.write("  PointRadiusRadius = not used" + "\r\n");
         }
 
-        oWriter.write("  ObsType  = " + oSubscription.m_nObsType);
-        if (oSubscription.m_nObsType == 0) {
+        oWriter.write("  ObsType  = " + oSubscription.m_nObsTypes);
+        if (oSubscription.m_nObsTypes == null) {
             oWriter.write(" (all)");
             }
 
@@ -206,7 +221,7 @@
         oWriter.write("  MinValue = " + oSubscription.m_dMin + "\r\n");
         oWriter.write("  MaxValue = " + oSubscription.m_dMax + "\r\n");
 
-        if (oSubscription.m_nObsType == 0)
+        if (oSubscription.m_nObsTypes == null)
         {
             oWriter.write("  RunFlags    = not applicable\r\n");
             oWriter.write("  PassNotPass = not applicable\r\n");

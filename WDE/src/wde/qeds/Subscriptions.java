@@ -20,6 +20,16 @@
  */
 package wde.qeds;
 
+import java.io.File;
+import java.io.PrintWriter;
+import java.sql.*;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.GregorianCalendar;
+import java.util.Hashtable;
+import java.util.TimeZone;
+import javax.servlet.http.HttpServletRequest;
+import javax.sql.DataSource;
 import org.apache.catalina.realm.GenericPrincipal;
 import org.apache.log4j.Logger;
 import wde.WDEMgr;
@@ -34,17 +44,6 @@ import wde.util.Config;
 import wde.util.ConfigSvc;
 import wde.util.MathUtil;
 import wde.util.Scheduler;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.sql.DataSource;
-import java.io.File;
-import java.io.PrintWriter;
-import java.sql.*;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.GregorianCalendar;
-import java.util.Hashtable;
-import java.util.TimeZone;
 
 /**
  * Provides an interface and control class that gathers and processes
@@ -245,7 +244,7 @@ public class Subscriptions implements Runnable {
             Timestamp endTime = new Timestamp(sub.m_lEndTime);
             Timestamp runningTime = new Timestamp(sub.m_lStartTime);
 
-            logger.info("Statistics on-demand query obsType: " + sub.m_nObsType
+            logger.info("Statistics on-demand query obsType: " + sub.m_nObsTypes
                     + " Start time: " + beginTime + " End time: " + endTime
                     + " Contributors: " + contribListStr + " Platforms: " + platformListStr);
 
@@ -264,10 +263,20 @@ public class Subscriptions implements Runnable {
                 String queryStr = null;
                 String obsTypeStr1 = "";
                 String obsTypeStr2 = "";
-                if (sub.m_nObsType != 0) {
-                    obsTypeStr1 = " and o.obsTypeId = " + sub.m_nObsType;
-                    obsTypeStr2 = " and obsTypeId = " + sub.m_nObsType;
+                if (sub.m_nObsTypes != null)
+                {
+                  StringBuilder conditionBuilder = new StringBuilder(50);
+                  for(int obstype : sub.m_nObsTypes)
+                    conditionBuilder.append(",").append(obstype);
+
+                  String obstypeList = conditionBuilder.substring(1);
+
+                  conditionBuilder.setLength(0);
+                  obsTypeStr1 =conditionBuilder.append(" and o.obsTypeId IN(").append(obstypeList).append(")").toString();
+                  conditionBuilder.setLength(0);
+                  obsTypeStr2 = conditionBuilder.append(" and obsTypeId IN(").append(obstypeList).append(")").toString();
                 }
+
                 if (contribListStr != null && contribListStr.length() > 2)
                     queryStr = "SELECT o.* FROM obs.\"" + tableName + "\" o, meta.sensor s " +
                             "WHERE obsTime >= ? AND obsTime < ? AND o.sensorId=s.id " +
@@ -426,7 +435,7 @@ public class Subscriptions implements Runnable {
             PreparedStatement iGetRadius = iSubsDb.prepareStatement("SELECT lat, lng, radius FROM subs.subRadius WHERE subId = ?");
             PreparedStatement iGetContrib = iSubsDb.prepareStatement("SELECT contribId FROM subs.subContrib WHERE subId = ?");
             PreparedStatement iGetStation = iSubsDb.prepareStatement("SELECT stationId FROM subs.subStation WHERE subId = ?");
-
+            PreparedStatement iGetSubObs = iSubsDb.prepareStatement("SELECT obstypeid FROM subs.subobs WHERE subId = ?", ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
             // the result sets are stored in memory and can be passed to
             // other methods repeatedly
             PreparedStatement iSubsQuery = iSubsDb.prepareStatement(SUBS_QUERY);
@@ -436,7 +445,7 @@ public class Subscriptions implements Runnable {
                 // process all subscriptions for the current cycle
                 int nCycle = iSubsResults.getInt(12);
                 if (oNow.get(GregorianCalendar.MINUTE) % nCycle == 0) {
-                    oSubs.deserialize(iSubsResults, iGetRadius, iGetContrib, iGetStation);
+                    oSubs.deserialize(iSubsResults, iGetRadius, iGetContrib, iGetStation, iGetSubObs);
 
                     // ensure the subscription destination exists
                     String sPath = m_sSubsDir + oSubs.m_nId;
@@ -466,6 +475,7 @@ public class Subscriptions implements Runnable {
             // free most of the subscription database resources
             iSubsResults.close();
             iGetRadius.close();
+            iGetSubObs.close();
             iGetContrib.close();
             iGetStation.close();
             iSubsQuery.close();
@@ -486,22 +496,26 @@ public class Subscriptions implements Runnable {
             iGetRadius = iSubsDb.prepareStatement("DELETE FROM subs.subRadius WHERE subId = ?");
             iGetContrib = iSubsDb.prepareStatement("DELETE FROM subs.subContrib WHERE subId = ?");
             iGetStation = iSubsDb.prepareStatement("DELETE FROM subs.subStation WHERE subId = ?");
+    		iGetSubObs = iSubsDb.prepareStatement("DELETE FROM subs.subobs WHERE subId = ?");
 
             nIndex = oSubIds.size();
             while (nIndex-- > 0) {
-                int m_nSubId = oSubIds.get(nIndex).intValue();
+                int nSubId = oSubIds.get(nIndex).intValue();
 
-                iGetRadius.setInt(1, m_nSubId);
+                iGetRadius.setInt(1, nSubId);
                 iGetRadius.executeUpdate();
 
-                iGetContrib.setInt(1, m_nSubId);
+                iGetContrib.setInt(1, nSubId);
                 iGetContrib.executeUpdate();
 
-                iGetStation.setInt(1, m_nSubId);
+                iGetStation.setInt(1, nSubId);
                 iGetStation.executeUpdate();
 
-                iSubsQuery.setInt(1, m_nSubId);
+                iSubsQuery.setInt(1, nSubId);
                 iSubsQuery.executeUpdate();
+
+              iGetSubObs.setInt(1, nSubId);
+              iGetSubObs.executeUpdate();
             }
 
             // free the remainder of the subscription database resources
@@ -509,6 +523,7 @@ public class Subscriptions implements Runnable {
             iGetContrib.close();
             iGetStation.close();
             iSubsQuery.close();
+            iGetSubObs.close();
             iSubsDb.close();
 
             // remove old files and directories
@@ -563,12 +578,12 @@ public class Subscriptions implements Runnable {
 
         logger.info("run() returning");
     }
-	 
-	 
+
+
 	/**
-	 * Gets and increments the next unique subscription id 
+	 * Gets and increments the next unique subscription id
 	 * @return subscription id
-	 */ 
+	 */
 	 public int getNextId()
 	{
 		return FcstSubscriptions.getInstance().getNextId();

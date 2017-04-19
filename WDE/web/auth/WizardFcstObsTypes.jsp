@@ -91,7 +91,7 @@
             <input id="subscribeUrl" type="hidden"
                    value="<%= response.encodeURL("/auth/WizardFcstSubscribe.jsp") %>"/>
             <% } %>
-            <input id="obs" name="obs" type="hidden" value=""/>
+            <input id="obs" name="obsType" type="hidden" value=""/>
         </form>
     </div>
     <div id="instructions" class="col-4"
