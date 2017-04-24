@@ -49,7 +49,7 @@
                 </tr>
                 <tr>
                     <td>
-                        <select id="listObsTypes" onchange="ObsTypeChanged()"></select>
+                      <select id="listObsTypes" multiple="multiple" onchange="ObsTypeChanged()"></select>
                     </td>
                     <td>
                         <input id="txtMin" type="text" size="10"

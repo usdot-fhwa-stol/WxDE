@@ -36,7 +36,7 @@ function cbGetObsTypes(oXml, oText)
   var oSelect = document.getElementById("listObsTypes");
 
   var oRow;
-  ListboxInsertItem(oSelect, "All Observations", "", true);
+  //ListboxInsertItem(oSelect, "All Observations", "", true);
   //oSelect.append('<option value="" selected>All Observations</option>');
 
   for (var i = 0; i < oObsTypes.length; i++)
@@ -49,11 +49,29 @@ function cbGetObsTypes(oXml, oText)
   }
 }
 
+function getSelectValues(select)
+{
+  var result = [];
+  var options = select && select.options;
+  var opt;
+
+  for (var i = 0, iLen = options.length; i < iLen; i++)
+  {
+    opt = options[i];
+
+    if (opt.selected)
+    {
+      result.push(opt.value || opt.text);
+    }
+  }
+  return result;
+}
 
 function ObsTypeChanged()
 {
   var oSelect = document.getElementById("listObsTypes");
 
+  var oSelectedItems = getSelectValues(oSelect);
   // Remove the Quality Check Tests table and all of its
   // elements.
   while (m_oTestTable.hasChildNodes())
@@ -68,19 +86,21 @@ function ObsTypeChanged()
   oTxtMax.value = "";
 
 
+
   // Always turn off the ObsType-specific elements if the
   // user has selected the "All Observations" item.
-  if (oSelect.value == "")
+  if (oSelectedItems.length !== 1)
   {
     ShowObsSpecificStuff(false);
   }
   else
   {
+
     // Turn on the ObsType-specific elements.
     ShowObsSpecificStuff(true);
 
     var oXmlRequest = new XmlRequest();
-    oXmlRequest.addParameter("obsType", oSelect.value);
+    oXmlRequest.addParameter("obsType", oSelectedItems[0]);
     oXmlRequest.getXml("../auth/listQualityChecks.jsp?" + csrf_nonce_param, cbGetQualityChecks);
   }
 }
@@ -243,6 +263,8 @@ function Validate()
   var oObsMax = document.getElementById("maxObs");
   var oObsMin = document.getElementById("minObs");
 
+
+
   oObsTypes.value = "";
   oObsMin.value = "";
   oObsTypes.value = "";
@@ -256,10 +278,17 @@ function Validate()
 
   // The remainder of the parameters are dependent on an observation type being selected
   var oObsTypeList = document.getElementById("listObsTypes");
-  var nIndex = oObsTypeList.selectedIndex;
+  var oSelectedObstypes = getSelectValues(oObsTypeList);
 
-  // Index greater than zero skips the "no selection" option
-  if (nIndex > 0)
+  if (oSelectedObstypes.length === 0)
+  {
+    oStatusMessage.nodeValue = "No ObsType selected.";
+    return;
+  }
+
+
+  // More than one selected item skips the "no selection" option
+  if (oSelectedObstypes === 1)
   {
     if (sMin.length > 0 && !ValidateNumbers(sMin))
     {
@@ -273,7 +302,6 @@ function Validate()
       return;
     }
 
-    var sObs = oObsTypeList.options[nIndex].value;
 
     if (sMin.length > 0)
       oObsMin.value = sMin;
@@ -281,8 +309,6 @@ function Validate()
 
     if (sMax.length > 0)
       oObsMax.value = sMax;
-
-    oObsTypes.value = sObs;
 
 
     // Javascript doesn't allow us to set an individual character in a string easily.
@@ -330,6 +356,8 @@ function Validate()
 
     oFlags.value = sFlags;
   }
+
+  oObsTypes.value = oSelectedObstypes.join(',');
 
   document.forms[0].submit();
 }
