@@ -18,7 +18,7 @@
 String sRequestFile = request.getParameter("file");
 
 	String subId = request.getParameter("subId");
-	if (!SubscriptionHelper.isAuthorized(request.getRemoteUser(), subId) || sRequestFile == null || !sRequestFile.matches("^[0-9_]*$")) {
+	if (!SubscriptionHelper.isAuthorized(request.getRemoteUser(), subId) || sRequestFile == null || !sRequestFile.matches("^[0-9_]*\\.[a-zA-Z]{3,4}$")) {
 		response.sendError(401, "Unauthorized!" );
 	}
 
