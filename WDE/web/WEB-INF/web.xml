@@ -291,7 +291,7 @@
       </init-param>
       <init-param>
         <param-name>hstsMaxAgeSeconds</param-name>
-        <param-value>7776000</param-value>
+        <param-value>31536000</param-value>
       </init-param>
       <init-param>
         <param-name>hstsIncludeSubDomains</param-name>
