@@ -70,7 +70,7 @@ public class StateStatusServlet extends HttpServlet
    */
   private static final String[] m_sDataSharingStates =
   {
-    "US.AK", "US.AZ", "US.CA", "US.CO", "US.DE", "US.FL", "US.GA", "US.IA", "US.ID", "US.IL", "US.IN", "US.KS", "US.KY", "US.MI", "US.MN", "US.MO", "US.MT", "US.ND", "US.NH", "US.NJ", "US.NV", "US.NY", "US.OR", "US.SD", "US.VT", "US.WI", "US.WY"
+    "US.AK", "US.AZ", "US.CA", "US.CO", "US.DE", "US.FL", "US.GA", "US.IA", "US.ID", "US.IL", "US.IN", "US.KS", "US.KY", "US.MA", "US.MI", "US.MN", "US.MO", "US.MT", "US.ND", "US.NE", "US.NH", "US.NJ", "US.NV", "US.NY", "US.OH", "US.OR", "US.SD", "US.UT", "US.VT", "US.WA", "US.WI", "US.WY"
   };
 
   /**
@@ -78,7 +78,7 @@ public class StateStatusServlet extends HttpServlet
    */
   private static final String[] m_sMetadataStates =
   {
-    "US.AK", "US.AZ", "US.CA", "US.CO", "US.DE", "US.FL", "US.GA", "US.IA", "US.ID", "US.IL", "US.IN", "US.KS", "US.KY", "US.MA", "US.MD", "US.ME", "US.MI", "US.MN", "US.MO", "US.MT", "US.ND", "US.NE", "US.NH", "US.NH", "US.NM", "US.NV", "US.NY", "US.OH", "US.OK", "US.OR", "US.SC", "US.SD", "US.TN", "US.TX", "US.UT", "US.VA", "US.VT", "US.WA", "US.WI", "US.WV", "US.WY"
+    "US.AK", "US.AZ", "US.CA", "US.CO", "US.DE", "US.FL", "US.GA", "US.IA", "US.ID", "US.IL", "US.IN", "US.KS", "US.KY", "US.MA", "US.MD", "US.ME", "US.MI", "US.MN", "US.MO", "US.MT", "US.ND", "US.NE", "US.NH", "US.NH", "US.NM", "US.NV", "US.NY", "US.OK", "US.OR", "US.SC", "US.SD", "US.TN", "US.TX", "US.UT", "US.VA", "US.VT", "US.WI", "US.WV", "US.WY"
   };
 
   /**
