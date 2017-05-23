@@ -646,13 +646,15 @@ L.WxdeLayer = L.LayerGroup.extend({
       {
         if (thisLayer._highlighter)
           thisLayer._highlighter.styleLayer(this);
-        stationDiv.innerHTML = this.getStationCode();
+        if (stationDiv)
+          stationDiv.innerHTML = this.getStationCode();
       };
       this._markerMouseOut = function (event)
       {
         if (thisLayer._highlighter)
           thisLayer.layerStyler.styleLayer(this);
-        stationDiv.innerHTML = '';
+        if (stationDiv)
+          stationDiv.innerHTML = '';
       };
     }
 
