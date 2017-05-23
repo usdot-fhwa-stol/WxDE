@@ -1,0 +1,54 @@
+
+    #map-container
+    {
+      top:0px;
+    }
+    
+    
+    #alert-conditions input[type="text"]
+    {
+      width:50px;
+    }
+    
+    #alert-conditions input[type="button"]
+    {
+      width:30px;
+      text-align: center;
+    }
+    
+    #alert-conditions td
+    {
+      padding: .5em;
+    }
+    
+    
+    #divReportTabs, #divNotificationMessage
+    {
+      display: inline-block;
+    }
+    
+    #divReportTabs
+    {
+      width: 15em;
+      height: 5em;
+    }
+    
+    #txtNotificationMessage
+    {
+      width: 25em;
+      height: 5em;
+    }
+    
+    #LayersMenu
+    {
+      display:none;
+    }
+
+#linkArea2
+{
+    float: left;
+    max-width: 499px;
+    min-width: 499px;
+    height: auto;
+    border-radius: 5px;
+}

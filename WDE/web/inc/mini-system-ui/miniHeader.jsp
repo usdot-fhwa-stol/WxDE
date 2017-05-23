@@ -270,6 +270,10 @@
                             Forecast
                             <img src="/image/icons/dark/fa-lock.png" class="reduce-top-margin-2" alt="Lock Icon"/>
                         </a></li>
+                        <li><a href="<%= response.encodeURL("/auth2/createAlert.jsp") %>" class="ie-fix-li-2" style="width: 130px;">
+                            Notifications
+                            <img src="/image/icons/dark/fa-lock.png" class="reduce-top-margin-2" alt="Lock Icon"/>
+                        </a></li>
                     </ul>
 
                     <% } else { %>
@@ -283,6 +287,9 @@
                         </a></li>
                         <li><a href="<%= response.encodeURL("/auth/WizardFcstGeospatial.jsp") %>" class="ie-fix-li-2" style="width: 130px;">
                             Forecast
+                        </a></li>
+                        <li><a href="<%= response.encodeURL("/auth2/createAlert.jsp") %>" class="ie-fix-li-2" style="width: 130px;">
+                            Notifications
                         </a></li>
                     </ul>
 
