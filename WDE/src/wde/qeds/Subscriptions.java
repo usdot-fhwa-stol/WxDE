@@ -122,6 +122,8 @@ public class Subscriptions implements Runnable {
      * Pointer to {@code Units} conversions.
      */
     Units m_oUnits = Units.getInstance();
+
+    NotificationEvaluator m_oNotificationEvaluator = new NotificationEvaluator();
     /**
      * Not currently used - length of time to keep {@code Subscription}
      * records.
@@ -334,8 +336,7 @@ public class Subscriptions implements Runnable {
             dbConn.close();
             dbConn = null;
         } catch (Exception e) {
-            e.printStackTrace();
-            logger.error(e.getMessage());
+            logger.error(e.getMessage(), e);
         }
 
         return status;
@@ -397,8 +398,11 @@ public class Subscriptions implements Runnable {
         GregorianCalendar oNow = new GregorianCalendar();
         Timestamp oNowTs = new Timestamp(oNow.getTimeInMillis());
 
+        long lNotificationObsTimeCutoff = oNow.getTimeInMillis() - 1000L * 60 * 5;
+
         // only one object of each is needed to deserialize database records
         ArrayList<SubObs> oSubObsList = new ArrayList<SubObs>();
+        ArrayList<SubObs> oNotificationObsList = new ArrayList<SubObs>();
         Subscription oSubs = new Subscription();
 
         // a 30-minute window is always queried
@@ -410,16 +414,23 @@ public class Subscriptions implements Runnable {
             SubObs oSubObs = new SubObs(m_oContribs, platformDao,
                     sensorDao, m_oUnits, obsTypeDao, oRawObsList.get(nIndex));
 
-            // only add obs that have valid metadata and can be distributed
+            // only add obs that have valid metadata
             if
                     (
                     oSubObs.m_iObsType != null &&
                             oSubObs.m_iSensor != null &&
-                            oSubObs.m_iSensor.getDistGroup() == 2 &&
                             oSubObs.m_oContrib != null &&
                             oSubObs.m_iPlatform != null
                     )
+            {
+              //only add obs since the last time notifications were evaluated
+              if(oSubObs.recvTime >= lNotificationObsTimeCutoff)
+                oNotificationObsList.add(oSubObs);
+
+              //only add obs that can be distributed
+              if(oSubObs.m_iSensor.getDistGroup() == 2)
                 oSubObsList.add(oSubObs);
+            }
         }
 
         try {
@@ -559,6 +570,8 @@ public class Subscriptions implements Runnable {
                 }
             }
 
+            m_oNotificationEvaluator.processNotifications(oNotificationObsList);
+
 //			if (m_iDsObs != null)
 //			{
 //				// delete cached observations older than 7 days
@@ -572,8 +585,7 @@ public class Subscriptions implements Runnable {
 //				iObsDb.close();
 //			}
         } catch (Exception e) {
-            e.printStackTrace();
-            logger.error(e.getMessage());
+            logger.error(e.getMessage(), e);
         }
 
         logger.info("run() returning");
