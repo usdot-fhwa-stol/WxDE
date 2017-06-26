@@ -4,6 +4,10 @@
       top:0px;
     }
     
+    #wdeMenu ul
+    {
+      z-index:1000;
+    }
     
     #alert-conditions input[type="text"]
     {

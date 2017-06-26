@@ -5,6 +5,8 @@
       float:left;
     }
     
+    .ui-dialog { z-index: 1000 !important ;}
+    
     #LayersMenuContainer, #unitsFieldSet label
     {
       margin-left:5px;
@@ -49,6 +51,7 @@
     {
       display:none;
     }
+    /*
     .leaflet-marker-pane
     {
       z-index: 4;
@@ -57,7 +60,7 @@
     {
       z-index: 5;
     }
-    
+    */
     #obstypes
     {
       margin-left:15px;
@@ -67,7 +70,7 @@
     {
       display:block; 
       float:left; 
-      z-index: 10; 
+      z-index: 1000; 
       position:absolute; 
       bottom: 12px;
       display:none;
