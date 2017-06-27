@@ -1,4 +1,3 @@
-L.Icon.Default.prototype.options.imagePath = '/image/';
 {
 
   var selectedRectangle, nw, se;
@@ -228,8 +227,8 @@ L.Icon.Default.prototype.options.imagePath = '/image/';
         map.dragging.enable();
 
 
-        //      nw = L.marker(selectedRectangle.getBounds().getNorthWest(), {zIndexOffset: 10000, riseOnHover: true, draggable: true}).addTo(map);
-        //     se = L.marker(selectedRectangle.getBounds().getSouthEast(), {zIndexOffset: 10000, riseOnHover: true, draggable: true}).addTo(map);
+        nw = L.marker(selectedRectangle.getBounds().getNorthWest(), {zIndexOffset: 10000, riseOnHover: true, draggable: true}).addTo(map);
+        se = L.marker(selectedRectangle.getBounds().getSouthEast(), {zIndexOffset: 10000, riseOnHover: true, draggable: true}).addTo(map);
 
         var dragEnd = function (e3)
         {
@@ -237,8 +236,8 @@ L.Icon.Default.prototype.options.imagePath = '/image/';
         };
         document.getSelection().removeAllRanges();
 
-//        nw.on("dragend", dragEnd);
-//        se.on("dragend", dragEnd);
+        nw.on("dragend", dragEnd);
+        se.on("dragend", dragEnd);
 
         map.off('mouseup', mouseOut);
         map.off('mouseout', mouseOut);
@@ -264,6 +263,8 @@ L.Icon.Default.prototype.options.imagePath = '/image/';
     $("#btnResetArea").click(function ()
     {
       map.removeLayer(selectedRectangle);
+      map.removeLayer(se);
+      map.removeLayer(nw);
       setReportStep(1);
     });
 
