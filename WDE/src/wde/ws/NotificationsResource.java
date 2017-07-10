@@ -65,12 +65,13 @@ public class NotificationsResource
 
   @DELETE
   @Path("{id}")
-  public Response deleteNotification(@PathParam("id") String id)
+  public Response deleteNotification(@PathParam("id") int id)
   {
-    return Response.ok().build();
+
+    return ( notificationsDao.deleteNotification(id) ? Response.ok() :Response.serverError()).build();
   }
 
-  
+
   private void serializeNotification(JsonGenerator jsonGen, Notification notification) throws IOException
   {
     jsonGen.writeStartObject();
