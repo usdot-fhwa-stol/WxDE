@@ -168,9 +168,21 @@ public class NotificationDao
     }
   }
 
-  public void deleteNotification(long notificationId)
+  public boolean deleteNotification(int notificationId)
   {
-
+    try(Connection con = datasource.getConnection();
+            PreparedStatement updateNotifStmt = con.prepareStatement(
+                    "DELETE FROM subs.notification WHERE id = ?"))
+    {
+      updateNotifStmt.setInt(1, notificationId);
+      updateNotifStmt.execute();
+      return true;
+    }
+    catch(Exception ex)
+    {
+      logger.error("error deleting notification " + notificationId, ex);
+      return false;
+    }
   }
 
   private List<Notification> privGetNotifications(String userName)
