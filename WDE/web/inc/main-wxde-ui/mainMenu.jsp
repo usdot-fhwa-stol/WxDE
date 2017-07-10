@@ -203,7 +203,7 @@
                         <img src="/image/icons/light/fa-lock.png" style="margin-left: 12px;" alt="Locked"/>
                         <% } %>
                     </a></li>
-                    <li><a href="<%= response.encodeURL("/auth2/createAlert.jsp")%>">
+                    <li><a href="<%= response.encodeURL("/auth2/viewAlerts.jsp")%>">
                         Notifications
                         <% if (request.getUserPrincipal() == null) {%>
                         <!-- 									<i class="icon-lock" style="margin-left:12px;"></i> -->

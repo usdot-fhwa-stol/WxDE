@@ -325,7 +325,8 @@
         data: JSON.stringify(notification),
         success: function (data)
         {
-          alert('New notification id: ' + data.id);
+          window.location.href = '/auth2/viewAlerts.jsp?' + csrf_nonce_param;
+
         },
         contentType: "application/json",
         dataType: 'json'
