@@ -61,13 +61,18 @@
 
           });
 
+          var operatorMap = [];
+          operatorMap['Gt'] = '>';
+          operatorMap['GtEq'] = '>=';
+          operatorMap['Lt'] = '<';
+          operatorMap['LtEq'] = '<=';
           var conditionTableBody = notificationRow.find('tbody');
           $.each(value.conditions, function (index, condition)
           {
             conditionTableBody.append('<tr>' +
                     '<td>' + condition.filter + '</td>' +
                     '<td>' + condition.obstypeId + '</td>' +
-                    '<td>' + condition.operator + '</td>' +
+                    '<td>' + operatorMap[condition.operator] + '</td>' +
                     '<td>' + condition.value + '</td>' +
                     '<td>' + condition.tolerance + '</td>' +
                     '</tr>');
