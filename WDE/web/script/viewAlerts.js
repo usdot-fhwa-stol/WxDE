@@ -34,7 +34,7 @@
         var table = $('<table class="reports-table"><thead>' +
                 '<th>message</th>' +
                 '<th>bounds</th>' +
-                '<th>trgrd</th><th>Conditions</th><th>delete</thead></thead><tbody></tbody></table>').appendTo("#divNotifications");
+                '<th>Conditions</th><th>delete</thead></thead><tbody></tbody></table>').appendTo("#divNotifications");
         var tableBody = table.find("tbody");
 
         $.each(data, function (index, value)
@@ -45,7 +45,7 @@
                           '<td>' + value.message + '</td>' +
                           '<td>lat1: ' + value.lat1 + '<br />lon1: ' + value.lon1 +
                           '<br />lat2: ' + value.lat2 + '<br />lon2: ' + value.lon2 + '</td>' +
-                          '<td>' + value.triggered + '</td><td><table><thead><th>filter</th><th>obstype</th><th>comp</th><th>val</th><th>tol</th><th>trgrd</th></thead><tbody></tbody></table></td><td><input type="button" value="delete" /></td></tr>');
+                          '<td><table><thead><th>filter</th><th>obstype</th><th>comp</th><th>val</th><th>tol</th></thead><tbody></tbody></table></td><td><input type="button" value="delete" /></td></tr>');
 
 
           notificationRow.appendTo(tableBody).data('id', value.id);
@@ -70,7 +70,6 @@
                     '<td>' + condition.operator + '</td>' +
                     '<td>' + condition.value + '</td>' +
                     '<td>' + condition.tolerance + '</td>' +
-                    '<td>' + condition.triggered + '</td>' +
                     '</tr>');
           });
         });
