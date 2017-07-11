@@ -2,6 +2,7 @@ package wde.ws;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.text.DecimalFormat;
 import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -22,6 +23,8 @@ import org.codehaus.jackson.JsonEncoding;
 import org.codehaus.jackson.JsonFactory;
 import org.codehaus.jackson.JsonGenerator;
 import wde.dao.NotificationDao;
+import wde.dao.ObsTypeDao;
+import wde.metadata.ObsType;
 import wde.qeds.Notification;
 import wde.qeds.NotificationCondition;
 
@@ -32,8 +35,10 @@ import wde.qeds.NotificationCondition;
 @Path("notifications")
 public class NotificationsResource
 {
+
   private final JsonFactory m_oJsonFactory = new JsonFactory();
 
+  private ObsTypeDao obstypeDao = ObsTypeDao.getInstance();
 
   @Context
   protected UriInfo uriInfo;
@@ -45,18 +50,27 @@ public class NotificationsResource
   private static final NotificationDao notificationsDao = NotificationDao.getInstance();
 
   @GET
-  @Produces({ MediaType.APPLICATION_JSON })
+  @Produces(
+  {
+    MediaType.APPLICATION_JSON
+  })
   public Response getNotifications()
   {
     return Response.ok(getNotificationJsonStream(notificationsDao.getUserNotifications(req.getUserPrincipal().getName()))).build();
   }
 
   @POST
-  @Consumes({ MediaType.APPLICATION_JSON})
-  @Produces({ MediaType.APPLICATION_JSON})
+  @Consumes(
+  {
+    MediaType.APPLICATION_JSON
+  })
+  @Produces(
+  {
+    MediaType.APPLICATION_JSON
+  })
   public Response addNotification(Notification notification)
   {
-    if(req.getUserPrincipal() != null)
+    if (req.getUserPrincipal() != null)
       notification.setUsername(req.getUserPrincipal().getName());
     notificationsDao.insertNotification(notification);
 
@@ -68,9 +82,8 @@ public class NotificationsResource
   public Response deleteNotification(@PathParam("id") int id)
   {
 
-    return ( notificationsDao.deleteNotification(id) ? Response.ok() :Response.serverError()).build();
+    return (notificationsDao.deleteNotification(id) ? Response.ok() : Response.serverError()).build();
   }
-
 
   private void serializeNotification(JsonGenerator jsonGen, Notification notification) throws IOException
   {
@@ -81,19 +94,25 @@ public class NotificationsResource
     jsonGen.writeNumberField("lat2", notification.getLat2());
     jsonGen.writeNumberField("lon2", notification.getLon2());
     jsonGen.writeStringField("message", notification.getMessage());
-      jsonGen.writeBooleanField("triggered", notification.isTriggered());
-      jsonGen.writeBooleanField("usingMetric", notification.isUsingMetric());
+    jsonGen.writeBooleanField("triggered", notification.isTriggered());
+    jsonGen.writeBooleanField("usingMetric", notification.isUsingMetric());
 
+    DecimalFormat formatter = new DecimalFormat("0.##");
     jsonGen.writeArrayFieldStart("conditions");
-    for(NotificationCondition condition : notification.getConditions())
+    for (NotificationCondition condition : notification.getConditions())
     {
+      ObsType obstype = obstypeDao.getObsType(condition.getObstypeId());
       jsonGen.writeStartObject();
       jsonGen.writeStringField("filter", condition.getFilter().name());
       jsonGen.writeStringField("operator", condition.getOperator().name());
       jsonGen.writeNumberField("obstypeId", condition.getObstypeId());
-      jsonGen.writeNumberField("tolerance", condition.getTolerance());
-      jsonGen.writeNumberField("value", condition.getValue());
+      jsonGen.writeStringField("tolerance", formatter.format(condition.getTolerance()));
       jsonGen.writeBooleanField("triggered", condition.isTriggered());
+
+      if (obstype != null)
+        jsonGen.writeStringField("obstypeName", obstype.getObsType());
+
+      jsonGen.writeStringField("value", formatter.format(condition.getValue()));
       jsonGen.writeEndObject();
     }
     jsonGen.writeEndArray();
@@ -131,7 +150,7 @@ public class NotificationsResource
         try (JsonGenerator jsonGen = m_oJsonFactory.createJsonGenerator(os, JsonEncoding.UTF8))
         {
           jsonGen.writeStartArray();
-          for(Notification notification : notifications)
+          for (Notification notification : notifications)
           {
             serializeNotification(jsonGen, notification);
           }

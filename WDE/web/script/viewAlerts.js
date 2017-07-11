@@ -71,7 +71,7 @@
           {
             conditionTableBody.append('<tr>' +
                     '<td>' + condition.filter + '</td>' +
-                    '<td>' + condition.obstypeId + '</td>' +
+                    '<td>' + condition.obstypeName + '</td>' +
                     '<td>' + operatorMap[condition.operator] + '</td>' +
                     '<td>' + condition.value + '</td>' +
                     '<td>' + condition.tolerance + '</td>' +
