@@ -46,10 +46,20 @@
     <div id="map_canvas" > </div>
 </div>
 		</div>
-		<div id="instructions" class="col-4" style="margin:0; margin-top:-15px;">
-			<h3>Instructions</h3>
+		<div id="instructions" class="col-4" style="margin-top:-15px;">
+			<h3>Alert Notification Instructions</h3>
 			<p>
-				some instructions
+Alert notifications are used to send a notification message by email, with a specific subject line, when a particular set of weather alert conditions are observed in a particular area. 
+To set the area, use the map to zoom to the area for which you would like to receive alert notifications. Select the <b>Set Selected Area</b> button. Click and drag on the map to draw a box around the stations for which you would like to receive alert notifications. To adjust the box, click and drag the icons on the corners of the box. To clear the selected area, click the <b>Clear Selected Area</b> button.
+To set the message subject, type the subject text in the <b>Notification Message</b> text box. The message will be sent to your email inbox when your alert conditions have been met.
+To create the set of alert conditions, you will compare selected weather observations to alert thresholds. For the first comparison, select a filter from the <b>filter</b> drop-down menu. </p>
+      <ul>
+        <li>“Any” will be met if any of the stations in your selected area meet the condition.</li>
+        <li>“Mean” will be met if the mean value from the stations in your selected area meets the condition.</li>
+        <li>“Mode” will be met if the mode value of the stations in your selected area meets the condition.</li>
+      </ul>
+      <p>To define the condition itself, select an obstype from the <b>obstype</b> drop-down menu and a comparison operator from the <b>comp</b> drop-down menu. Input a threshold value in the <b>val</b> text box, and a tolerance in the <b>tol</b> text box. Add the next alert notification condition by selecting the <input type="button" value="+" /> button next to the first condition. Conditions can be removed by selecting the <input type="button" value="-" /> button. 
+
 			</p>
       
   <ul id="LayersMenu">

@@ -25,6 +25,11 @@
       padding: .5em;
     }
     
+    #instructions
+    {
+      margin-left:1em;
+    }
+    
     
     #divReportTabs, #divNotificationMessage
     {
