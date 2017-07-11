@@ -10,6 +10,7 @@
 	
       <link href="/style/jquery/overcast/jquery-ui-1.10.2.custom.css" rel="stylesheet" type="text/css"/>
 	<link href="/style/reports-table.css" rel="stylesheet" media="all">
+	<link href="/style/viewAlerts.css" rel="stylesheet">
    <!--    <script src="/script/jquery/jquery-2.2.0.js"></script>
   <script src="/script/jquery/jquery-ui-full-1.11.4.js"></script>-->
     <script src="/script/xml.js" type="text/javascript"></script>
