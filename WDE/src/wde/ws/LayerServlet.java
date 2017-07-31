@@ -510,7 +510,7 @@ public abstract class LayerServlet extends HttpServlet
     long lStart = oPlatformRequest.getRequestTimestamp() - m_lSearchRangeInterval;
     long lEnd = oPlatformRequest.getRequestTimestamp();
 
-    String sQuery = (oPlatformRequest.hasObsType() ? getQueryWithObsType() : getQueryWithoutObstype()).replace(OBS_TABLE_PLACEHOLDER, getDateObsTableName(lStart)).replace(DISTGROUP_LIST_PLACEHOLDER, buildQsForInClause(oPlatformRequest.getDistributionGroups().length));
+    String sQuery = (oPlatformRequest.hasObsType() && hasObs() ? getQueryWithObsType() : getQueryWithoutObstype()).replace(OBS_TABLE_PLACEHOLDER, getDateObsTableName(lStart)).replace(DISTGROUP_LIST_PLACEHOLDER, buildQsForInClause(oPlatformRequest.getDistributionGroups().length));
 
     int nParameterIndex = 0;
     PreparedStatement oStatement = oConnection.prepareStatement(sQuery);
