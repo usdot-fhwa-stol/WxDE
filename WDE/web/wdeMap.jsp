@@ -761,7 +761,7 @@ $('#datetimepicker').datetimepicker({
         map.showStationCodeLabels();
       else
       {
-        if(this.value === "0" && map.hasStationCodeLabels)
+        if(map.hasStationCodeLabels)
           map.hideLayerDivs();
           
         map.refreshLayers();
