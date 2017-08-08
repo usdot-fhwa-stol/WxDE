@@ -785,6 +785,14 @@ L.WxdeLayer = L.LayerGroup.extend({
               else
               {
 
+                obsList.sort(function (a, b)
+                {
+                  var comp = a.ot.localeCompare(b.ot);
+                  if (comp !== 0)
+                    return comp;
+                  else
+                    return a.si * 1 - b.si * 1;
+                });
 
                 var m_oQCh =
                         [
