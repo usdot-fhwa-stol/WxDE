@@ -581,9 +581,13 @@ var styleState = function(feature) {
     });
     
     
-    $(window).resize(function() {
-    $("#dialog-form").dialog("option", "position", "center");
-});
+    $(window).resize(function() 
+    {
+      if ($("#dialog-form").hasClass("ui-dialog-content")) // Test if the dialog has been initialized
+      {
+        $("#dialog-form").dialog("option", "position",  { my: "center", at: "center", of: window });
+      }
+    });
 
 (function ($) {
       

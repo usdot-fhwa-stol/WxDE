@@ -208,6 +208,15 @@ L.WxdeSummaryMap = L.Map.extend({
       position: {my: "center", at: "center"}
     });
 
+    $(window).resize(function ()
+    {
+      var position = {my: "center", at: "center", of: window};
+      $("#road-legend-form, #details-form, #summary-legend-form").each(function (index)
+      {
+        if ($(this).hasClass("ui-dialog-content")) // Test if the dialog has been initialized
+          $(this).dialog("option", "position", position);
+      });
+    });
 
     if (this.options.lstObstypes)
     {
