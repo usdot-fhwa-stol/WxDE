@@ -16,16 +16,15 @@
 
 package wde.util;
 
-import org.apache.log4j.Logger;
-import wde.data.Email;
-
-import javax.mail.*;
-import javax.mail.internet.*;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Properties;
+import javax.mail.*;
+import javax.mail.internet.*;
+import org.apache.log4j.Logger;
+import wde.data.Email;
 
 public class Notification {
 
@@ -83,19 +82,11 @@ public class Notification {
 
         Notification.isStandAlone = true;
 
-        Notification notification = Notification.getInstance();
+        Email email = new Email();
+        email.setBody("a test message");
+        email.setSubject(" a test subject");
+        email.setTo("ScotDLange@yahoo.com");Notification.send(email);
 
-        ArrayList<InternetAddress> recipients = new ArrayList<>();
-        InternetAddress me = null;
-        try {
-            me = new InternetAddress("bryan.krueger@synesis-partners.com");
-            recipients.add(me);
-        } catch (AddressException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-
-        notification.sendEmail(recipients, "notification test", args[0], args[1], args[2]);
     }
 
     public void sendEmail(ArrayList<InternetAddress> recipients, String subject, String messageBody, String filePath, String fileDisplayName) {
