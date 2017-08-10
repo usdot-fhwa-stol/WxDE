@@ -14,7 +14,7 @@ function onLoad(sSelectedContribs)
     m_sSelectedContribs = sSelectedContribs;
     
     var oXmlRequest = new XmlRequest();
-    oXmlRequest.getXml("listContributors.jsp", cbGetContribs);
+    oXmlRequest.getXml("listContributors.jsp?" + csrf_nonce_param, cbGetContribs);
 }
 
 
@@ -35,7 +35,7 @@ function cbGetContribs(oXml, oText)
         oXmlRequest.addParameter("contribId", sContribs[i]);
     }
 
-    oXmlRequest.getXml("listStations.jsp", cbGetStations);
+    oXmlRequest.getXml("listStations.jsp?" + csrf_nonce_param, cbGetStations);
 }
 
 

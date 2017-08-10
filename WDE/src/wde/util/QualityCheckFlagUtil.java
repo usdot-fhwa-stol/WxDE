@@ -18,9 +18,29 @@ package wde.util;
 
 public class QualityCheckFlagUtil {
 
-    private static final int[] qcLength = {12, 13};
-    private static String[] padding = {"000000000000", "0000000000000"};
+    private static final int[] qcLength = {15, 16};
+    private static String[] padding = {"000000000000000", "0000000000000000"};
     private static char[] qcChars = {'/', '-', 'N', 'P'};
+
+    public static char[] getDefaultQcFlags() {
+        int sourceId = 0;
+        char[] flags = new char[qcLength[sourceId]];
+        for(int i = 0; i < flags.length; ++i) {
+            flags[i] = '/';
+        }
+
+        return flags;
+    }
+
+    public static char[] getPassingQcFlags() {
+        int sourceId = 0;
+        char[] flags = new char[qcLength[sourceId]];
+        for(int i = 0; i < flags.length; ++i) {
+            flags[i] = 'P';
+        }
+
+        return flags;
+    }
 
     public static int getQcLength(int sourceId) {
         int len = 0;
@@ -52,38 +72,38 @@ public class QualityCheckFlagUtil {
         return qcCharFlags;
     }
 
-    public static QualityCheckFlags getFlags(int sourceId, char[] flagStr) {
-        QualityCheckFlags qcf = null;
+    public static QualityCheckFlags getFlags(int sourceId, char[] flags)
+		{
+			if (sourceId != 1 && sourceId != 2)
+				return null;
 
-        if (sourceId != 1 && sourceId != 2)
-            return qcf;
+			char[] flagStr = new char[]{'/','/','/','/','/','/','/','/','/','/','/',
+				'/','/','/','/','/'}; // default 16 character array
+			System.arraycopy(flags, 0, flagStr, 0, flags.length); // expand flags
+			int rf = 0;
+			int pf = 0;
+			for (int i = qcLength[sourceId - 1] - 1; i >= 0; i--) {
+					switch (flagStr[i]) {
+							case '/':
+									break;
+							case '-':
+									pf += 1;
+									break;
+							case 'N':
+									rf += 1;
+									break;
+							case 'P':
+									rf += 1;
+									pf += 1;
+									break;
+					}
+					rf = rf << 1;
+					pf = pf << 1;
+			}
+			rf = rf >> 1;
+			pf = pf >> 1;
 
-        int rf = 0;
-        int pf = 0;
-        for (int i = qcLength[sourceId - 1] - 1; i >= 0; i--) {
-            switch (flagStr[i]) {
-                case '/':
-                    break;
-                case '-':
-                    pf += 1;
-                    break;
-                case 'N':
-                    rf += 1;
-                    break;
-                case 'P':
-                    rf += 1;
-                    pf += 1;
-                    break;
-            }
-            rf = rf << 1;
-            pf = pf << 1;
-        }
-        rf = rf >> 1;
-        pf = pf >> 1;
-
-        qcf = new QualityCheckFlags(rf, pf);
-
-        return qcf;
+			return new QualityCheckFlags(rf, pf);
     }
 
     public static void main(String[] args) {

@@ -17,7 +17,7 @@
 
 	<jsp:include page="/inc/main-wxde-ui/mainHeader.jsp"></jsp:include>
 	<jsp:include page="/inc/main-wxde-ui/mainMenu.jsp"></jsp:include>
-	<jsp:include page="/inc/userLoginInclude.html"></jsp:include>	
+	<jsp:include page="/inc/userLoginInclude.jsp"></jsp:include>	
 	<jsp:include page="/inc/main-wxde-ui/mainFooter.jsp"></jsp:include>
 	<script type="text/javascript">
 	    $(document).ready(function() {
@@ -25,7 +25,7 @@
 	    	$('#j_username').focus();
 	    	
 			$("#register").click(function() {
-	   			window.location.replace("/userRegistration.jsp");
+	   			window.location.replace("<%= response.encodeURL("/userRegistration.jsp")%>" );
 	   		});
 		});
 	</script>

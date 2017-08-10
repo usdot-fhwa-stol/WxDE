@@ -4,7 +4,7 @@ function onLoad()
 
     // ToggleMessageDisplay(false);
     var oXmlRequest = new XmlRequest();
-    oXmlRequest.getXml("listContributors.jsp", cbGetContribs);
+    oXmlRequest.getXml("listContributors.jsp?" + csrf_nonce_param, cbGetContribs);
 }
 
 

@@ -83,6 +83,10 @@ public class CsvCollector implements ICollector {
      */
     protected StringBuilder platformCodeSB = new StringBuilder();
     /**
+     * Reference to Collector Service Manager for elevation check
+     */
+    protected CsMgr m_oCsMgr;
+    /**
      * Interface to a current platform resolved from completed platform code
      */
     protected IPlatform m_iPlatform;
@@ -210,6 +214,7 @@ public class CsvCollector implements ICollector {
 
         m_nContribIds = nContribIds; // save reference to list of contrib ids
         m_oCsvSvc = oCsvSvc; // save the parent collector service object
+				m_oCsMgr = oCsMgr;
 
         // create the handler objects that interpret column information 
         // configuration information is stored in a configuration database
@@ -437,10 +442,12 @@ public class CsvCollector implements ICollector {
                 iObsSet = m_oCsvSvc.getObsSet(nObsTypeId);
 
             // now that we have all three components, save the observation
-            if (iObsSet != null) {
-                // 1 for WxDE
-                iObsSet.addObs(1, iSensor.getId(), lTimestamp, now, m_nLat, m_nLon, m_tElev, dValue);
-                obsAdded = true;
+            if (iObsSet != null)
+						{
+							m_tElev = m_oCsMgr.checkElev(m_nLat, m_nLon, m_tElev);
+              iObsSet.addObs(1, iSensor.getId(), lTimestamp, now, 
+								m_nLat, m_nLon, m_tElev, dValue);
+              obsAdded = true; // source is 1 for WxDE
             }
         }
 

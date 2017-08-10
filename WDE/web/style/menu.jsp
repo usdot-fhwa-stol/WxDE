@@ -1,3 +1,4 @@
+<%@page import="org.owasp.encoder.Encode"%>
 <%@ page import="java.io.Console" %>
 <%@ page language="java" contentType="text/html; charset=ISO-8859-1" pageEncoding="ISO-8859-1" %>
 <style type="text/css">
@@ -92,7 +93,7 @@
                 }
 
                 $.ajax({
-                    url: "/resources/feedback",
+                    url: "<%= response.encodeURL("/resources/feedback")%>",
                     type: "POST",
                     contentType: "application/json",
                     data: JSON.stringify(feedbackInfo),
@@ -149,7 +150,7 @@
     <tr>
         <td>
             <ul class="sf-menu" id="wdeMenu" style="float: none;">
-                <li class="current"><a href="/">Home</a></li>
+                <li class="current"><a href="<%= response.encodeURL("/")%>">Home</a></li>
                 <li class="current"><a href="#">Data</a>
                     <ul>
                         <li class="current"><a href="#">Summary Map</a></li>
@@ -200,18 +201,18 @@
 
                 <% if (request.getUserPrincipal() != null) { %>
                 <li class="current" style="float: right;">
-                    <a href="#"><%= request.getUserPrincipal().getName() %>
+                  <a href="#"><%= Encode.forHtml(request.getUserPrincipal().getName()) %>
                     </a>
                     <ul>
-                        <li class="current"><a href="/auth/userEdit.html">Manage</a></li>
-                        <li class="current"><a href="/auth/logout.jsp">Logout</a></li>
+                        <li class="current"><a href="<%= response.encodeURL("/auth/userEdit.html")%>">Manage</a></li>
+                        <li class="current"><a href="<%= response.encodeURL("/auth/logout.jsp")%>">Logout</a></li>
                     </ul>
                 </li>
                 <% } else { %>
 
-                <li class="current" style="float: right;"><a href="/auth/loginRedirect.jsp">Login</a>
+                <li class="current" style="float: right;"><a href="<%= response.encodeURL("/auth/loginRedirect.jsp")%>">Login</a>
                     <ul>
-                        <li class="current"><a href="/user.html">Registration</a>
+                        <li class="current"><a href="<%= response.encodeURL("/user.html")%>">Registration</a>
                     </ul>
                 </li>
                 <% } %>

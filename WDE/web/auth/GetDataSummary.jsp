@@ -16,6 +16,6 @@
 
 </head>
 <%
-	response.sendRedirect("GetDataSummary2.jsp?" + request.getQueryString());
+  response.sendRedirect(response.encodeRedirectURL("GetDataSummary2.jsp?" + request.getQueryString()));
 %>
 </html>

@@ -9,7 +9,8 @@ $( function() {
 	var locHash = location.hash.split("#")[1],
 		hashSource = locHash.split('.')[0],
 		dataSource = locHash.split('.')[1],
-		jsonSource = '/resources/auth/platforms/contributor/' + hashSource,
+    //Is the hash value vulnerable to XSS?
+		jsonSource = '/resources/auth/platforms/contributor/' + hashSource + '?' + csrf_nonce_param,
 		fileName = dataSource + '-Stations';
 
 	$('#sourceName').html(dataSource);

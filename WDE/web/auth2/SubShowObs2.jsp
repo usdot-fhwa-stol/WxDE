@@ -1,35 +1,46 @@
 <%@page contentType="text/plain; charset=iso-8859-1" language="java" import="java.io.*,java.sql.*,java.text.*,java.util.*,javax.sql.*,wde.*,wde.util.*" 
-%><jsp:useBean id="oSubscription" scope="session" class="wde.qeds.Subscription" 
+%><%if (Integer.parseInt(request.getParameter("subId")) >= 0){%>
+<jsp:useBean id="oSubscription" scope="session" class="wde.qeds.Subscription" 
 /><jsp:setProperty name="oSubscription" property="*" 
-/><%
-   	Config oConfig = ConfigSvc.getInstance().getConfig("wde.qeds.QedsMgr");
+/><%} else{%>
+<jsp:useBean id="oFcstSubscription" scope="session" class="wde.qeds.FcstSubscription"
+/><jsp:setProperty name="oFcstSubscription" property="*"
+/>
+<%
+        }
+        Config oConfig = ConfigSvc.getInstance().getConfig("wde.qeds.QedsMgr");
 //	String sSubDir = "\\\\clarus1\\subscriptions\\";
 	String sSubDir = oConfig.getString("subscription", "./");
 	if (!sSubDir.endsWith("/")) {
 		sSubDir += "/";
 	}
 
+String sRequestFile = request.getParameter("file");
+
 	String subId = request.getParameter("subId");
-	if (!SubscriptionHelper.isAuthorized(request.getRemoteUser(), subId)) {
+	if (!SubscriptionHelper.isAuthorized(request.getRemoteUser(), subId) || sRequestFile == null || !sRequestFile.matches("^[0-9_]*\\.[a-zA-Z]{3,4}$")) {
 		response.sendError(401, "Unauthorized!" );
 	}
 
+        String sFilename;
+        if (Integer.parseInt(request.getParameter("subId")) >= 0)
+            sFilename = subId + "/" + sRequestFile;
+        else
+            sFilename = subId.substring(1) + "/" + request.getParameter("file");
     try
     {
-        BufferedReader oReader = new BufferedReader(
-			new FileReader(sSubDir + subId + "/" +
-			request.getParameter("file")));
-		
+        BufferedReader oReader = new BufferedReader(new FileReader(sSubDir + sFilename));
+        	
         String sLine;
-        while ((sLine = oReader.readLine()) != null) {
+        while ((sLine = oReader.readLine()) != null) 
+        {
             out.write(sLine + "\r\n");
-		}
+        }
 
-		oReader.close();
+        oReader.close();
     }
     catch(Exception oException)
     {
-        String sFilename = subId + "/" + request.getParameter("file");
         request.getRequestDispatcher("missingResource.jsp?resource=Subscription File&id=" + sFilename).forward(request, response);
     }
     

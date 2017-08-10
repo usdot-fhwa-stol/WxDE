@@ -1,5 +1,5 @@
 // global variables
-var QCH_MAX = 12;
+var QCH_MAX = 15;
 var m_oMap;
 var oMapOptions;
 var m_oInfoWindow;
@@ -401,6 +401,9 @@ function BuildQChTests()
     m_oAllTests.push("QchsServiceBarnes", imgBarnesSpatial.src);
     m_oAllTests.push("QchsServiceDewpoint", imgDewpoint.src);
     m_oAllTests.push("QchsServicePressure", imgSealevelPressure.src);
+    m_oAllTests.push("QchsModelAnalysis", imgModelAnalysis.src);
+    m_oAllTests.push("QchsNeighboringVehicle", imgNeighboringVehicle.src);
+    m_oAllTests.push("QchsVehicleStdDev", imgVehicleStdDev.src);
 }
 
 
@@ -418,7 +421,7 @@ function GetObsList()
 
     var oXmlRequest = new XmlRequest();
     // oXmlRequest.getXml("../obsv1/listObsTypes.jsp", cbGetObsList);
-    oXmlRequest.getXml("ListObsTypes", cbGetObsList);
+    oXmlRequest.getXml("ListObsTypes?" + csrf_nonce_param, cbGetObsList);
 }
 
 
@@ -662,7 +665,7 @@ function GetStations()
     if (m_bShowASOS)
       oXmlRequest.addParameter("showasos", "1");
 
-    oXmlRequest.getXml("GetPlatformsForRegion", cbGetStations);
+    oXmlRequest.getXml("GetPlatformsForRegion?" + csrf_nonce_param, cbGetStations);
 }
 
 
@@ -691,7 +694,7 @@ var ShowInfoWindow = function(oMarker)
     oXmlRequest.addParameter("stationId", oMarker.m_oStation.id);
     oXmlRequest.addParameter("lat", oMarker.m_oStation.lt);
     oXmlRequest.addParameter("lon", oMarker.m_oStation.ln);
-    oXmlRequest.getXml("GetPlatformsForRegion", cbGetObsForStation);
+    oXmlRequest.getXml("GetPlatformsForRegion?" + csrf_nonce_param, cbGetObsForStation);
 };
 
 /*
@@ -747,7 +750,11 @@ var cbGetObsForStation = function(oXml, sText, trigger)
             "    <td class=\"td-image\" rowspan=\"2\"><img src=\"" + imgBarnesSpatial.src + "\" alt=\"Barnes Spatial\"/></td>" +
             "    <td class=\"td-image\" rowspan=\"2\"><img src=\"" + imgDewpoint.src + "\" alt=\"Dewpoint\"/></td>" +
             "    <td class=\"td-image\" rowspan=\"2\"><img src=\"" + imgSealevelPressure.src + "\" alt=\"Sea Level Pressure\"/></td>" +
-            "    <td class=\"td-image\" rowspan=\"2\"><img src=\"" + imgPrecipAccum.src + "\" alt=\"Accumulated Precipitation\"/></td>";
+            "    <td class=\"td-image\" rowspan=\"2\"><img src=\"" + imgPrecipAccum.src + "\" alt=\"Accumulated Precipitation\"/></td>" +
+            "    <td class=\"td-image\" rowspan=\"2\"><img src=\"" + imgModelAnalysis.src + "\" alt=\"Model Analysis\"/></td>" +
+            "    <td class=\"td-image\" rowspan=\"2\"><img src=\"" + imgNeighboringVehicle.src + "\" alt=\"Neighboring Vehicle\"/></td>" +
+            "    <td class=\"td-image\" rowspan=\"2\"><img src=\"" + imgVehicleStdDev.src + "\" alt=\"Vehicle Standard Deviation\"/></td>";
+
         } else {
             sObsTableHeader +=
                 "  <tr align=\"center\">" +
@@ -1305,7 +1312,7 @@ function cbGetStations(oXml, oText)
                 {
                     anchorPoint: new google.maps.Point(1, 1),
                     position: new google.maps.LatLng(item.lt, item.ln),
-                    icon: m_oBrownIcon
+                    icon: m_oBlueIcon
                 };
 
                 vdtMarker = new google.maps.Marker(oOptions);
@@ -1319,7 +1326,8 @@ function cbGetStations(oXml, oText)
                 vdtMarker.m_oStation.lt = item.lt;
                 vdtMarker.m_oStation.ln = item.ln;
                 vdtMarker.setMap(m_oMap);
-                vdtMarker.returnIcon = m_oBrownIcon;
+                //vdtMarker.returnIcon = m_oBrownIcon;
+                vdtMarker.returnIcon  = m_oBlueIcon;
                 vdtMarker.routePath = routePath;
                 
                 // add listeners to the marker
@@ -1331,7 +1339,7 @@ function cbGetStations(oXml, oText)
                 
                 var vdtMouseOutListener = google.maps.event.addListener(vdtMarker, "mouseout", function() {
                     this.routePath.setMap(null);
-                    this.setIcon(m_oBrownIcon);
+                    this.setIcon(m_oBlueIcon);
                     m_oStationCode.firstChild.data = "Station Code: ";
                 });
 
@@ -1526,7 +1534,7 @@ function GetObsValue()
 
     var oXmlRequest = new XmlRequest(); // request the obs values
     oXmlRequest.addParameter("obsType", oSelect.value);
-    oXmlRequest.getXml("GetPlatformsForRegion", cbGetObsValue);
+    oXmlRequest.getXml("GetPlatformsForRegion?" + csrf_nonce_param, cbGetObsValue);
 }
 
 
@@ -1866,10 +1874,12 @@ function Jump()
     $('#toggleRS').on('click', function() { //Road Segments
         toggleVisibility($(this), routePaths);
     });
+    /*
     //button/checkbox event handler for VDT Mobile
     $("#toggleVDT").on("click", function() {
         toggleVisibility($(this), vdtMarkersWithRoutes);
     });
+    */
     //button/checkbox event handler for WxDE Mobile
     $("#toggleWxDEMbl").on("click", function() {
         toggleVisibility($(this), mobileMarkersWithRoutes);

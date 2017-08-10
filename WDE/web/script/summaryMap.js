@@ -53,7 +53,7 @@ var initialize = function() {
 	$('#loading').fadeIn('slow');
 	window.states = new Array();
 	
-	$.getJSON('resources/boundary/states', function(response) {
+	$.getJSON('resources/boundary/states?' + csrf_nonce_param, function(response) {
 		var State = {};
 		var States = [];
 		var stateIndex = 0;

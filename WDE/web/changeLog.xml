@@ -1,48 +1,28 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <changelogs>
         <changelog>
-                <date>March 1, 2016</date>
+                <date>Ongoing</date>
                 <heading>Data Sharing Agreements</heading>
                 <news>
-                        Some data collection sites are shown as gray dots on the map, indicating that data are not available for public display.
-                        There are several possible reasons for this, but it may be that the contributor has not yet signed a data sharing agreement.
-                        We encourage all states and other weather data contributors to sign such an agreement in order to provide a richer database
-                        to our research community.
+			Some contributor sites show only metadata as gray circles on the map, indicating that data are not available for public display.
+			There are a few possible reasons for this, but it may be that the contributor has not yet signed a data sharing agreement.
+			We encourage all states and other weather data contributors to sign such an agreement in order to provide a richer database
+			to our research community.
                 </news>
                 <url>/newsPage.jsp</url>
                 <link>internal</link>
                 <featured>true</featured>
 	</changelog>
 	<changelog>
-                <date>April 12, 2016</date>
-                <heading>WxDE Version 3.3</heading>
+                <date>August 31, 2016</date>
+                <heading>WxDE Version 4.0</heading>
                 <news>
-                        The WxDE team is currently developing several system enhancements that will be available in version 3.3.
+                        The WxDE team is currently developing several system enhancements that will be available in version 4.0.
                         Map enhancements will improve performance and update control of various layers of information display.
-                        We have also added three new quality checks and are implementing an inference module from the Vehicle Data Translator.
+                        We have added new quality checks as well as integrated Vehicle Data Translator alerts and road forecast features.
                 </news>
                 <url>/changeLog.jsp</url>
                 <link>internal</link>
-                <featured>true</featured>
-        </changelog>
-        <changelog>
-                <date>April 25-27, 2016</date>
-                <heading>Coming Up...</heading>
-                <news>
- 			International Conference on Winter Maintenance and Surface Transportation Weather, Fort Collins, CO.
-                </news>
-                <url>http://www.cvent.com/events/2016-international-conference-workshop-on-winter-maintenance-and-surface-transportation-weather/event-summary-68f0128fa8f541a7a72894d622be6b02.aspx</url>
-                <link>external</link>
-                <featured>true</featured>
-        </changelog>
-        <changelog>
-                <date>April 27-29, 2016</date>
-                <heading>Coming Up...</heading>
-                <news>
-			Standing International Road Weather Commission (SIRWEC) Conference, Fort Collins, CO.
-                </news>
-                <url>http://www.sirwec.org/</url>
-                <link>external</link>
                 <featured>true</featured>
         </changelog>
 </changelogs>

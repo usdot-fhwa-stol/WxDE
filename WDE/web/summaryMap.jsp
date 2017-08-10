@@ -143,7 +143,7 @@
 				<div style="margin-top: 10px;">
 					No warranties on accuracy of data are intended or provided. See
 					link to contributor's data disclaimer in our <a
-						style="text-decoration: underline;" href="/termsOfUse.jsp" title="Terms of Use">Terms
+            style="text-decoration: underline;" href="<%= response.encodeURL("/termsOfUse.jsp")%>" title="Terms of Use">Terms
 						of Use</a>.
 				</div>
 				<div>

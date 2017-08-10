@@ -49,7 +49,7 @@
                 </tr>
                 <tr>
                     <td>
-                        <select id="listObsTypes" onchange="ObsTypeChanged()"></select>
+                      <select id="listObsTypes" multiple="multiple" onchange="ObsTypeChanged()"></select>
                     </td>
                     <td>
                         <input id="txtMin" type="text" size="10"
@@ -93,7 +93,9 @@
             <input id="subscribeUrl" type="hidden"
                    value="<%= response.encodeURL("/auth2/WizardSubscribe.jsp") %>"/>
             <% } %>
-            <input id="obs" name="obs" type="hidden" value=""/>
+            <input id="obs" name="obsType" type="hidden" value=""/>
+            <input id="maxObs" name="maxObsValue" type="hidden" value=""/>
+            <input id="minObs" name="minObsValue" type="hidden" value=""/>
             <input id="flags" name="flags" type="hidden" value=""/>
         </form>
     </div>

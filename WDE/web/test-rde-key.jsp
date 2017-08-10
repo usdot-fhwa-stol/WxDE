@@ -1,3 +1,5 @@
+
+<%@page import="org.owasp.encoder.Encode"%>
 <%@page contentType="text/html; charset=UTF-8" language="java" import="java.net.URLEncoder,wde.security.*" %>
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <html>
@@ -19,17 +21,17 @@
 				System.out.println("key from JSP: " + key);
 			%>	
 				var rdeInfo = new Object();
-				rdeInfo.key = "<%=key%>";
+				rdeInfo.key = "<%=Encode.forJavaScript(key)%>";
 				$.ajax({
-					url: "http://10.10.10.28/resources/rde",
+					url: "<%= response.encodeURL("http://10.10.10.28/resources/rde")%>",
 				    type: "POST",
 				    contentType: "application/json",
 				    data: JSON.stringify(rdeInfo),
     	            success: function() {
-    	            	window.location.replace("http://10.10.10.28/auth/wizardGeospatial.jsp?lat=95.45&long=-35.55&radius=30.0");
+    	            	window.location.replace("<%= response.encodeURL("http://10.10.10.28/auth/wizardGeospatial.jsp?lat=95.45&long=-35.55&radius=30.0")%>" );
                 	},
                 	error: function() {
-    	            	window.location.replace("http://10.10.10.28/auth/loginRedirect.jsp");
+    	            	window.location.replace("<%= response.encodeURL("http://10.10.10.28/auth/loginRedirect.jsp")%>");
                 	} 
 				});
 			});
@@ -38,6 +40,6 @@
 </head>
 <body>
 	<button id="login" type="button">Login</button>
-	<a href="http://10.10.10.28/resources/rde?key=<%=getKey%>&lat=45&long=-93&radius=50">login</a>
+  <a href="<%= response.encodeURL("http://10.10.10.28/resources/rde?key=" + Encode.forHtmlAttribute( getKey ) + "&lat=45&long=-93&radius=50")%>">login</a>
 </body>
 </html>

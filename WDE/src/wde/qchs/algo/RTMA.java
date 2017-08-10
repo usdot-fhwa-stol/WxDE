@@ -1,5 +1,5 @@
 /**
- * @file RTMARange.java
+ * @file RTMA.java
  */
 package wde.qchs.algo;
 
@@ -20,7 +20,7 @@ public class RTMA extends LikeInstrument
 	/**
 	 * Service for requesting RTMA forecast values
 	 */
-	protected wde.qchs.RTMA m_oRTMA = wde.qchs.RTMA.getInstance();
+	protected wde.cs.ext.RTMA m_oRTMA = wde.cs.ext.RTMA.getInstance();
 
 
 	/**
@@ -51,7 +51,7 @@ public class RTMA extends LikeInstrument
 		double dModel = m_oRTMA.getReading(nObsTypeId, iObs.getObsTimeLong(), 
 			iObs.getLatitude(), iObs.getLongitude());
 
-		if (dModel == Double.NaN) // no model data available
+		if (Double.isNaN(dModel)) // no model data available
 			return;
 
 		double dValue = iObs.getValue();

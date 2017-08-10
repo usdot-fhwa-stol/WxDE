@@ -9,7 +9,7 @@
    		title="Federal Highway Administration Web Site" class="fhwa-logo-link accessible-link" target="_new"></a>
 	
 	<div class="wxde-typography">
-        <a href="/" title="WxDE Home" class=" accessible-link">
+        <a href="<%= response.encodeURL("/")%>" title="WxDE Home" class=" accessible-link">
 			Weather Data <br>
 			<span>Environment</span>
 		</a>

@@ -4,21 +4,26 @@
  */
 package wde.qeds;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.TimeZone;
+import javax.sql.DataSource;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import wde.WDEMgr;
 import wde.util.MathUtil;
 import wde.util.QualityCheckFlagUtil;
 import wde.util.Region;
+import wde.util.Scheduler;
+import wde.util.Text;
 
-import javax.sql.DataSource;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.StringTokenizer;
 
 /**
  * Provides filtering parameters which can be set and used to gather
@@ -28,6 +33,16 @@ import java.util.StringTokenizer;
  */
 public class Subscription {
     private static final Logger logger = Logger.getLogger(Subscription.class);
+	 public static NextId g_oNextId = new NextId();
+    /**
+     * The allowable values for the subscription format
+     */
+    public static final String[] FORMATS = {"CMML", "CSV", "KML", "XML"};
+
+    /**
+     * The default format
+     */
+    public static final int DEFAULT_FORMAT_INDEX = 1;
 
     /**
      * Subscription id.
@@ -54,7 +69,7 @@ public class Subscription {
     /**
      * Output file format.
      */
-    public String m_sOutputFormat = "CSV";
+    public String m_sOutputFormat = FORMATS[DEFAULT_FORMAT_INDEX];
 
     /**
      * Get observations no earlier than this.
@@ -85,7 +100,7 @@ public class Subscription {
     /**
      * Observation type of interest.
      */
-    public int m_nObsType = 0;
+    public int[] m_nObsTypes;
     /**
      * Lower bound observation value.
      */
@@ -149,7 +164,7 @@ public class Subscription {
         m_sSecret = "";
         m_sSecretAttempt = "";
 
-        m_sOutputFormat = "CSV";
+        m_sOutputFormat = FORMATS[DEFAULT_FORMAT_INDEX];
 
         m_lStartTime = Long.MIN_VALUE;
         m_lEndTime = Long.MIN_VALUE;
@@ -157,7 +172,7 @@ public class Subscription {
         m_dLat1 = m_dLng1 = -Double.MAX_VALUE;
         m_dLat2 = m_dLng2 = Double.MAX_VALUE;
 
-        m_nObsType = 0;
+        m_nObsTypes = null;
         m_dMin = Double.NEGATIVE_INFINITY;
         m_dMax = Double.POSITIVE_INFINITY;
 
@@ -173,13 +188,13 @@ public class Subscription {
 
     public void setContactEmail(String sContactEmail) {
         if (sContactEmail != null && sContactEmail.length() > 0)
-            m_sContactEmail = sContactEmail;
+            m_sContactEmail = Text.truncate(sContactEmail, 128);
     }
 
 
     public void setContactName(String sContactName) {
         if (sContactName != null && sContactName.length() > 0)
-            m_sContactName = sContactName;
+            m_sContactName = Text.truncate(sContactName, 64);
     }
 
 
@@ -338,31 +353,40 @@ public class Subscription {
         m_dLng2 = coordinates[3];
     }
 
+
     /**
-     * Sets the observation-type, and observation-bound filters. The string
-     * should be comma-delimited of the form:
-     * <blockquote>
-     * observation-type, observation-min-value, observation-max-value
-     * </blockquote>
+     * Sets the observation types
      *
-     * @param sObs comma-delimited string containing observation filters.
+     * @param sObs comma-delimited list of obstypes.
      */
-    public void setObs(String sObs) {
-        logger.debug("setObs(" + sObs + ")");
-        m_nObsType = 0;
-        m_dMin = Double.NEGATIVE_INFINITY;
-        m_dMax = Double.POSITIVE_INFINITY;
+    public void setObsType(String sObs)
+    {
+      logger.debug("setObs(" + sObs + ")");
 
-        String[] sObsFilters = sObs.split(",");
+      if(sObs == null || sObs.trim().isEmpty())
+        m_nObsTypes = null;
 
-        if (sObsFilters.length > 0 && sObsFilters[0] != null && sObsFilters[0].length() > 0)
-            m_nObsType = Integer.parseInt(sObsFilters[0]);
+      String[] sObsFilters = sObs.split(",");
+		  m_nObsTypes = new int[sObsFilters.length];
 
-        if (sObsFilters.length > 1 && sObsFilters[1] != null && sObsFilters[1].length() > 0)
-            m_dMin = Double.parseDouble(sObsFilters[1]);
+		  for (int i = 0; i < sObsFilters.length; i++)
+			  m_nObsTypes[i] = Integer.parseInt(sObsFilters[i]);
+    }
 
-        if (sObsFilters.length > 2 && sObsFilters[2] != null && sObsFilters[2].length() > 0)
-            m_dMax = Double.parseDouble(sObsFilters[2]);
+    public void setMaxObsValue(String sValue)
+    {
+      if (sValue != null && sValue.trim().length() > 0)
+        m_dMin = Double.parseDouble(sValue);
+      else
+        m_dMin = Double.MIN_VALUE;
+    }
+
+    public void setMinObsValue(String sValue)
+    {
+      if (sValue != null && sValue.trim().length() > 0)
+        m_dMax = Double.parseDouble(sValue);
+      else
+        m_dMax = Double.MAX_VALUE;
     }
 
     /**
@@ -477,7 +501,7 @@ public class Subscription {
      * falls within the observation-value range. false otherwise.
      */
     public boolean inRange(double dValue) {
-        if (m_nObsType == 0)
+        if (m_nObsTypes == null)
             return true;
 
         return (dValue >= m_dMin && dValue <= m_dMax);
@@ -495,7 +519,7 @@ public class Subscription {
      * don't match.
      */
     public boolean wasChecked(int sourceId, char[] _nFlag) {
-        if (m_nObsType == 0)
+        if (m_nObsTypes == null)
             return true;
 
         if (m_nRun == 0)
@@ -533,10 +557,7 @@ public class Subscription {
      * interest.
      */
     public boolean isObs(int nObsType) {
-        if (m_nObsType == 0)
-            return true;
-
-        return (m_nObsType == nObsType);
+      return m_nObsTypes == null ? true : Arrays.binarySearch(m_nObsTypes, nObsType) >= 0;
     }
 
     /**
@@ -548,11 +569,14 @@ public class Subscription {
      * @param oGetRadius    prepared radius database query, ready to execute.
      * @param oGetContrib   prepared contributor db query, ready to execute.
      * @param oGetStation   prepared station database query, ready to execute.
+     * @param oGetSubObs    prepared subs obstype query, ready to execute.
      * @throws java.lang.Exception
      */
     public void deserialize(ResultSet oSubscription,
                             PreparedStatement oGetRadius, PreparedStatement oGetContrib,
-                            PreparedStatement oGetStation) throws Exception {
+                            PreparedStatement oGetStation,
+                            PreparedStatement oGetSubObs) throws Exception
+    {
         m_nId = oSubscription.getInt(1);
 
         // set the subscription parameters
@@ -572,7 +596,29 @@ public class Subscription {
         if (oSubscription.wasNull())
             m_dLng2 = Double.MAX_VALUE;
 
-        m_nObsType = oSubscription.getInt(6);
+        int nObstype = oSubscription.getInt(6);
+        if (oSubscription.wasNull())
+        {
+          oGetSubObs.setInt(1, m_nId);
+          int nRows = 0;
+          try(ResultSet oRs = oGetSubObs.executeQuery())
+          {
+            oRs.last();
+            nRows = oRs.getRow();
+            oRs.beforeFirst();
+            int nCount = 0;
+            m_nObsTypes = new int[nRows];
+            while (oRs.next())
+              m_nObsTypes[nCount++] = oRs.getInt(1);
+          }
+        }
+        else if(nObstype == 0)
+          m_nObsTypes = null;
+        else // old record created before support for multiple obstypes
+        {
+          m_nObsTypes = new int[1];
+          m_nObsTypes[0] = nObstype;
+        }
 
         m_dMin = oSubscription.getDouble(7);
         if (oSubscription.wasNull())
@@ -589,26 +635,29 @@ public class Subscription {
 
         m_oRadius = null;
         oGetRadius.setInt(1, m_nId);
-        ResultSet rs = oGetRadius.executeQuery();
-        if (rs.next())
+        try(ResultSet rs = oGetRadius.executeQuery())
+        {
+          if (rs.next())
             m_oRadius = new PointRadius(rs.getInt(1),
                     rs.getInt(2),
                     rs.getInt(3));
-        rs.close();
+        }
 
         m_oContribIds.clear();
         oGetContrib.setInt(1, m_nId);
-        rs = oGetContrib.executeQuery();
-        while (rs.next())
+        try(ResultSet rs = oGetContrib.executeQuery())
+        {
+          while (rs.next())
             m_oContribIds.add(new Integer(rs.getInt(1)));
-        rs.close();
+        }
 
         m_oPlatformIds.clear();
         oGetStation.setInt(1, m_nId);
-        rs = oGetStation.executeQuery();
-        while (rs.next())
-            m_oPlatformIds.add(new Integer(rs.getInt(1)));
-        rs.close();
+        try(ResultSet rs = oGetStation.executeQuery())
+        {
+          while (rs.next())
+              m_oPlatformIds.add(new Integer(rs.getInt(1)));
+        }
     }
 
     /**
@@ -662,7 +711,14 @@ public class Subscription {
      *               cycle attribute.
      */
     public void setCycle(String sCycle) {
+      try
+      {
         m_nCycle = Integer.parseInt(sCycle);
+      }
+      catch(Exception ex)
+      {
+        logger.error("Unable to parse cycle value", ex);
+      }
     }
 
     /**
@@ -735,7 +791,7 @@ public class Subscription {
     }
 
     public void setName(String name) {
-        this.name = name;
+        this.name = Text.truncate(name, 100);
     }
 
     public String getDescription() {
@@ -743,7 +799,7 @@ public class Subscription {
     }
 
     public void setDescription(String description) {
-        this.description = description;
+        this.description = Text.truncate(description, 500);
     }
 
     public String getSubScope() {
@@ -751,7 +807,7 @@ public class Subscription {
     }
 
     public void setSubScope(String subScope) {
-        this.subScope = subScope;
+        this.subScope = "public".equalsIgnoreCase(subScope) ? "public" : "private";
     }
 
     public String getFormat() {
@@ -762,6 +818,79 @@ public class Subscription {
      * @param sFormat
      */
     public void setFormat(String sFormat) {
-        m_sOutputFormat = sFormat.toUpperCase();
+        int nFormatIndex = Arrays.binarySearch(FORMATS, sFormat.toUpperCase());
+        if(nFormatIndex < 0)
+          nFormatIndex = DEFAULT_FORMAT_INDEX;
+
+        m_sOutputFormat = FORMATS[nFormatIndex];
     }
+
+	 public static class NextId implements Runnable
+	 {
+		 public int m_nNextId = 0;
+
+		 NextId()
+		 {
+			 run();
+			    Scheduler.getInstance().schedule(this, 0, 86400, true);
+		 }
+		 @Override
+		 public final void run()
+		 {
+			boolean bFoundMax = false;
+			boolean bFoundMin = false;
+			java.util.Date oToday = new java.util.Date();
+			SimpleDateFormat oFormat = new SimpleDateFormat("yyyyMMdd");
+			oFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
+			String sSearch = "'%" + oFormat.format(oToday) + "%'";
+			if (m_nNextId != 0)
+			{
+				m_nNextId = Integer.parseInt(oFormat.format(oToday)) * 100;
+			}
+			Connection iConnection = null;
+			try
+			{
+            DataSource iDataSource = WDEMgr.getInstance().getDataSource("java:comp/env/jdbc/wxde");
+            if (iDataSource == null)
+                return;
+
+            iConnection = iDataSource.getConnection();
+            if (iConnection == null)
+                return;
+
+				int nMax = 0;
+				int nMin = 0;
+				Statement iStatementMax = iConnection.createStatement();
+				Statement iStatementMin = iConnection.createStatement();
+				ResultSet oRsMax = iStatementMax.executeQuery("SELECT MAX(id) FROM subs.subscription WHERE CAST(id AS TEXT) LIKE " + sSearch + " AND id>0");
+				ResultSet oRsMin = iStatementMin.executeQuery("SELECT MIN(id) FROM subs.subscription WHERE CAST(id AS TEXT) LIKE " + sSearch + " AND id<0");
+				if (oRsMax.next())
+				{
+					nMax = oRsMax.getInt(1);
+					if (nMax != 0)
+						bFoundMax = true;
+				}
+				oRsMax.close();
+				if (oRsMin.next())
+				{
+					nMin = oRsMin.getInt(1);
+					if (nMin != 0)
+						bFoundMin = true;
+				}
+				oRsMin.close();
+				if (bFoundMax && bFoundMin)
+					m_nNextId = Math.max(nMax, -nMin) + 1;
+				else if (bFoundMax)
+					m_nNextId = nMax + 1;
+				else if (bFoundMin)
+					m_nNextId = -nMin + 1;
+				else
+					m_nNextId = Integer.parseInt(oFormat.format(oToday)) * 100;
+			}
+			catch (Exception oException)
+			{
+
+			}
+		 }
+	 }
 }

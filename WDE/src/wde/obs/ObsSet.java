@@ -52,9 +52,14 @@ public class ObsSet extends ArrayList<Observation> implements IObsSet {
      * @param nObsType Observation type to be contained in this set.
      * @param nSerial  observation set serial identifier.
      */
-    ObsSet(int nObsType, int nSerial) {
+    public ObsSet(int nObsType, int nSerial) {
         m_nObsType = nObsType;
         m_nSerial = nSerial;
+    }
+
+    public ObsSet(int nObsType) {
+        m_nObsType = nObsType;
+        m_nSerial = (int) (Math.random() * 1000 + 1);
     }
 
 

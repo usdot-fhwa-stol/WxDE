@@ -21,7 +21,7 @@
 			$("#noSubs").hide();
 			var subscriptionType = new Array("Private","Public","Shared");
 			$.ajax({
-	            url:'/resources/auth/subscriptions/', 
+	            url:'<%= response.encodeURL("/resources/auth/subscriptions/") %>', 
 	            dataType: 'json',
 	            success: loadTable,
 	            cache: false
@@ -44,7 +44,7 @@
 					}
 					$('#tblSubscriptions')
 						.append(
-							'<tr class="subscription-row" data-link="SubFolder.jsp?subId=' + item.subscriptionId + '" title="Subscription ' + item.subscriptionId + '">'
+							'<tr class="subscription-row" data-link="SubFolder.jsp?subId=' + item.subscriptionId + '&' + csrf_nonce_param + '" title="Subscription ' + item.subscriptionId + '">'
 								+ '<td>' + item.subscriptionId + '</a></td>'
 								+ '<td>' + item.name + '</a></td>'
 								+ '<td>' + item.description + '</td>'

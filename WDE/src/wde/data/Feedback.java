@@ -1,14 +1,14 @@
 package wde.data;
 
-import wde.data.xml.TimestampAdapter;
-
+import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
-import java.sql.Timestamp;
-import java.text.SimpleDateFormat;
-import java.util.Date;
+import wde.data.xml.TimestampAdapter;
+import wde.util.Text;
 
 
 @XmlRootElement
@@ -55,7 +55,7 @@ public class Feedback {
     }
 
     public void setUserName(String userName) {
-        this.userName = userName;
+        this.userName = Text.truncate(userName, 15);
     }
 
     public String getName() {
@@ -63,7 +63,7 @@ public class Feedback {
     }
 
     public void setName(String name) {
-        this.name = name;
+        this.name = Text.truncate(name, 100);
     }
 
     public String getEmail() {
@@ -71,7 +71,7 @@ public class Feedback {
     }
 
     public void setEmail(String email) {
-        this.email = email;
+        this.email = Text.truncate(email, 100);
     }
 
     public String getSection() {
@@ -79,7 +79,7 @@ public class Feedback {
     }
 
     public void setSection(String section) {
-        this.section = section;
+        this.section = Text.truncate(section,100);
     }
 
     public String getDescription() {
@@ -87,7 +87,7 @@ public class Feedback {
     }
 
     public void setDescription(String description) {
-        this.description = description;
+        this.description = Text.truncate(description, 500);
     }
 
     public Date getDateCreated() {

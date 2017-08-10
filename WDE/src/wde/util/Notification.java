@@ -51,9 +51,9 @@ public class Notification {
         }
         if (useGmail) {
             props.put("mail.smtp.auth", "true");
-            props.put("mail.smtp.stattls.enable", "true");
+            props.put("mail.smtp.starttls.enable", "true");
             props.put("mail.smtp.host", "smtp.gmail.com");
-            props.put("mail.smtp.port", "465");
+            props.put("mail.smtp.port", "587");
             props.put("mail.smtp.socketFactory.class", "javax.net.ssl.SSLSocketFactory");
         } else
             props.put("mail.smtp.host", mailServerStr);

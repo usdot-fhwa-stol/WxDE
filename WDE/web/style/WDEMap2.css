@@ -1,0 +1,256 @@
+  
+    #layerControlContainer
+    {
+      margin: 8px 5px 5px;
+      float:left;
+    }
+    
+    #LayersMenuContainer, #unitsFieldSet label
+    {
+      margin-left:5px;
+    }
+    
+    #LayersMenu
+    {
+      padding:5px;
+      display:inline-block;
+    }
+    
+    #LayersMenu label
+    {
+      margin-right:5px;
+      min-width: 60px;
+    }
+    #LayersMenu li
+    {
+      border:none;
+    }
+    
+    
+    
+    
+    
+    label
+    {
+      width:auto;
+    }
+    
+    #unitsFieldSet
+    {
+      display:inline;
+    }
+    
+    #unitsFieldSet legend
+    {
+      display:none;
+    }
+    
+    .ui-datepicker-current
+    {
+      display:none;
+    }
+    .leaflet-marker-pane
+    {
+      z-index: 4;
+    }
+    .leaflet-overlay-pane
+    {
+      z-index: 5;
+    }
+    
+    #obstypes
+    {
+      margin-left:15px;
+    }
+    
+    #LayersMenuContainer
+    {
+      display:block; 
+      float:left; 
+      z-index: 10; 
+      position:absolute; 
+      bottom: 12px;
+      display:none;
+    }
+    
+    #map-container
+    {
+      height:428px; 
+      position:relative;
+      top: 80px;
+    }
+    
+    #LayersMenu input
+    {
+      float:right;
+    }
+    
+    
+    
+    
+.obs-marker-icon
+{
+  width:auto;
+  height:auto;
+  color:black !important;
+  background:white !important;
+  margin-top:6px;
+  margin-left:6px;
+  border: 1px solid black;
+}
+
+#stationCode
+{
+  width:auto;
+  float:left;
+  margin-left:15px;
+}
+
+ #latlong
+ {
+   width:190px;
+ }
+
+#timeUTC, #latlong, #stationCode
+{
+  display:inline-block;
+}
+
+#datetimepicker
+{
+  background:transparent;
+  border-style: none;
+  width:102px;
+}
+#timeUTC
+{
+  background: white;
+  color: black;
+  padding-left: 1px;
+  border-style: solid;
+  border-color: black;
+  border-width: 1px;
+  padding-right: 10px;
+}
+
+#timeUTC.DisabledElement
+{
+  color:gray;
+}
+
+#latlong, #stationCode
+{
+  margin-top:12px;
+}
+    
+
+table.qualityChecks td.sensorIndex {
+	display: inline-block;
+	width: 40px;
+}
+
+
+table.qualityChecks td.sensorMake {
+	display: inline-block;
+	width: 182px;
+}
+
+table.qualityChecks td.sensorModel {
+	display: inline-block;
+	width: 330px;
+}
+
+
+
+    /**
+caption {
+	padding: 0 0 5px 0;
+	font: italic 11px "Trebuchet MS", Verdana, Arial, Helvetica, sans-serif;
+}
+##?hd,
+th {
+	font: bold 11px "Trebuchet MS", Verdana, Arial, Helvetica, sans-serif;
+	color: #4f6b72;
+	border-right: 1px solid #C1DAD7;
+	border-bottom: 1px solid #C1DAD7;
+	border-top: 1px solid #C1DAD7;
+	letter-spacing: 2px;
+	text-transform: uppercase;
+	text-align: left;
+	padding: 6px 6px 6px 12px;
+	
+}
+
+th.nobg {
+	border-top: 0;
+	border-left: 0;
+	border-right: 1px solid #C1DAD7;
+	background: none;
+}
+
+td {
+	border-right: 1px solid #C1DAD7;
+	border-bottom: 1px solid #C1DAD7;
+	background: #fff;
+	padding: 6px 6px 6px 12px;
+	color: #4f6b72;
+}
+
+
+td.alt {
+	background: #F5FAFA;
+	color: #797268;
+}
+**/
+    
+    
+    
+.top-toolbar-container div 
+{
+display:inline-block;
+}
+
+
+.no-title-form .ui-dialog-titlebar 
+{
+   display:none;
+}
+
+.no-title-form .ui-dialog-titlebar-close
+{
+  top:0.3em !important;
+  left:0.3em !important;
+}
+
+#platform-details
+{
+  position:relative;
+} 
+
+table.qualityChecks td.timestamp
+{
+  width:80px;
+}
+
+div.summary-legend-icon
+{
+  width:15px;
+  height:15px;
+  margin:3px;
+}
+
+ .summary-legend-text
+ {
+   padding:8px;
+ }
+ 
+ button.DialogButton > img, img.DialogButton
+ {
+    width: 16px;
+    height: 16px;
+}
+
+.DialogButton
+{
+  padding: 0px;
+}

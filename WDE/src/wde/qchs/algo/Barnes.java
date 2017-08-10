@@ -4,6 +4,7 @@
  */
 package wde.qchs.algo;
 
+import wde.dao.PlatformDao;
 import wde.metadata.ISensor;
 import wde.obs.IObs;
 import wde.qchs.ModObs;
@@ -44,10 +45,21 @@ public class Barnes extends LikeInstrument {
     protected double m_dExp;
 
     /**
+     * List of allowed platform categories.
+     */
+		protected char[] m_cPlatFilter = {'M'};
+
+    /**
      * Lockable container of {@code ModObsSet} objects.
      */
     protected StripeLock<ModObsSet> m_oLock =
             new StripeLock<ModObsSet>(new ModObsSets(), DEFAULT_LOCKS);
+
+	/**
+	 * Reference to the platform cache.
+	 */
+	protected PlatformDao m_oPlatformDao = PlatformDao.getInstance();
+
 
 
     /**
@@ -106,13 +118,27 @@ public class Barnes extends LikeInstrument {
         m_oLock.readUnlock();
     }
 
+
+    /**
+     * Placeholder for subclasses that may implement additional pre-quality 
+		 * checking filters that further reduce the observation set
+     *
+     * @param nLat    latitude of the target observation.
+     * @param nLon    longitude of the target observation.
+     * @param oObsSet thread-local observation set to be filtered.
+     */
+		protected void filter(int nLat, int nLon, ArrayList<IObs> oObsSet)
+		{
+		}
+
+
     /**
      * Estimates a value at the given latitude and longitude by finding a
      * weighted average of all observations contained in the
      * provided observation set.
      *
      * @param nLat       latitude of the observation to estimate.
-     * @param nLon       longitue of the observation to estimate.
+     * @param nLon       longitude of the observation to estimate.
      * @param oObsSet    ArrayList containing the observations for calculation.
      * @param oModObsSet locked modified observation set that will contain the
      *                   modified observations after this method returns.
@@ -121,8 +147,9 @@ public class Barnes extends LikeInstrument {
      */
     protected double estimateValue(int nLat, int nLon, IObs iTargetObs,
                                    ArrayList<IObs> oObsSet, ModObsSet oModObsSet) {
-        oModObsSet.clear();
-        oModObsSet.ensureCapacity(oObsSet.size());
+				filter(nLat, nLon, oObsSet); // optional filter for source observations
+				oModObsSet.clear();
+				oModObsSet.ensureCapacity(oObsSet.size());
 
         // obs inside the max radius and outside the min radius are used
         // for this comparison to avoid finding each platform explicitly
@@ -181,8 +208,16 @@ public class Barnes extends LikeInstrument {
      * @param oResult    results of the test.
      */
     @Override
-    public void check(int nObsTypeId, ISensor iSensor,
-                      IObs iObs, QChResult oResult) {
+    public void check(int nObsTypeId, ISensor iSensor, 
+			IObs iObs, QChResult oResult)
+		{
+				char cCat = m_oPlatformDao.getPlatform(iSensor.getPlatformId()).getCategory();
+				for (int nIndex = 0; nIndex < m_cPlatFilter.length; nIndex++)
+				{
+					if (m_cPlatFilter[nIndex] == cCat)
+						return; // only execute when target obs from allowed categories
+				}
+
         // retrieve the background field
         int nLat = iObs.getLatitude();
         int nLon = iObs.getLongitude();

@@ -12,11 +12,11 @@
 		$(function() {
 			
 		    $("#cancel").click(function() {
-				window.location.replace("/index.jsp");
+				window.location.replace("<%= response.encodeURL("/index.jsp")%>" );
 		    });
 		    
 		    $.ajax({
-		        url: "/resources/organizationTypes/",
+		        url: "<%= response.encodeURL("/resources/organizationTypes/")%>",
 		        dataType: "json",
 		        success: function(resp) {
 		            $.each(resp.organizationType, function(index, item) {
@@ -26,7 +26,7 @@
 		    });
 		    
 		    $.ajax({
-		        url: "/resources/countries/",
+		        url: "<%= response.encodeURL("/resources/countries/")%>",
 		        dataType: "json",
 		        success: function(resp) {
 		            $.each(resp.country, function(index, item) {
@@ -106,7 +106,7 @@
 					userInfo.organizationType = $("#organizationType").val();
 					userInfo.country = $("#country").val();
 					$.ajax({
-					    url: "/resources/user",
+					    url: "<%= response.encodeURL("/resources/user")%>",
 					    type: "POST",
 					    contentType: "application/json",
 					    data: JSON.stringify(userInfo),
@@ -136,7 +136,7 @@
 		        buttons: {
 		          "Login": function() {
 		            $( this ).dialog( "close" );
-		            window.location.replace("/auth/loginRedirect.jsp");
+		            window.location.replace("<%= response.encodeURL("/auth/loginRedirect.jsp")%>" );
 		          }
 		        }
 			});
@@ -203,13 +203,13 @@
 						
 						<div>
 							<label for="password" style="width: 120px;">Password: </label>
-							<input type="password" id="password" name="password" size="41"
+							<input type="password" autocomplete="off" id="password" name="password" size="41"
 						       class="ui-corner-all" style="width: 297px;">
 						</div>
 						
 						<div>
 							<label for="password2" style="width: 120px;">Verify Password: </label>
-						<input type="password" id="password2" name="password2" size="41"
+						<input type="password" autocomplete="off" id="password2" name="password2" size="41"
 						       class="ui-corner-all" style="width: 297px;">
 						</div>
 						

@@ -38,7 +38,7 @@ $(function(){
 				user.password = newPassword;
 				
 				$.ajax({
-					url : "/resources/email/submitPassword",
+					url : "/resources/email/submitPassword?" + csrf_nonce_param,
 					type : "POST",
 					contentType: "application/JSON",
 					data : JSON.stringify(user),
@@ -47,7 +47,7 @@ $(function(){
 						$("#stage").html(
 							  "<p>You have successfully changed your account's password.<br>"
 							+ "You can now login with your new password.</p>"
-							+ "<a href=\"/auth/loginRedirect.jsp\" class=\"btn-login btn-dark\">"
+							+ "<a href=\"/auth/loginRedirect.jsp?" + csrf_nonce_param + "\" class=\"btn-login btn-dark\">"
 							+ "<i class=\"icon-signin\"></i> Login</a><br><br><br>"
 						);
 						$("#loading").fadeOut();
@@ -56,7 +56,7 @@ $(function(){
 						$("#stage").html(
 								  "<p>We were unable to process your request to change password.<br>"
 								+ "Please try again.</p>"
-								+ "<a href=\"/userAccountRetrieval.jsp\" class=\"cant-access-account\">"
+								+ "<a href=\"/userAccountRetrieval.jsp?" + csrf_nonce_param + "\" class=\"cant-access-account\">"
 								+ "Can't access your account?</a><br><br><br>"
 							);
 						$("#loading").fadeOut();

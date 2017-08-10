@@ -1,11 +1,18 @@
+<%@page import="org.owasp.encoder.Encode"%>
 <%@page import="ucar.ma2.ForbiddenConversionException"%>
 <%@page import="javax.xml.ws.http.HTTPException"%>
 <%@page contentType="text/html; charset=UTF-8" language="java" import="java.io.*,java.sql.*,java.text.*,java.util.*,javax.sql.*,wde.*,wde.util.*" %>
-<jsp:useBean id="oSubscription" scope="session" class="wde.qeds.Subscription" />
-<jsp:setProperty name="oSubscription" property="*" />
+<%if (Integer.parseInt(request.getParameter("subId")) >= 0){%>
+<jsp:useBean id="oSubscription" scope="session" class="wde.qeds.Subscription" 
+/><jsp:setProperty name="oSubscription" property="*" 
+/><%} else{%>
+<jsp:useBean id="oFcstSubscription" scope="session" class="wde.qeds.FcstSubscription"
+/><jsp:setProperty name="oFcstSubscription" property="*"
+/>
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 
 <%
+   }
 	Config oConfig = ConfigSvc.getInstance().getConfig("wde.qeds.QedsMgr");
 	String sDataSourceName =
 		oConfig.getString("datasource", "java:comp/env/jdbc/wxde");
@@ -16,8 +23,16 @@
 	}
 	
 	String subId = request.getParameter("subId");
+  
+  if(!subId.matches("^[a-zA-Z0-9-_]*$"))
+    subId = "null"; // If it is something with invalid characters just set it to a value that is still invalid, but safe.
+  
     DecimalFormat oFormatter = new DecimalFormat("#,###");
-    File oDir = new File(sSubDir + "/" + subId);
+    File oDir;
+    if (Integer.parseInt(subId) > 0)
+        oDir = new File(sSubDir + "/" + subId);
+    else
+       oDir = new File(sSubDir + "/" + subId.substring(1));
     
 	if (!SubscriptionHelper.isAuthorized(request.getRemoteUser(), subId)) {
 		response.sendError(401, "Unauthorized!" );
@@ -86,7 +101,7 @@
 	<% String subTitle = "Subscription " + request.getParameter("subId"); %>
 
     <jsp:include page="/inc/main-wxde-ui/headers-and-styles.jsp">
-    	<jsp:param value="<%=subTitle%>" name="title"/>
+      <jsp:param value="<%= Encode.forHtml( subTitle)%>" name="title"/>
     </jsp:include>
 	<jsp:include page="/inc/main-wxde-ui/script-file-sources.jsp"></jsp:include>
 	
@@ -123,7 +138,7 @@
 	<script type="text/javascript">
 		$(document).ready(function() {
 			$.ajax({
-	            url:'/resources/auth/subscriptions/<%=request.getParameter("subId")%>', 
+	            url:'<%= response.encodeURL("/resources/auth/subscriptions/" + Encode.forJavaScript( request.getParameter("subId")))%>', 
 	            dataType: 'json',
 	            success: function(resp) {
 					$("#hName").text(resp.name);
@@ -157,7 +172,7 @@
 		File oFile = oFiles.get(nIndex);
 %>
           <tr>
-            <td><a href="SubShowObs.jsp?subId=<%= request.getParameter("subId") + "&file=" + oFile.getName() %>" target="_blank"><%= oFile.getName() %></a></td>
+            <td><a href="<%= response.encodeURL( "SubShowObs.jsp?subId=" + Encode.forHtmlAttribute( request.getParameter("subId")) + "&file=" + oFile.getName()) %>" target="_blank"><%= oFile.getName() %></a></td>
             <td class="fileSize"><%= oFormatter.format(oFile.length()) %></td>
           </tr>
 <%
@@ -168,11 +183,11 @@
 		</div>
 		
 		<div id="instructions" class="col-4" style="margin:0; margin-top:-15px;">
-          <h3>Subscription: <%= request.getParameter("subId") %></h3>
+      <h3>Subscription: <%= Encode.forHtml( request.getParameter("subId")) %></h3>
 		       Name = <label id="hName"></label><br>
 		       Description = <label id="hDescription"></label><br>
 		       UUID = <label id="hUuid"></label><br>
-          <%= sbReadme.toString() %>
+           <%= Encode.forHtml( sbReadme.toString()) %>
 			<div id="statusMessage" class="msg" style="color: #800; border: 1px #800 solid; display: none; font-size: 1.2em;">
 				<!-- <img src="/image/close-img.svg" id="close-msg" style="float:right; cursor: pointer; margin-top:2px;" /> -->
 			</div>

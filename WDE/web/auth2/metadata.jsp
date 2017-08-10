@@ -14,10 +14,13 @@
     File oDir = new File(oConfig.getString("metadata", null));
     File[] oFileList = oDir.listFiles();
     ArrayList<File> oFiles = new ArrayList<File>();
-    for (int i = 0; i < oFileList.length; i++)
+    if(oFileList != null)
     {
-        if (oFileList[i].getName().indexOf(".csv") > 0 || oFileList[i].getName().indexOf(".nc") > 0)
-            oFiles.add(oFileList[i]);
+      for (int i = 0; i < oFileList.length; i++)
+      {
+          if (oFileList[i].getName().indexOf(".csv") > 0 || oFileList[i].getName().indexOf(".nc") > 0)
+              oFiles.add(oFileList[i]);
+      }
     }
     Collections.sort(oFiles);
 %>
@@ -88,11 +91,11 @@
 		%>
 		          <tr>
 		            <td>
-		            	<a href="ShowMetadata.jsp?file=<%= oFile.getName() %>" class="link" title="Click to view"><%= oFile.getName() %></a>
+		            	<a href="<%= response.encodeURL("ShowMetadata.jsp?file=" + oFile.getName()) %>" class="link" title="Click to view"><%= oFile.getName() %></a>
 	            	</td>
 		            <td class="fileSize"><%= sDate %></td>
 		            <td style="padding-top: 0;">
-		            	<a href="/auth2/metadata/<%= oFile.getName() %>" class="btn btn-dark" id="downloadFile">
+		            	<a href="<%= response.encodeURL("/auth2/metadata/" +  oFile.getName()) %>" class="btn btn-dark" id="downloadFile">
 							<img src="/image/icons/light/fa-download.png" alt="Download Icon" style="margin-bottom: -1px" /> 
 							Download</a>
 	            	</td>

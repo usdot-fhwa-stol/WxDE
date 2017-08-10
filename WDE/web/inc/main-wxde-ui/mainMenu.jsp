@@ -1,3 +1,4 @@
+<%@page import="org.owasp.encoder.Encode"%>
 <script>
     $(document).ready(function () {
 
@@ -76,7 +77,7 @@
                 feedbackInfo.kaptcha = $("#kaptcha").val();
 
                 $.ajax({
-                    url: "/resources/feedback",
+                    url: "<%= response.encodeURL("/resources/feedback")%>",
                     type: "POST",
                     contentType: "application/json",
                     data: JSON.stringify(feedbackInfo),
@@ -111,7 +112,7 @@
                 $('#kaptchaImage').attr('src', '/kaptcha.jpg?' + Math.floor(Math.random()*100) );
 
                 $.ajax({
-                    url: "/resources/user",
+                    url: "<%= response.encodeURL("/resources/user")%>",
                     dataType: "json",
                     success: function (data) {
                         console.log('data', data);
@@ -168,19 +169,19 @@
 <a href="#" class="skip-link" data-skip="wdeMenu">Skip to Local Navigation</a>
 
 <ul class="sf-menu" id="wdeMenu" style="float: none;">
-    <li id="homePage-li" class="current main-nav"><a href="/"><img src="/image/icons/light/fa-home.png"
+    <li id="homePage-li" class="current main-nav"><a href="<%= response.encodeURL("/")%>"><img src="/image/icons/light/fa-home.png"
                                                                 class="main-menu-icons" id="home-link" alt="Home"/> Home</a>
     </li>
     <li id="dataPage-li" class="current main-nav"><a href="#" class="non-link-cursor" alt="Data">
         <img src="/image/icons/light/fa-cloud-download.png" class="main-menu-icons" alt="Data Icon"/>
         Data</a>
         <ul>
-            <li class="current"><a href="/summaryMap.jsp">Summary Map</a></li>
+            <li class="current"><a href="<%= response.encodeURL("/wdeMap.jsp")%>">Summary Map</a></li>
             <li>
                 <a href="#" class="non-link-cursor" title="Observations">Observations</a>
                 <ul>
                     <% if (request.getUserPrincipal() == null || request.getUserPrincipal() != null && !request.isUserInRole("wde_limited")) { %>
-                    <li><a href="/auth2/wizardContributor.jsp">
+                    <li><a href="<%= response.encodeURL("/auth2/wizardContributor.jsp")%>">
                         Contributor
                         <% if (request.getUserPrincipal() == null) {%>
                         <!-- 									<i class="icon-lock" style="margin-left:16px;"></i> -->
@@ -188,8 +189,15 @@
                         <% } %>
                     </a></li>
                     <% } %>
-                    <li><a href="/auth/wizardGeospatial.jsp">
+                    <li><a href="<%= response.encodeURL("/auth/wizardGeospatial.jsp")%>">
                         Coordinates
+                        <% if (request.getUserPrincipal() == null) {%>
+                        <!-- 									<i class="icon-lock" style="margin-left:12px;"></i> -->
+                        <img src="/image/icons/light/fa-lock.png" style="margin-left: 12px;" alt="Locked"/>
+                        <% } %>
+                    </a></li>
+                    <li><a href="<%= response.encodeURL("/auth/WizardFcstGeospatial.jsp")%>">
+                        Forecast
                         <% if (request.getUserPrincipal() == null) {%>
                         <!-- 									<i class="icon-lock" style="margin-left:12px;"></i> -->
                         <img src="/image/icons/light/fa-lock.png" style="margin-left: 12px;" alt="Locked"/>
@@ -198,7 +206,7 @@
                 </ul>
             </li>
             <% if (request.getUserPrincipal() == null || request.getUserPrincipal() != null && !request.isUserInRole("wde_limited")) { %>
-            <li><a href="/auth2/Subscriptions.jsp" title="Data Subscriptions">
+            <li><a href="<%= response.encodeURL("/auth2/Subscriptions.jsp")%>" title="Data Subscriptions">
                 Data Subscriptions
                 <% if (request.getUserPrincipal() == null) {%>
                 <!-- 							<i class="icon-lock" style="margin-left:12px;"></i> -->
@@ -207,14 +215,14 @@
             </a></li>
             <li><a href="#">Metadata</a>
                 <ul>
-                    <li><a href="/auth2/metadata.jsp">
+                    <li><a href="<%= response.encodeURL("/auth2/metadata.jsp")%>">
                         Files
                         <% if (request.getUserPrincipal() == null) {%>
                         <!-- 									<i class="icon-lock" style="margin-left:17px;"></i> -->
                         <img src="/image/icons/light/fa-lock.png" style="margin-left: 17px;" alt="Locked"/>
                         <% } %>
                     </a></li>
-                    <li><a href="/auth2/dataSource.jsp">
+                    <li><a href="<%= response.encodeURL("/auth2/dataSource.jsp")%>">
                         Tables
                         <% if (request.getUserPrincipal() == null) {%>
                         <!-- 									<i class="icon-lock" style="margin-left:12px;"></i> -->
@@ -223,6 +231,7 @@
                     </a></li>
                 </ul>
             </li>
+            <li><a href="<%= response.encodeURL("/auth2/archive.jsp")%>">Archive</a></li>
             <% } %>
         </ul>
     </li>
@@ -231,11 +240,11 @@
         <img src="/image/icons/light/fa-question-o.png" class="main-menu-icons" alt="Question"/>
         About</a>
         <ul>
-            <li class="current"><a href="/newsPage.jsp">News</a></li>
-            <li class="current"><a href="/changeLog.jsp">Change Logs</a></li>
-            <li class="current"><a href="/termsOfUse.jsp">Terms of Use</a></li>
-            <li class="current"><a href="/frequentlyAskedQuestions.jsp">FAQ</a></li>
-            <li class="current"><a href="/siteMap.jsp">Site Map</a></li>
+            <li class="current"><a href="<%= response.encodeURL("/newsPage.jsp")%>">News</a></li>
+            <li class="current"><a href="<%= response.encodeURL("/changeLog.jsp")%>">Change Logs</a></li>
+            <li class="current"><a href="<%= response.encodeURL("/termsOfUse.jsp")%>">Terms of Use</a></li>
+            <li class="current"><a href="<%= response.encodeURL("/frequentlyAskedQuestions.jsp")%>">FAQ</a></li>
+            <li class="current"><a href="<%= response.encodeURL("/siteMap.jsp")%>">Site Map</a></li>
         </ul>
     </li>
 
@@ -250,14 +259,14 @@
     <li id="userPage" class="current main-nav" style="float: right;">
         <a href="#" class="non-link-cursor">
             <img src="/image/icons/light/fa-user.png" class="main-menu-icons"
-                 title="<%= request.getUserPrincipal().getName() %>" alt="User"/>
-            <%= request.getUserPrincipal().getName() %>
+                 title="<%= Encode.forHtmlAttribute( request.getUserPrincipal().getName() ) %>" alt="User"/>
+            <%= Encode.forHtml( request.getUserPrincipal().getName()) %>
         </a>
         <ul>
             <% if (!request.isUserInRole("wde_limited")) { %>
-            <li class="current"><a href="/auth2/userEdit.jsp">Manage</a></li>
+            <li class="current"><a href="<%= response.encodeURL("/auth2/userEdit.jsp")%>">Manage</a></li>
             <% } %>
-            <li class="current"><a href="/auth/logout.jsp">Logout</a></li>
+            <li class="current"><a href="<%= response.encodeURL("/auth/logout.jsp")%>">Logout</a></li>
         </ul>
     </li>
     <% if (request.isUserInRole("wde_admin")) { %>
@@ -267,20 +276,20 @@
             Admin
         </a>
         <ul>
-            <li class="current"><a href="/admin/feedbacks.jsp" title="User Feedback">User Feedback</a></li>
-            <li class="current"><a href="/admin/reports.jsp" title="Reports">Reports</a></li>
-            <li class="current"><a href="/wdeMap.jsp?lat=46&lon=-108&zoom=4" title="Full Data Map">Full Data Map</a>
+            <li class="current"><a href="<%= response.encodeURL("/admin/feedbacks.jsp")%>" title="User Feedback">User Feedback</a></li>
+            <li class="current"><a href="<%= response.encodeURL("/admin/reports.jsp")%>" title="Reports">Reports</a></li>
+            <li class="current"><a href="<%= response.encodeURL("/wdeMap.jsp?lat=46&lon=-108&zoom=4")%>" title="Full Data Map">Full Data Map</a>
             </li>
         </ul>
     </li>
     <% } %>
     <% } else { %>
-    <li class="current main-nav" id="userPage" style="float: right;"><a href="/auth/loginRedirect.jsp" title="Login">
+    <li class="current main-nav" id="userPage" style="float: right;"><a href="<%= response.encodeURL("/auth/loginRedirect.jsp")%>" title="Login">
         <img src="/image/icons/light/fa-signin.png" class="main-menu-icons" style="height:14px; width:14px;"
              alt="Signin"/>
         Login</a>
         <ul>
-            <li class="current"><a href="/userRegistration.jsp" title="Registration">Registration</a>
+            <li class="current"><a href="<%= response.encodeURL("/userRegistration.jsp")%>" title="Registration">Registration</a>
         </ul>
     </li>
     <% } %>

@@ -22,14 +22,14 @@
 		<div>
 			<p style="margin:10px;">	
 				You have entered an invalid <strong>user name</strong> or <strong>password</strong>.<br>
-				Please <a href="/auth/loginRedirect.jsp" class="login-a-link" title="Login">login</a> with your correct user credentials.
+				Please <a href="<%= response.encodeURL("/auth/loginRedirect.jsp")%>" class="login-a-link" title="Login">login</a> with your correct user credentials.
 			</p>
 			<br />
 			<a class="btn-block btn-dark btn-login" id="tryAgain" href="/auth/loginRedirect.jsp">
 				<i class="icon-signin"></i>
 				Login</a>
 			
-			<a href="/userAccountRetrieval.jsp" class="cant-access-account">
+			<a href="<%= response.encodeURL("/userAccountRetrieval.jsp")%>" class="cant-access-account">
 				Can't access your account?
 			</a>
 		</div>

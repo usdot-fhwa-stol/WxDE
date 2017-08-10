@@ -1,9 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<web-app version="2.5" xmlns="http://java.sun.com/xml/ns/javaee"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd">
+<web-app xmlns="http://java.sun.com/xml/ns/javaee"
+	      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	      xsi:schemaLocation="http://java.sun.com/xml/ns/javaee 
+	      http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd"
+	      version="3.0">
 
-
+  
     <display-name>WXDE</display-name>
     <welcome-file-list>
         <welcome-file>index.html</welcome-file>
@@ -14,83 +16,18 @@
         <welcome-file>default.jsp</welcome-file>
     </welcome-file-list>
 
+
     <servlet>
-        <servlet-name>Kaptcha</servlet-name>
-        <servlet-class>com.google.code.kaptcha.servlet.KaptchaServlet</servlet-class>
+        <servlet-name>ExtStarter</servlet-name>
+        <servlet-class>wde.cs.ext.ExtStarter</servlet-class>
+        <load-on-startup>0</load-on-startup>
     </servlet>
 
     <servlet-mapping>
-        <servlet-name>Kaptcha</servlet-name>
-        <url-pattern>/kaptcha.jpg</url-pattern>
+        <servlet-name>ExtStarter</servlet-name>
+        <url-pattern>/ExtStarter</url-pattern>
     </servlet-mapping>
 
-    <filter>
-        <filter-name>KaptchaLoginFilter</filter-name>
-        <filter-class>wde.security.KaptchaLoginFilter</filter-class>
-    </filter>
-
-    <filter-mapping>
-        <filter-name>KaptchaLoginFilter</filter-name>
-        <url-pattern>/j_security_check</url-pattern>
-    </filter-mapping>
-
-    <servlet>
-        <servlet-name>CsHttp</servlet-name>
-        <servlet-class>wde.cs.CsHttp</servlet-class>
-        <init-param>
-            <description>millisecond startup delay</description>
-            <param-name>delay</param-name>
-            <param-value>0</param-value>
-        </init-param>
-        <load-on-startup>1</load-on-startup>
-    </servlet>
-
-    <servlet-mapping>
-        <servlet-name>CsHttp</servlet-name>
-        <url-pattern>/CsHttp</url-pattern>
-    </servlet-mapping>
-
-    <servlet>
-        <servlet-name>csvc</servlet-name>
-        <servlet-class>wde.cs.HttpPush</servlet-class>
-
-        <init-param>
-            <description>REQUIRED: destination directory for uploaded files</description>
-            <param-name>dest-dir</param-name>
-            <param-value>/opt/collectors/DE/data/</param-value>
-        </init-param>
-
-        <init-param>
-            <description>REQUIRED: semicolon separated network address filters</description>
-            <param-name>addresses</param-name>
-            <param-value>167.21.</param-value>
-        </init-param>
-
-        <init-param>
-            <description>REQUIRED: semicolon separated filename filters</description>
-            <param-name>files</param-name>
-            <param-value>atmospheric.txt;subsurface.txt;surface.txt</param-value>
-        </init-param>
-
-        <init-param>
-            <description>OPTIONAL: minimum milliseconds between upload attempts, 5 minute default</description>
-            <param-name>min-interval</param-name>
-            <param-value>300000</param-value>
-        </init-param>
-
-        <init-param>
-            <description>OPTIONAL: maximum bytes allowed for each file, 4KB default</description>
-            <param-name>max-filesize</param-name>
-            <param-value>4096</param-value>
-        </init-param>
-
-        <load-on-startup>1</load-on-startup>
-    </servlet>
-
-    <servlet-mapping>
-        <servlet-name>csvc</servlet-name>
-        <url-pattern>/csvc</url-pattern>
-    </servlet-mapping>
 
     <servlet>
         <servlet-name>QedsMgr</servlet-name>
@@ -103,16 +40,18 @@
         <url-pattern>/QedsMgr</url-pattern>
     </servlet-mapping>
 
+
     <servlet>
         <servlet-name>ListObsTypes</servlet-name>
         <servlet-class>wde.qeds.ListObsTypes</servlet-class>
-        <load-on-startup>1</load-on-startup>
+        <load-on-startup>2</load-on-startup>
     </servlet>
 
     <servlet-mapping>
         <servlet-name>ListObsTypes</servlet-name>
         <url-pattern>/ListObsTypes</url-pattern>
     </servlet-mapping>
+
 
     <servlet>
         <servlet-name>GetPlatformsForRegion</servlet-name>
@@ -126,8 +65,9 @@
             <param-value>true</param-value>
         </init-param>
 
-        <load-on-startup>1</load-on-startup>
+        <load-on-startup>3</load-on-startup>
     </servlet>
+
 
     <servlet-mapping>
         <servlet-name>GetPlatformsForRegion</servlet-name>
@@ -137,7 +77,7 @@
     <servlet>
         <servlet-name>ApplicationInterfaceServlet</servlet-name>
         <servlet-class>wde.qeds.ApplicationInterfaceServlet</servlet-class>
-        <load-on-startup>1</load-on-startup>
+        <load-on-startup>4</load-on-startup>
     </servlet>
 
     <servlet-mapping>
@@ -145,16 +85,77 @@
         <url-pattern>/downloadSubscription</url-pattern>
     </servlet-mapping>
 
+
+    <servlet>
+        <servlet-name>DataTime</servlet-name>
+        <servlet-class>wde.ws.EmdssDataTime</servlet-class>
+    </servlet>
+
+    <servlet-mapping>
+        <servlet-name>DataTime</servlet-name>
+        <url-pattern>/datatime</url-pattern>
+    </servlet-mapping>
+
+
+    <servlet>
+        <servlet-name>DistrictAlerts</servlet-name>
+        <servlet-class>wde.ws.EmdssAlerts</servlet-class>
+    </servlet>
+
+    <servlet-mapping>
+        <servlet-name>DistrictAlerts</servlet-name>
+        <url-pattern>/district_alerts</url-pattern>
+    </servlet-mapping>
+
+
+    <servlet>
+        <servlet-name>LatestVehicles</servlet-name>
+        <servlet-class>wde.ws.EmdssVehicles</servlet-class>
+    </servlet>
+
+    <servlet-mapping>
+        <servlet-name>LatestVehicles</servlet-name>
+        <url-pattern>/latest_vehicles</url-pattern>
+    </servlet-mapping>
+
+
+    <servlet>
+        <servlet-name>Plots</servlet-name>
+        <servlet-class>wde.ws.EmdssPlots</servlet-class>
+    </servlet>
+
+    <servlet-mapping>
+        <servlet-name>Plots</servlet-name>
+        <url-pattern>/plots</url-pattern>
+    </servlet-mapping>
+
+
     <servlet>
         <servlet-name>ServletAdaptor</servlet-name>
         <servlet-class>com.sun.jersey.spi.container.servlet.ServletContainer</servlet-class>
-        <load-on-startup>1</load-on-startup>
+        <load-on-startup>5</load-on-startup>
     </servlet>
 
     <servlet-mapping>
         <servlet-name>ServletAdaptor</servlet-name>
         <url-pattern>/resources/*</url-pattern>
     </servlet-mapping>
+
+
+  <servlet>
+    <servlet-name>AltitudeLookup</servlet-name>
+    <servlet-class>wde.cs.ext.NED</servlet-class>
+    <init-param>
+      <param-name>dir</param-name>
+      <param-value>/opt/NED/</param-value>
+    </init-param>
+  </servlet>
+
+  <servlet-mapping>
+    <servlet-name>AltitudeLookup</servlet-name>
+    <url-pattern>/elev/*</url-pattern>
+  </servlet-mapping>
+
 
     <resource-ref>
         <description>wxde</description>
@@ -231,8 +232,150 @@
     </error-page>
 
     <error-page>
-        <error-code>500</error-code>
-        <location>/error/500.jsp</location>
+      <exception-type>java.lang.Throwable</exception-type>
+      <location>/error/500.jsp</location>
     </error-page>
+    
+    <filter>
+      <filter-name>CachControl</filter-name>
+      <filter-class>wde.security.filters.CacheControlFilter</filter-class>
+      <init-param>
+        <param-name>disableCache</param-name>
+        <param-value>true</param-value>
+      </init-param>
+    </filter>
+    <filter-mapping>
+      <filter-name>CachControl</filter-name>
+      <url-pattern>*.jsp</url-pattern>
+      <url-pattern>/resources/*</url-pattern>
+      <dispatcher>REQUEST</dispatcher>
+      <dispatcher>FORWARD</dispatcher>
+    </filter-mapping>
 
+    <filter>
+      <filter-name>RefererValidationFilter</filter-name>
+      <filter-class>wde.security.filters.RefererValidationFilter</filter-class>
+    <init-param>
+      <param-name>entryPoints</param-name>
+      <param-value>/index.jsp,/downloadSubscription,/wdeMap.jsp</param-value>
+    </init-param>
+    <init-param>
+      <param-name>allowedReferersPattern</param-name>
+      <param-value>^(?:(?:http|https)://)?(?:localhost|99\.198\.128\.113|wxde\.fhwa\.dot\.gov)(?::[0-9]{1,5})?.*$</param-value>
+    </init-param>
+    <init-param>
+      <param-name>allowMissingReferer</param-name>
+      <param-value>true</param-value>
+    </init-param>
+    <init-param>
+      <param-name>rejectRedirectUrl</param-name>
+      <param-value>/</param-value>
+    </init-param>
+  </filter>
+  
+  <filter-mapping>
+    <filter-name>RefererValidationFilter</filter-name>
+    <url-pattern>*.jsp</url-pattern>
+    <url-pattern>/auth2/*</url-pattern>
+    <url-pattern>/admin/*</url-pattern>
+    <url-pattern>/resources/*</url-pattern>
+    <url-pattern>/auth/*</url-pattern>
+  </filter-mapping>
+
+    <filter>
+      <filter-name>httpHeaderSecurity</filter-name>
+      <filter-class>wde.security.filters.HttpHeaderSecurityFilter</filter-class>
+      <init-param>
+        <param-name>hstsEnabled</param-name>
+        <param-value>true</param-value>
+      </init-param>
+      <init-param>
+        <param-name>hstsMaxAgeSeconds</param-name>
+        <param-value>31536000</param-value>
+      </init-param>
+      <init-param>
+        <param-name>hstsIncludeSubDomains</param-name>
+        <param-value>true</param-value>
+      </init-param>      
+      <init-param>
+        <param-name>antiClickJackingEnabled</param-name>
+        <param-value>true</param-value>
+      </init-param>     
+      <init-param>
+        <param-name>antiClickJackingOption</param-name>
+        <param-value>DENY</param-value>
+      </init-param>  
+      <init-param>
+        <param-name>blockContentTypeSniffingEnabled</param-name>
+        <param-value>true</param-value>
+      </init-param>  
+      <init-param>
+        <param-name>xssProtectionEnabled</param-name>
+        <param-value>true</param-value>
+      </init-param>
+      <init-param>
+        <param-name>contentSecurityEnabled</param-name>
+        <param-value>true</param-value>
+      </init-param>
+      <init-param>
+        <param-name>contentSecurityHeaderValue</param-name>
+        <param-value>frame-ancestors 'self'; default-src http://fonts.gstatic.com ; script-src http://www.google-analytics.com ajax.googleapis.com maps.googleapis.com http://gmaps-utility-gis.googlecode.com http://api.imapbuilder.net maps.google.com code.jquery.com 'self' 'unsafe-eval'  'unsafe-inline'; style-src 'self'  'unsafe-inline' fonts.googleapis.com; img-src *.openstreetmap.org *.mqcdn.com https://maps.gstatic.com https://csi.gstatic.com https://maps.google.com http://www.google-analytics.com 'self' data:; connect-src 'self'</param-value>
+      </init-param>
+    </filter>
+    <filter-mapping>
+      <filter-name>httpHeaderSecurity</filter-name>
+      <url-pattern>/*</url-pattern>
+    </filter-mapping>
+    
+  <filter>
+    <filter-name>CsrfFilter</filter-name>
+    <filter-class>org.apache.catalina.filters.CsrfPreventionFilter</filter-class>
+    <init-param>
+      <param-name>entryPoints</param-name>
+      <param-value>/auth/j_security_check,/auth/loginRedirect.jsp,/userLogin.jsp,/userLoginFailed.jsp,/index.jsp,/downloadSubscription,/userAccountRetrieval.jsp</param-value>
+    </init-param>
+    <init-param>
+      <param-name>nonceCacheSize</param-name>
+      <param-value>20</param-value>
+    </init-param>
+  </filter>
+  
+  <!--  The filter will only be able to insert tokens in links on a page
+        if is mapped, so we need to make sure all JSPs go through the filter  -->
+  <filter-mapping>
+    <filter-name>CsrfFilter</filter-name>
+    <url-pattern>*.jsp</url-pattern>
+    <url-pattern>/auth2/*</url-pattern>
+    <url-pattern>/admin/*</url-pattern>
+    <url-pattern>/resources/*</url-pattern>
+    <url-pattern>/auth/*</url-pattern>
+    <dispatcher>REQUEST</dispatcher>
+    <dispatcher>FORWARD</dispatcher>
+  </filter-mapping>
+ 
+
+	<!-- Only Allow GET and POST methods to access JSPs -->
+  <security-constraint>
+		<web-resource-collection>
+			<web-resource-name>wxde</web-resource-name>
+			<url-pattern>*.jsp</url-pattern>
+			<http-method-omission>GET</http-method-omission>
+			<http-method-omission>POST</http-method-omission>
+		</web-resource-collection>
+		<auth-constraint />
+	</security-constraint>
+
+	<!-- Only allow GET, POST, PUT, and DELETE methods when accessing application. -->
+  <security-constraint>
+		<web-resource-collection>
+			<web-resource-name>wxde</web-resource-name>
+			<url-pattern>/*</url-pattern>
+			<http-method-omission>GET</http-method-omission>
+			<http-method-omission>POST</http-method-omission>
+			<http-method-omission>PUT</http-method-omission>
+			<http-method-omission>DELETE</http-method-omission>
+		</web-resource-collection>
+		<auth-constraint />
+	</security-constraint>
+    
 </web-app>

@@ -8,7 +8,7 @@
 		</a>
 	</div>
 	<div style="float:left; margin-left:10px;">
-		<a href="/privacyPolicy.jsp" title="Privacy Policy">Privacy Policy</a> |
+		<a href="<%= response.encodeURL("/privacyPolicy.jsp")%>" title="Privacy Policy">Privacy Policy</a> |
 		<a href="http://www.fhwa.dot.gov/foia/" title="Freedom of Informatoin Act">Freedom of Information Act (FOIA)</a> |
 		<a href="http://www.fhwa.dot.gov/accessibility/" title="Accessibility">Accessibility</a> |
 		<a href="http://www.fhwa.dot.gov/webpolicies/publishschedule.cfm" target="_blank" title="Web Policies">Web Policies &amp; Notices</a> |

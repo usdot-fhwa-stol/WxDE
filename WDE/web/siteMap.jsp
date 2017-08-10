@@ -21,45 +21,45 @@
 		
 		<ul class="site-map">
 			
-			<li><a href="/">Home</a></li>
+			<li><a href="<%= response.encodeURL("/")%>">Home</a></li>
 			<li>Data
 				<ul>
-					<li><a href="/summaryMap.jsp">Summary Map</a></li>
+					<li><a href="<%= response.encodeURL("/summaryMap.jsp")%>">Summary Map</a></li>
 					<li>Observations
 						<ul>
-							<li><a href="/auth2/wizardContributor.jsp">Contributor</a></li>
-							<li><a href="/auth/wizardGeospatial">Coordinates</a></li>
+							<li><a href="<%= response.encodeURL("/auth2/wizardContributor.jsp")%>">Contributor</a></li>
+							<li><a href="<%= response.encodeURL("/auth/wizardGeospatial.jsp")%>">Coordinates</a></li>
 						</ul>
 					</li>
-					<li><a href="/auth2/Subscriptions.jsp">Data Subscriptions</a></li>
+					<li><a href="<%= response.encodeURL("/auth2/Subscriptions.jsp")%>">Data Subscriptions</a></li>
 					<li>Metadata
 						<ul>
-							<li><a href="/auth2/metadata.jsp">Files</a></li>
-							<li><a href="/auth2/dataSource.jsp">Tables</a></li>
+							<li><a href="<%= response.encodeURL("/auth2/metadata.jsp")%>">Files</a></li>
+							<li><a href="<%= response.encodeURL("/auth2/dataSource.jsp")%>">Tables</a></li>
 						</ul>
 					</li>
 				</ul>
 			</li>
 			
-			<li><a href="/summaryMap.jsp">WxDE Map</a></li>
+			<li><a href="<%= response.encodeURL("/wdeMap.jsp")%>">WxDE Map</a></li>
 			
 			<li>About
 				<ul>
-					<li><a href="/newsPage.jsp">News</a></li>
-					<li><a href="/changeLog.jsp">Change Logs</a></li>
-					<li><a href="/termsOfUse.jsp">Terms of Use</a></li>
-					<li><a href="/frequentlyAskedQuestions.jsp">Frequently Asked Questions</a></li>
+					<li><a href="<%= response.encodeURL("/newsPage.jsp")%>">News</a></li>
+					<li><a href="<%= response.encodeURL("/changeLog.jsp")%>">Change Logs</a></li>
+					<li><a href="<%= response.encodeURL("/termsOfUse.jsp")%>">Terms of Use</a></li>
+					<li><a href="<%= response.encodeURL("/frequentlyAskedQuestions.jsp")%>">Frequently Asked Questions</a></li>
 				</ul>
 			</li>
 			
-			<li><a href="/auth/loginRedirect.jsp">Login</a>
+			<li><a href="<%= response.encodeURL("/auth/loginRedirect.jsp")%>">Login</a>
 				<ul>
-					<li><a href="/userRegistration.jsp">Registration</a></li>
-					<li><a href="/userAccountRetrieval.jsp">Can't access your account?</a></li>				
+					<li><a href="<%= response.encodeURL("/userRegistration.jsp")%>">Registration</a></li>
+					<li><a href="<%= response.encodeURL("/userAccountRetrieval.jsp")%>">Can't access your account?</a></li>				
 				</ul>
 			</li>
 			
-			<li><a href="/privacyPolicy.jsp">Privacy Policy</a></li>
+			<li><a href="<%= response.encodeURL("/privacyPolicy.jsp")%>">Privacy Policy</a></li>
 			
 		</ul>
 		

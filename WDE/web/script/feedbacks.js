@@ -7,7 +7,7 @@ $(function() {
 	setTimeout( function() {
 		
 		$.ajax({
-            url:'/resources/admin/feedback', 
+            url:'/resources/admin/feedback?' + csrf_nonce_param, 
             dataType: 'json',
             success: populateData,
             cache: false
@@ -28,10 +28,38 @@ $(function() {
 				}
 			}
 				
+      //This is not expected to match any possible valid URL. It only needs to match URLs that we would have legitimately inserted from a feedback request. 
+      //If there is a match, we will deal only with the portion of the URL that was returned by the match and not necessarily the whole URL.
+      var urlPattern = new RegExp("https?:\/\/[0-9a-zA-Z\.-]*(?::[0-9]*)?(\/[a-z0-9A-Z]*){0,}(?:\.[a-z]{1,4})?\\??(?:[a-zA-Z0-9-_\.]*=[a-zA-Z0-9-_\.]*){0,}(?:#[a-zA-Z0-9-_\.=]*)?");
+
 			$.each(
 				tempArray,
 				function(index, item) {
-	
+          item.name=escapeHtml(item.name);
+          item.description=escapeHtml(item.description);
+          item.email=escapeHtml(item.email);
+          
+          var urlMatches = urlPattern.exec(item.section);
+          if(urlMatches)
+          {
+            item.section = urlMatches[0];
+          }
+          else
+            item.section = "/";
+          
+          var linkUrl = item.section === "" ? "" : item.section.substring(item.section.indexOf('/', item.section.indexOf('//') + 2));
+          if(linkUrl.startsWith("/#"))
+            linkUrl = "/" + linkUrl.substring(2);
+          
+          var noncePrefix= linkUrl.indexOf('?') > 0 ? '&' : '?';
+          
+          var hashIndex = linkUrl.indexOf('#');
+          if(hashIndex > 0)
+            linkUrl = linkUrl.substring(0, hashIndex) + noncePrefix + csrf_nonce_param + linkUrl.substring(hashIndex);
+          else
+            linkUrl = linkUrl + noncePrefix + csrf_nonce_param;
+          
+                    
 					strName = item.name;
 					dataName = strName;
 					strSection = item.section
@@ -60,8 +88,8 @@ $(function() {
 					if (timeCreated == "" || timeCreated == undefined) {
 						timeCreated = '<em style="color: #aaa;">Not Provided</em>';
 					}
-	
-					strDescription = item.description.replace(/[\/\\'"<>]/g,'');
+						
+					strDescription = item.description;
 					
 					$('.reports-table')
 						.append(
@@ -88,7 +116,7 @@ $(function() {
 								+ '<td class="align-center" id="feedbackSection" data-section="'
 								+ strSection
 								+ '"><a class="page-link link" href="'
-								+ item.section
+								+ linkUrl
 								+ '" title="Go to Section" target="_blank">'
 								+ strSection
 								+ '</a></td>'
@@ -122,27 +150,27 @@ $(function() {
 											.attr('data-type')
 									+ '</p>'
 									+ '<p><span class="label">Name: </span>'
-										+ $(this)
+										+ escapeHtml($(this)
 											.parent('td')
 											.siblings('#feedbackUser')
-											.attr('data-name')
+											.attr('data-name'))
 									+ '</p>'
 									+ '<p><span class="label">Email: </span>'
-										+ $(this)
+										+ escapeHtml($(this)
 											.parent('td')
 											.siblings('#feedbackUser')
-											.attr('data-email')
+											.attr('data-email'))
 									+ '</p>'
 									+ '<p><span class="label">Section: </span>'
-										+ $(this)
+										+ escapeHtml($(this)
 											.parent('td')
 											.siblings('#feedbackSection')
-											.attr('data-section')
+											.attr('data-section'))
 										+ '.jsp'
 									+ '</p>'
 									+ '<p><span class="label">Description:</span></p>'
 									+ '<p>'
-										+ $(this).attr('data-msg')
+										+ escapeHtml($(this).attr('data-msg'))
 									+ '</p>'
 								);
 							$("#descriptionModal").dialog("open");

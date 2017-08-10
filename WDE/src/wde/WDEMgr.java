@@ -36,7 +36,7 @@ import wde.util.CollectionReport;
 import wde.util.Config;
 import wde.util.ConfigSvc;
 import wde.util.threads.AsyncQ;
-import wde.vdt.VDTController;
+//import wde.vdt.VDTController;
 
 import javax.naming.InitialContext;
 import javax.naming.NoInitialContextException;
@@ -150,7 +150,7 @@ public class WDEMgr extends TimerTask {
                 m_oSequence.add(null);
 
             DatabaseManager.wdeMgrInstantiated = true;
-            VDTController.wdeMgrInstantiated = true;
+//            VDTController.wdeMgrInstantiated = true;
             CollectionReport.wdeMgrInstantiated = true;
         } catch (Exception oException) {
             oException.printStackTrace();
@@ -280,7 +280,7 @@ public class WDEMgr extends TimerTask {
             logger.error(e.getMessage());
         }
 
-        VDTController.getInstance();
+//        VDTController.getInstance();
         logger.info("startup");
     }
 
