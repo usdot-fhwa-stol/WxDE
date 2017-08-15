@@ -182,7 +182,7 @@ L.WxdeSummaryMap = L.Map.extend({
       modal: true,
       draggable: false,
       resizable: false,
-      width: "400",
+      width: 650,
       height: "auto",
       position: {my: "center", at: "center"}
     });
@@ -193,7 +193,7 @@ L.WxdeSummaryMap = L.Map.extend({
       modal: true,
       draggable: false,
       resizable: false,
-      width: "400",
+      width: 650,
       height: "auto",
       position: {my: "center", at: "center"}
     });
@@ -203,7 +203,7 @@ L.WxdeSummaryMap = L.Map.extend({
       modal: true,
       draggable: false,
       resizable: false,
-      width: "400",
+      width: 500,
       height: "auto",
       position: {my: "center", at: "center"}
     });
