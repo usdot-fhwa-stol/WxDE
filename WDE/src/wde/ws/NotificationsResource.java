@@ -62,6 +62,29 @@ public class NotificationsResource
     return Response.ok(getNotificationJsonStream(notificationsDao.getUserNotifications(req.getUserPrincipal().getName()))).build();
   }
 
+
+  @GET
+  @Consumes(
+  {
+    MediaType.APPLICATION_JSON
+  })
+  @Produces(
+  {
+    MediaType.APPLICATION_JSON
+  })
+  @Path("{id}")
+  public Response getNotification(@PathParam("id") int id)
+  {
+    Notification notification = notificationsDao.getNotification(id);
+    if(notification == null)
+      return Response.status(NOT_FOUND).build();
+
+    if(!notification.getUsername().equals(req.getUserPrincipal().getName()))
+      return Response.status(UNAUTHORIZED).build();
+
+    return Response.ok(getNotificationJsonStream(notification)).build();
+  }
+
   @POST
   @Consumes(
   {
@@ -73,8 +96,10 @@ public class NotificationsResource
   })
   public Response addNotification(Notification notification)
   {
-    if (req.getUserPrincipal() != null)
-      notification.setUsername(req.getUserPrincipal().getName());
+    if (req.getUserPrincipal() == null)
+      return Response.status(UNAUTHORIZED).build();
+
+    notification.setUsername(req.getUserPrincipal().getName());
     notificationsDao.insertNotification(notification);
 
     return Response.ok(getNotificationJsonStream(notification)).build();
@@ -92,9 +117,6 @@ public class NotificationsResource
   @Path("{id}")
   public Response updateNotification(Notification notification, @PathParam("id") int id)
   {
-    if (req.getUserPrincipal() != null)
-      notification.setUsername(req.getUserPrincipal().getName());
-
     Notification currentNotification = notificationsDao.getNotification(id);
     if(currentNotification == null)
       return Response.status(NOT_FOUND).build();
