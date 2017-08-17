@@ -1,5 +1,6 @@
 package wde.ws;
 
+import com.sun.org.apache.xerces.internal.util.Status;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.text.DecimalFormat;
@@ -10,6 +11,7 @@ import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
@@ -27,6 +29,7 @@ import wde.dao.ObsTypeDao;
 import wde.metadata.ObsType;
 import wde.qeds.Notification;
 import wde.qeds.NotificationCondition;
+import static javax.ws.rs.core.Response.Status.*;
 
 /**
  *
@@ -76,6 +79,48 @@ public class NotificationsResource
 
     return Response.ok(getNotificationJsonStream(notification)).build();
   }
+
+  @PUT
+  @Consumes(
+  {
+    MediaType.APPLICATION_JSON
+  })
+  @Produces(
+  {
+    MediaType.APPLICATION_JSON
+  })
+  @Path("{id}")
+  public Response updateNotification(Notification notification, @PathParam("id") int id)
+  {
+    if (req.getUserPrincipal() != null)
+      notification.setUsername(req.getUserPrincipal().getName());
+
+    Notification currentNotification = notificationsDao.getNotification(id);
+    if(currentNotification == null)
+      return Response.status(NOT_FOUND).build();
+
+    if(!currentNotification.getUsername().equals(req.getUserPrincipal().getName()))
+      return Response.status(UNAUTHORIZED).build();
+
+    //id and username cannot be updated
+    notification.setId(id);
+    notification.setUsername(currentNotification.getUsername());
+
+    //clear triggered statuses when updating
+    notification.setTriggered(false);
+    int index = 0;
+    for(NotificationCondition condition : notification.getConditions())
+    {
+      condition.setTriggered(false);
+      condition.setIndex(index++);
+    }
+
+    notificationsDao.updateNotification(notification);
+
+    return Response.ok(getNotificationJsonStream(notification)).build();
+  }
+
+
 
   @DELETE
   @Path("{id}")
