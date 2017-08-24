@@ -20,9 +20,8 @@
     <link href="/style/WDEMap.css" rel="stylesheet" type="text/css" media="screen"/>
     <link href="/style/WDEMap2.css" rel="stylesheet" type="text/css" media="screen"/>
    <link href="/style/createAlert.css" rel="stylesheet" type="text/css" media="screen"/> 
-  
-   <!--    <script src="/script/jquery/jquery-2.2.0.js"></script>
-  <script src="/script/jquery/jquery-ui-full-1.11.4.js"></script>-->
+
+  <script src="/script/jquery/jquery.getUrlParam.js"></script>
 	<script src="/script/us-states.js"></script>
 	<script src="/script/leaflet.js"></script>
 <script src="/script/leaflet-wxde.js"></script> 

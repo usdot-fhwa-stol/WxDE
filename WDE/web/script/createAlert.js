@@ -3,6 +3,7 @@
   var selectedRectangle, nw, se;
   $(document).ready(function ()
   {
+    var editId = $(document).getUrlParam("editId");
 
     var reportStepDivs = $("#divReportStep1, #divReportStep2, #divReportStep3");
 
@@ -39,17 +40,22 @@
 
     var btnClickAdd;
     var btnClickRemove;
-    function addRow()
+    function addRow(addHandler = true)
     {
-
-      $('<tr>' +
+      var newRow = $('<tr>' +
               '<td class="alert-filter">' + buildSelect(['Any', 'Mean', 'Mode']) + '</td>' +
               '<td class="alert-obstype">' + buildSelect(obsList) + '</td>' +
               '<td class="alert-operator">' + buildSelect([{value: 'Gt', label: '>'}, {value: 'Lt', label: '<'}, {value: 'GtEq', label: '>='}, {value: 'LtEq', label: '<='}]) + '</td>' +
               '<td class="alert-val"><input type="text" /></td>' +
               '<td class="alert-tol"><input type="text" /></td>' +
               '<td class="alert-add-remove"><input type="button" value="+" /></td>' +
-              '</tr>').prependTo('#alert-conditions tbody').find('input[type="button"]').on('click', btnClickAdd);
+              '</tr>');
+
+      newRow.prependTo('#alert-conditions tbody');
+
+      if (addHandler)
+        newRow.find('input[type="button"]').on('click', btnClickAdd);
+      return newRow;
     }
 
     btnClickRemove = function ()
@@ -77,7 +83,10 @@
           value.value = value.id;
         });
 
-        addRow();
+        if (editId)
+          loadNotification(editId);
+        else
+          addRow();
       },
       timeout: 3000
     });
@@ -95,17 +104,6 @@
       return highlightStyle;
     }
 
-
-    function getPolylineHighlightStyle(style)
-    {
-      var highlightStyle = {};
-      for (var styleAttr in style)
-      {
-        if (style.hasOwnProperty(styleAttr))
-          highlightStyle[styleAttr] = style[styleAttr];
-      }
-      return highlightStyle;
-    }
 
     function setStandardStyleProperties(style)
     {
@@ -205,11 +203,24 @@
 
     map.registerWxdeLayer(L.wxdeLayer('/RoadLayer', processPolylineData, roadStyler, roadOptions));
 
+    function setupMarkers(rectangle)
+    {
+      var bounds = rectangle.getBounds();
+      nw = L.marker(bounds.getNorthWest(), {draggable: true}).addTo(map);
+      se = L.marker(bounds.getSouthEast(), {draggable: true}).addTo(map);
+
+      var dragEnd = function (e3)
+      {
+        rectangle.setBounds([nw.getLatLng(), se.getLatLng()]);
+      };
+
+      nw.on("dragend", dragEnd);
+      se.on("dragend", dragEnd);
+
+    }
 
     var mouseDown = function (e)
     {
-      var lat = e.latlng.lat;
-      var lng = e.latlng.lng;
       selectedRectangle = L.rectangle([e.latlng, e.latlng]);
       selectedRectangle.addTo(map);
 
@@ -224,25 +235,16 @@
       {
         map.off('mousemove', mouseMove);
         map.off('mousedown', mouseDown);
-        map.dragging.enable();
-
-
-        nw = L.marker(selectedRectangle.getBounds().getNorthWest(), {zIndexOffset: 10000, riseOnHover: true, draggable: true}).addTo(map);
-        se = L.marker(selectedRectangle.getBounds().getSouthEast(), {zIndexOffset: 10000, riseOnHover: true, draggable: true}).addTo(map);
-
-        var dragEnd = function (e3)
-        {
-          selectedRectangle.setBounds([nw.getLatLng(), se.getLatLng()]);
-        };
-        document.getSelection().removeAllRanges();
-
-        nw.on("dragend", dragEnd);
-        se.on("dragend", dragEnd);
-
         map.off('mouseup', mouseOut);
         map.off('mouseout', mouseOut);
 
+        map.dragging.enable();
+
+        document.getSelection().removeAllRanges();
+
         setReportStep(3);
+
+        setupMarkers(selectedRectangle);
       };
 
       map.on('mouseup', mouseOut);
@@ -319,19 +321,63 @@
 
        */
       //?' + csrf_nonce_param
+
+      var url = '/resources/notifications';
+      var method;
+      if (editId)
+      {
+        url += '/' + editId;
+        method = 'PUT';
+      }
+      else
+        method = 'POST';
+
       $.ajax({
-        type: 'POST',
-        url: '/resources/notifications?' + csrf_nonce_param,
+        type: method,
+        url: url + '?' + csrf_nonce_param,
         data: JSON.stringify(notification),
         success: function (data)
         {
           window.location.href = '/auth2/viewAlerts.jsp?' + csrf_nonce_param;
-
         },
         contentType: "application/json",
         dataType: 'json'
       });
     });
+
+
+    function loadNotification(id)
+    {
+      $.getJSON('/resources/notifications/' + id + '?' + csrf_nonce_param,
+              function (notification, status)
+              {
+                selectedRectangle = L.rectangle([[notification.lat1, notification.lon1], [notification.lat2, notification.lon2]]);
+                selectedRectangle.addTo(map);
+
+                setupMarkers(selectedRectangle);
+
+                setReportStep(3);
+
+                map.fitBounds(selectedRectangle.getBounds());
+                $('#txtNotificationMessage').val(notification.message);
+
+                $.each(notification.conditions, function (index, condition)
+                {
+                  var conditionRow = addRow(false);
+
+                  conditionRow.find("TD.alert-filter").children().val(condition.filter);
+                  conditionRow.find("TD.alert-obstype").children().val(condition.obstypeId);
+                  conditionRow.find("TD.alert-operator").children().val(condition.operator);
+                  conditionRow.find("TD.alert-tol").children().val(condition.tolerance);
+                  conditionRow.find("TD.alert-val").children().val(condition.value);
+                });
+
+                var conditionList = $('#alert-conditions input[type="button"]');
+
+                conditionList.slice(1).on('click', btnClickRemove).val('-');
+                conditionList.first().on('click', btnClickAdd).val('+');
+              });
+    }
 
     $.getJSON('/states/status', function (response)
     {

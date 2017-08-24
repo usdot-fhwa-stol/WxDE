@@ -34,7 +34,7 @@
         var table = $('<table class="reports-table"><thead>' +
                 '<th>message</th>' +
                 '<th>bounds</th>' +
-                '<th>Conditions</th><th>delete</thead></thead><tbody></tbody></table>').appendTo("#divNotifications");
+                '<th>Conditions</th><th>&nbsp;</thead></thead><tbody></tbody></table>').appendTo("#divNotifications");
         var tableBody = table.find("tbody");
 
         $.each(data, function (index, value)
@@ -45,11 +45,17 @@
                           '<td>' + value.message + '</td>' +
                           '<td>lat1: ' + value.lat1 + '<br />lon1: ' + value.lon1 +
                           '<br />lat2: ' + value.lat2 + '<br />lon2: ' + value.lon2 + '</td>' +
-                          '<td><table><thead><th>filter</th><th>obstype</th><th>comp</th><th>val</th><th>tol</th></thead><tbody></tbody></table></td><td><input type="button" value="delete" /></td></tr>');
+                          '<td><table><thead><th>filter</th><th>obstype</th><th>comp</th><th>val</th><th>tol</th></thead><tbody></tbody></table></td><td><input class="edit" type="button" value="edit" /><input class="delete" type="button" value="delete" /></td></tr>');
 
 
           notificationRow.appendTo(tableBody).data('id', value.id);
-          notificationRow.find('input').click(function ()
+
+          notificationRow.find('input.edit').click(function ()
+          {
+            location.href = '/auth2/createAlert.jsp?editId=' + notificationRow.data('id') + '&' + csrf_nonce_param;
+          });
+
+          notificationRow.find('input.delete').click(function ()
           {
             $.ajax({
               type: 'DELETE',
