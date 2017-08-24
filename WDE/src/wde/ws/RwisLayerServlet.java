@@ -1,31 +1,37 @@
 package wde.ws;
 
 import javax.naming.NamingException;
-import javax.servlet.annotation.WebServlet;
+import javax.servlet.ServletConfig;
+import javax.servlet.ServletException;
 
 /**
  *
  * @author scot.lange
  */
-@WebServlet(urlPatterns = "/RwisLayer/*")
 public class RwisLayerServlet extends PointLayerServletBase
 {
 
-  private final String m_sBaseSelect = "SELECT\n"
+  @Override
+  public void init(ServletConfig config) throws ServletException
+  {
+    super.init(config);
+    String sContribCondition = config.getInitParameter("contribCondition");
+
+
+    String sBaseSelect = "SELECT\n"
           + "p.id\n"
           + ",p.category\n"
           + ",p.platformcode\n"
           + ",p.locbaselat AS latitude\n"
           + ",p.locbaselong AS longitude\n";
 
-  private final String m_sBaseFromWhere
+    String sBaseFromWhere
           = "FROM\n"
           + "meta.platform p\n"
           + "INNER JOIN meta.sensor s ON p.id = s.platformid\n"
           + "INNER JOIN " + OBS_TABLE_PLACEHOLDER + " o ON s.id = o.sensorid\n"
           + "WHERE\n"
-          + "p.contribid<>4\n"
-          + "AND p.category IN ('P', 'T')\n"
+          + "p.category IN ('P', 'T')\n"
           + "AND p.locbaselat >= ?\n"
           + "AND p.locbaselat <= ?\n"
           + "AND p.locbaselong >= ?\n"
@@ -34,18 +40,28 @@ public class RwisLayerServlet extends PointLayerServletBase
           + "AND o.obstime >= ?\n"
           + "AND o.obstime <= ?\n";
 
-  private final String m_sQueryWithoutObsTemplate
-          = m_sBaseSelect
+    if(sContribCondition != null)
+      sBaseFromWhere +=  " AND p.contribid " + sContribCondition + "\n";
+
+    m_sQueryWithoutObsTemplate
+          = sBaseSelect
           + ",NULL AS value\n"
-          + m_sBaseFromWhere
+          + sBaseFromWhere
           + "GROUP BY p.id, p.platformcode, p.locbaselat, p.locbaselong, s.distgroup";
 
-  private final String m_sQueryWithObsTemplate
-          = m_sBaseSelect
+    m_sQueryWithObsTemplate
+          = sBaseSelect
           + ",o.value\n"
-          + m_sBaseFromWhere
+          + sBaseFromWhere
           + "AND o.obstypeid = ?\n"
           + "ORDER BY platformid, obstime desc";
+  }
+
+
+
+  private  String m_sQueryWithoutObsTemplate;
+
+  private  String m_sQueryWithObsTemplate;
 
   public RwisLayerServlet() throws NamingException
   {

@@ -313,9 +313,11 @@
   <div id="LayersMenuContainer">
   <ul id="LayersMenu">
     <li><label for="chkRwisLayer">ESS Obs</label><input type="checkbox" id="chkRwisLayer" /></li>
+    <li><label for="chkAsosLayer">ASOS/AWOS Obs</label><input type="checkbox" id="chkAsosLayer" /></li>
     <li><label for="chkMobileLayer">Mobile Obs</label><input type="checkbox" id="chkMobileLayer" /></li>
     <li><label for="chkRoadLayer">Segment Obs</label><input type="checkbox" id="chkRoadLayer" /></li>
     <li><label for="chkMetaDataLayer">ESS Metadata</label><input type="checkbox" id="chkMetaDataLayer" /></li>
+    <li><label for="chkAsosMetaDataLayer">ASOS/AWOS Metadata</label><input type="checkbox" id="chkAsosMetaDataLayer" /></li>
 </ul></div>
     <div id="map_canvas" > </div>
 </div>
@@ -409,6 +411,7 @@ $("#LayersMenu").find("input:checkbox").each(function (i) {
         
       });
       document.getElementById('chkMetaDataLayer').checked = false;
+      document.getElementById('chkAsosMetaDataLayer').checked = false;
       document.getElementById('englishUnits').checked = true;
 
 
@@ -677,6 +680,9 @@ var rwisHighlightStyle = getHighlightStyle(rwisStyle);
 var rwisOptions = {checkbox: document.getElementById("chkRwisLayer"), highlighter: new StaticLayerStyler(rwisHighlightStyle)};
 map.registerWxdeLayer(L.wxdeLayer('RwisLayer', createCircleMarkers, new StaticLayerStyler(rwisStyle),  rwisOptions));
 
+var asosOptions = {checkbox: document.getElementById("chkAsosLayer"), highlighter: new StaticLayerStyler(rwisHighlightStyle)};
+map.registerWxdeLayer(L.wxdeLayer('AsosLayer', createCircleMarkers, new StaticLayerStyler(rwisStyle),  asosOptions));
+
 var mobileStyle = setStandardStyleProperties({color: "blue"});
 var mobileHighlightStyle = getHighlightStyle(mobileStyle);
 var mobileOptions = {checkbox: document.getElementById("chkMobileLayer"), highlighter: new StaticLayerStyler(mobileHighlightStyle)};
@@ -689,6 +695,8 @@ var metaHighlightStyle = getHighlightStyle(metaDataStyle);
 var metaDataOptions = {hasObs: false, checkbox: document.getElementById("chkMetaDataLayer"), highlighter: new StaticLayerStyler(metaHighlightStyle)};
 map.registerWxdeLayer(L.wxdeLayer('MetaDataLayer', createCircleMarkers, new StaticLayerStyler(metaDataStyle), metaDataOptions));
 
+var asosMetaDataOptions = {hasObs: false, checkbox: document.getElementById("chkAsosMetaDataLayer"), highlighter: new StaticLayerStyler(metaHighlightStyle)};
+map.registerWxdeLayer(L.wxdeLayer('AsosMetaDataLayer', createCircleMarkers, new StaticLayerStyler(metaDataStyle), asosMetaDataOptions));
 
 
 var highlightRoadStyle = setStandardPolylineStyleProperties({ color: '#CFF'});

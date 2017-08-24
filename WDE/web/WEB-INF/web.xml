@@ -155,6 +155,58 @@
     <servlet-name>AltitudeLookup</servlet-name>
     <url-pattern>/elev/*</url-pattern>
   </servlet-mapping>
+  
+  <servlet>
+    <servlet-name>RwisLayerServlet</servlet-name>
+    <servlet-class>wde.ws.RwisLayerServlet</servlet-class>
+    <init-param>
+      <param-name>contribCondition</param-name>
+      <param-value><![CDATA[<>4]]></param-value>
+    </init-param>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>RwisLayerServlet</servlet-name>
+    <url-pattern>/RwisLayer/*</url-pattern>
+  </servlet-mapping>
+  
+  <servlet>
+    <servlet-name>AsosLayerServlet</servlet-name>
+    <servlet-class>wde.ws.RwisLayerServlet</servlet-class>
+    <init-param>
+      <param-name>contribCondition</param-name>
+      <param-value>=4</param-value>
+    </init-param>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>AsosLayerServlet</servlet-name>
+    <url-pattern>/AsosLayer/*</url-pattern>
+  </servlet-mapping>
+  
+  <servlet>
+    <servlet-name>RwisMetadataServlet</servlet-name>
+    <servlet-class>wde.ws.RwisMetadataServlet</servlet-class>
+    <init-param>
+      <param-name>contribCondition</param-name>
+      <param-value><![CDATA[<>4]]></param-value>
+    </init-param>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>RwisMetadataServlet</servlet-name>
+    <url-pattern>/RwisMetaDataLayer/*</url-pattern>
+  </servlet-mapping>
+  
+  <servlet>
+    <servlet-name>AsosMetaDataServlet</servlet-name>
+    <servlet-class>wde.ws.RwisMetadataServlet</servlet-class>
+    <init-param>
+      <param-name>contribCondition</param-name>
+      <param-value>=4</param-value>
+    </init-param>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>AsosMetaDataServlet</servlet-name>
+    <url-pattern>/AsosMetaDataLayer/*</url-pattern>
+  </servlet-mapping>
 
 
     <resource-ref>
