@@ -314,7 +314,7 @@
     </init-param>
     <init-param>
       <param-name>allowedReferersPattern</param-name>
-      <param-value>^(?:(?:http|https)://)?(?:localhost|99\.198\.128\.113|wxde\.fhwa\.dot\.gov)(?::[0-9]{1,5})?.*$</param-value>
+            <param-value>^(?:(?:http|https)://)?(?:localhost|68\.70\.88\.87|99\.198\.128\.113|testwxde\.data-env\.com|wxde\.fhwa\.dot\.gov)(?::[0-9]{1,5})?.*$</param-value>
     </init-param>
     <init-param>
       <param-name>allowMissingReferer</param-name>
@@ -389,7 +389,7 @@
     </init-param>
     <init-param>
       <param-name>nonceCacheSize</param-name>
-      <param-value>20</param-value>
+      <param-value>20</param-value> 
     </init-param>
   </filter>
   
