@@ -33,7 +33,7 @@ $(function() {
 	   	    			  + $(this).find('news').text()
 	   	    			+ '</p>'
 	   	    			+ '<a data-heading="' + $(this).find('heading').text() + '" '
-	   	    			+ 'href="' + $(this).find('url').text() + '#'
+	   	    			+ 'href="' + $(this).find('url').text() + '?' + csrf_nonce_param + '#'
 	   	    			+ $(this).find('heading').text()
 	   	    			+ '"class="button-white readmore-button '+ linkType +'" style="z-index: ' + z-- +'; float:right" title="' + $(this).find('heading').text() + '">'
 	   	    			+	'READ MORE <span class="sr-only" style="position: absolute; right: 9999px">About ' + $(this).find('heading').text() + '</span>'
