@@ -1,6 +1,5 @@
 package wde.ws;
 
-import com.sun.org.apache.xerces.internal.util.Status;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.text.DecimalFormat;
