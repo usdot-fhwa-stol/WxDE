@@ -155,6 +155,58 @@
     <servlet-name>AltitudeLookup</servlet-name>
     <url-pattern>/elev/*</url-pattern>
   </servlet-mapping>
+  
+  <servlet>
+    <servlet-name>RwisLayerServlet</servlet-name>
+    <servlet-class>wde.ws.RwisLayerServlet</servlet-class>
+    <init-param>
+      <param-name>contribCondition</param-name>
+      <param-value><![CDATA[<>4]]></param-value>
+    </init-param>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>RwisLayerServlet</servlet-name>
+    <url-pattern>/RwisLayer/*</url-pattern>
+  </servlet-mapping>
+  
+  <servlet>
+    <servlet-name>AsosLayerServlet</servlet-name>
+    <servlet-class>wde.ws.RwisLayerServlet</servlet-class>
+    <init-param>
+      <param-name>contribCondition</param-name>
+      <param-value>=4</param-value>
+    </init-param>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>AsosLayerServlet</servlet-name>
+    <url-pattern>/AsosLayer/*</url-pattern>
+  </servlet-mapping>
+  
+  <servlet>
+    <servlet-name>RwisMetadataServlet</servlet-name>
+    <servlet-class>wde.ws.RwisMetadataServlet</servlet-class>
+    <init-param>
+      <param-name>contribCondition</param-name>
+      <param-value><![CDATA[<>4]]></param-value>
+    </init-param>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>RwisMetadataServlet</servlet-name>
+    <url-pattern>/RwisMetaDataLayer/*</url-pattern>
+  </servlet-mapping>
+  
+  <servlet>
+    <servlet-name>AsosMetaDataServlet</servlet-name>
+    <servlet-class>wde.ws.RwisMetadataServlet</servlet-class>
+    <init-param>
+      <param-name>contribCondition</param-name>
+      <param-value>=4</param-value>
+    </init-param>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>AsosMetaDataServlet</servlet-name>
+    <url-pattern>/AsosMetaDataLayer/*</url-pattern>
+  </servlet-mapping>
 
 
     <resource-ref>
@@ -175,6 +227,7 @@
             <url-pattern>/resources/admin/*</url-pattern>
             <http-method>GET</http-method>
             <http-method>POST</http-method>
+            <http-method>DELETE</http-method>
         </web-resource-collection>
         <auth-constraint>
             <role-name>wde_admin</role-name>
@@ -261,7 +314,7 @@
     </init-param>
     <init-param>
       <param-name>allowedReferersPattern</param-name>
-      <param-value>^(?:(?:http|https)://)?(?:localhost|99\.198\.128\.113|wxde\.fhwa\.dot\.gov)(?::[0-9]{1,5})?.*$</param-value>
+            <param-value>^(?:(?:http|https)://)?(?:localhost|68\.70\.88\.87|99\.198\.128\.113|testwxde\.data-env\.com|wxde\.fhwa\.dot\.gov)(?::[0-9]{1,5})?.*$</param-value>
     </init-param>
     <init-param>
       <param-name>allowMissingReferer</param-name>
@@ -319,7 +372,7 @@
       </init-param>
       <init-param>
         <param-name>contentSecurityHeaderValue</param-name>
-        <param-value>frame-ancestors 'self'; default-src http://fonts.gstatic.com ; script-src http://www.google-analytics.com ajax.googleapis.com maps.googleapis.com http://gmaps-utility-gis.googlecode.com http://api.imapbuilder.net maps.google.com code.jquery.com 'self' 'unsafe-eval'  'unsafe-inline'; style-src 'self'  'unsafe-inline' fonts.googleapis.com; img-src *.openstreetmap.org *.mqcdn.com https://maps.gstatic.com https://csi.gstatic.com https://maps.google.com http://www.google-analytics.com 'self' data:; connect-src 'self'</param-value>
+        <param-value>frame-ancestors 'self'; default-src http://fonts.gstatic.com ; script-src http://www.google-analytics.com ajax.googleapis.com maps.googleapis.com http://gmaps-utility-gis.googlecode.com http://api.imapbuilder.net maps.google.com code.jquery.com 'self' 'unsafe-eval'  'unsafe-inline'; style-src 'self'  'unsafe-inline' fonts.googleapis.com; img-src localhost *.openstreetmap.org *.mqcdn.com https://maps.gstatic.com https://csi.gstatic.com https://maps.google.com http://www.google-analytics.com 'self' data:; connect-src 'self'</param-value>
       </init-param>
     </filter>
     <filter-mapping>
@@ -336,7 +389,7 @@
     </init-param>
     <init-param>
       <param-name>nonceCacheSize</param-name>
-      <param-value>20</param-value>
+      <param-value>20</param-value> 
     </init-param>
   </filter>
   

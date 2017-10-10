@@ -8,10 +8,10 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.TimeZone;
 import java.util.regex.Pattern;
 import javax.naming.Context;
@@ -351,15 +351,14 @@ public abstract class LayerServlet extends HttpServlet
     }
   }
 
-  protected void serializeObsRecord(JsonGenerator oOutputGenerator, ArrayList<Integer> oReturnedObsTypes, DecimalFormat oNumberFormatter, DecimalFormat oConfFormat, SimpleDateFormat oDateFormat, Date oDate,
+  protected void serializeObsRecord(JsonGenerator oOutputGenerator, Set<Integer> oReturnedSensors, DecimalFormat oNumberFormatter, DecimalFormat oConfFormat, SimpleDateFormat oDateFormat, Date oDate,
           int nObsTypeId, double dObsValue, long lObsTime, int source, float fConvfValue, int nSensorId, String[] strArray
   ) throws IOException
   {
-    int nObsTypeIndex = Collections.binarySearch(oReturnedObsTypes, nObsTypeId);
-    if (nObsTypeIndex >= 0)
+    if (oReturnedSensors.contains(nSensorId))
       return;
     else
-      oReturnedObsTypes.add(~nObsTypeIndex, nObsTypeId);
+      oReturnedSensors.add(nSensorId);
 
     ISensor iSensor = m_oSensoDao.getSensor(nSensorId);
 
@@ -407,9 +406,9 @@ public abstract class LayerServlet extends HttpServlet
     oOutputGenerator.writeEndObject();
   }
 
-  protected void serializeObsRecord(JsonGenerator oOutputGenerator, ArrayList<Integer> oReturnedObsTypes, DecimalFormat oNumberFormatter, DecimalFormat oConfFormat, SimpleDateFormat oDateFormat, Date oDate, ResultSet oResult) throws IOException, SQLException
+  protected void serializeObsRecord(JsonGenerator oOutputGenerator, Set<Integer> oReturnedSensors, DecimalFormat oNumberFormatter, DecimalFormat oConfFormat, SimpleDateFormat oDateFormat, Date oDate, ResultSet oResult) throws IOException, SQLException
   {
-    serializeObsRecord(oOutputGenerator, oReturnedObsTypes, oNumberFormatter, oConfFormat, oDateFormat, oDate,
+    serializeObsRecord(oOutputGenerator, oReturnedSensors, oNumberFormatter, oConfFormat, oDateFormat, oDate,
             oResult.getInt("obstypeid"), oResult.getDouble("value"), oResult.getTimestamp("obstime").getTime(), oResult.getInt("sourceid"), oResult.getFloat("confValue"), oResult.getInt("sensorid"), (String[]) oResult.getArray("qchCharFlag").getArray());
 
   }
@@ -435,11 +434,11 @@ public abstract class LayerServlet extends HttpServlet
             Date oDate = new Date();
             oOutputGenerator.writeArrayFieldStart("obs");
 
-            ArrayList<Integer> oReturnedObsTypes = new ArrayList<Integer>();
+            Set<Integer> oReturnedSensors = new HashSet<Integer>();
             while (oResult.next())
             {
               nElevation = oResult.getInt("elevation");
-              serializeObsRecord(oOutputGenerator, oReturnedObsTypes, oNumberFormatter, oConfFormat, oDateFormat, oDate, oResult);
+              serializeObsRecord(oOutputGenerator, oReturnedSensors, oNumberFormatter, oConfFormat, oDateFormat, oDate, oResult);
             }
 
             oOutputGenerator.writeEndArray();
@@ -510,7 +509,7 @@ public abstract class LayerServlet extends HttpServlet
     long lStart = oPlatformRequest.getRequestTimestamp() - m_lSearchRangeInterval;
     long lEnd = oPlatformRequest.getRequestTimestamp();
 
-    String sQuery = (oPlatformRequest.hasObsType() ? getQueryWithObsType() : getQueryWithoutObstype()).replace(OBS_TABLE_PLACEHOLDER, getDateObsTableName(lStart)).replace(DISTGROUP_LIST_PLACEHOLDER, buildQsForInClause(oPlatformRequest.getDistributionGroups().length));
+    String sQuery = (oPlatformRequest.hasObsType() && hasObs() ? getQueryWithObsType() : getQueryWithoutObstype()).replace(OBS_TABLE_PLACEHOLDER, getDateObsTableName(lStart)).replace(DISTGROUP_LIST_PLACEHOLDER, buildQsForInClause(oPlatformRequest.getDistributionGroups().length));
 
     int nParameterIndex = 0;
     PreparedStatement oStatement = oConnection.prepareStatement(sQuery);

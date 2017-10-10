@@ -29,9 +29,15 @@
 		        url: "<%= response.encodeURL("/resources/countries/")%>",
 		        dataType: "json",
 		        success: function(resp) {
+              var countries = '';
 		            $.each(resp.country, function(index, item) {
-		            	$("#country").append("<option value="+item.code+">"+item.name+"</option>");
-		            });
+                  var newOpt = "<option value="+item.code+">"+item.name+"</option>";
+                  if(item.code ==='US' || item.code === 'CA')
+                    countries = newOpt + countries;
+                  else
+                    countries += newOpt;
+                  });
+                $("#country").append(countries);
 		        }
 		    });
 		    

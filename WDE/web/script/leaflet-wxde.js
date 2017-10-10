@@ -182,7 +182,7 @@ L.WxdeSummaryMap = L.Map.extend({
       modal: true,
       draggable: false,
       resizable: false,
-      width: "400",
+      width: 650,
       height: "auto",
       position: {my: "center", at: "center"}
     });
@@ -193,7 +193,7 @@ L.WxdeSummaryMap = L.Map.extend({
       modal: true,
       draggable: false,
       resizable: false,
-      width: "400",
+      width: 650,
       height: "auto",
       position: {my: "center", at: "center"}
     });
@@ -203,11 +203,20 @@ L.WxdeSummaryMap = L.Map.extend({
       modal: true,
       draggable: false,
       resizable: false,
-      width: "400",
+      width: 500,
       height: "auto",
       position: {my: "center", at: "center"}
     });
 
+    $(window).resize(function ()
+    {
+      var position = {my: "center", at: "center", of: window};
+      $("#road-legend-form, #details-form, #summary-legend-form").each(function (index)
+      {
+        if ($(this).hasClass("ui-dialog-content")) // Test if the dialog has been initialized
+          $(this).dialog("option", "position", position);
+      });
+    });
 
     if (this.options.lstObstypes)
     {
@@ -646,13 +655,15 @@ L.WxdeLayer = L.LayerGroup.extend({
       {
         if (thisLayer._highlighter)
           thisLayer._highlighter.styleLayer(this);
-        stationDiv.innerHTML = this.getStationCode();
+        if (stationDiv)
+          stationDiv.innerHTML = this.getStationCode();
       };
       this._markerMouseOut = function (event)
       {
         if (thisLayer._highlighter)
           thisLayer.layerStyler.styleLayer(this);
-        stationDiv.innerHTML = '';
+        if (stationDiv)
+          stationDiv.innerHTML = '';
       };
     }
 
@@ -785,6 +796,14 @@ L.WxdeLayer = L.LayerGroup.extend({
               else
               {
 
+                obsList.sort(function (a, b)
+                {
+                  var comp = a.ot.localeCompare(b.ot);
+                  if (comp !== 0)
+                    return comp;
+                  else
+                    return a.si * 1 - b.si * 1;
+                });
 
                 var m_oQCh =
                         [

@@ -203,6 +203,13 @@
                         <img src="/image/icons/light/fa-lock.png" style="margin-left: 12px;" alt="Locked"/>
                         <% } %>
                     </a></li>
+                    <li><a href="<%= response.encodeURL("/auth2/viewAlerts.jsp")%>">
+                        Notifications
+                        <% if (request.getUserPrincipal() == null) {%>
+                        <!-- 									<i class="icon-lock" style="margin-left:12px;"></i> -->
+                        <img src="/image/icons/light/fa-lock.png" style="margin-left: 12px;" alt="Locked"/>
+                        <% } %>
+                    </a></li>
                 </ul>
             </li>
             <% if (request.getUserPrincipal() == null || request.getUserPrincipal() != null && !request.isUserInRole("wde_limited")) { %>
