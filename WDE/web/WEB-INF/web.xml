@@ -310,7 +310,7 @@
       <filter-class>wde.security.filters.RefererValidationFilter</filter-class>
     <init-param>
       <param-name>entryPoints</param-name>
-      <param-value>/index.jsp,/downloadSubscription,/wdeMap.jsp</param-value>
+      <param-value>/index.jsp,/downloadSubscription,/wdeMap.jsp,/maw.jsp</param-value>
     </init-param>
     <init-param>
       <param-name>allowedReferersPattern</param-name>
