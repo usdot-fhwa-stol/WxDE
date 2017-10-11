@@ -74,6 +74,17 @@ function printArray(testArray)
 
     var protocol = window.location.protocol;
     var hostname = window.location.hostname;
+    var port = window.location.port;
+    
+    
+    if(!port || port ==='')
+      port = 0;
+    
+    var baseUrl = protocol + "//" + hostname;
+    if(port !== 0)
+      baseUrl += ':' + port;
+    
+    baseUrl += "/archdl.jsp?" + csrf_nonce_param;
 
     for(var i = 0; i < testArray.length; i++)
     {
@@ -101,7 +112,7 @@ function printArray(testArray)
                 }
 
                 dateString = displayYear + displayMonth + displayDay;
-                var urlHelp = protocol + "//" + hostname + "/archdl.jsp?" + csrf_nonce_param + "&file=" + testArray[i] + "-" + dateString;
+                var urlHelp = baseUrl + "&file=" + testArray[i] + "-" + dateString;
                 finalArray[inc] = "<li><a href='" + urlHelp +"' download='" + testArray[i] + "-" + dateString + ".csv.gz'>" + testArray[i] + "-" + dateString + ".csv.gz" + "</a></li>";
                 inc++;
             }
