@@ -288,7 +288,7 @@ function Validate()
 
 
   // More than one selected item skips the "no selection" option
-  if (oSelectedObstypes === 1)
+  if (oSelectedObstypes.length === 1) 
   {
     if (sMin.length > 0 && !ValidateNumbers(sMin))
     {

@@ -371,9 +371,9 @@ public class Subscription {
 
 		  for (int i = 0; i < sObsFilters.length; i++)
 			  m_nObsTypes[i] = Integer.parseInt(sObsFilters[i]);
-    }
+    } 
 
-    public void setMaxObsValue(String sValue)
+    public void setMinObsValue(String sValue)
     {
       if (sValue != null && sValue.trim().length() > 0)
         m_dMin = Double.parseDouble(sValue);
@@ -381,7 +381,7 @@ public class Subscription {
         m_dMin = Double.MIN_VALUE;
     }
 
-    public void setMinObsValue(String sValue)
+    public void setMaxObsValue(String sValue)
     {
       if (sValue != null && sValue.trim().length() > 0)
         m_dMax = Double.parseDouble(sValue);
