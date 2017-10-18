@@ -17,6 +17,9 @@ function onLoad()
   m_oTestLabels["wde.qchs.algo.SensorRange"] = "Sensor Range";
   m_oTestLabels["wde.qchs.algo.Sounding"] = "Sea Level Pressure";
   m_oTestLabels["wde.qchs.algo.Step"] = "Step Test";
+  m_oTestLabels["wde.qchs.algo.RTMA"] = "Model Analysis";
+  m_oTestLabels["wde.qchs.algo.VehNeighbor"] = "Neighboring Vehicle";
+  m_oTestLabels["wde.qchs.algo.VehStdDev"] = "Vehicle Standard Dev";
 
   CreateClock(false);
 
