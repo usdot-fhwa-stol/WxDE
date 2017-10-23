@@ -64,11 +64,11 @@ public class NotificationEvaluator
         int nLat = MathUtil.toMicro(oSubObs.m_dLat);
         int nLon = MathUtil.toMicro(oSubObs.m_dLon);
 
-        nMinLat = Integer.min(nLat, nMinLat);
-        nMaxLat = Integer.max(nLat, nMaxLat);
+        nMinLat = Math.min(nLat, nMinLat);
+        nMaxLat = Math.max(nLat, nMaxLat);
 
-        nMinLon = Integer.min(nLon, nMinLon);
-        nMaxLon = Integer.max(nLon, nMaxLon);
+        nMinLon = Math.min(nLon, nMinLon);
+        nMaxLon = Math.max(nLon, nMaxLon);
 
         oObsListObstypes.add(oSubObs.m_nObsTypeId);
 
@@ -131,10 +131,12 @@ public class NotificationEvaluator
           if(oObsListBuilder != null)
             oObsListBuilder.append(",").append(dValue);
 
-          dMin = Double.min(dValue, dMin);
-          dMax = Double.max(dValue, dMax);
+          dMin = Math.min(dValue, dMin);
+          dMax = Math.max(dValue, dMax);
 
-          int nCount = oCountMap.getOrDefault(dValue, 1);
+          Integer nCount = oCountMap.get(dValue);
+          if(nCount == null)
+            nCount = 1;
 
           oCountMap.put(dValue, nCount);
 

@@ -22,6 +22,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.GregorianCalendar;
 import java.util.Hashtable;
@@ -208,15 +209,15 @@ public class FcstSubscriptions implements Runnable, Comparator<Road> {
     }
 
 	 /**
-	  * Executes forecast getReadings and database queries to populate the given 
-	  * list with forecast observations that meet the specifications of the given 
+	  * Executes forecast getReadings and database queries to populate the given
+	  * list with forecast observations that meet the specifications of the given
 	  * Forecast Subscription
-	  * 
-	  * 
+	  *
+	  *
 	  * @param oSubObsList empty list to be populated with observations
 	  * @param oSub the Forecast Subscription
 	  */
-    private void getObs(ArrayList<SubObs> oSubObsList, FcstSubscription oSub) 
+    private void getObs(ArrayList<SubObs> oSubObsList, FcstSubscription oSub)
 	 {
 		Connection iObsDb = null;
 		ResultSet iRs = null;
@@ -249,9 +250,9 @@ public class FcstSubscriptions implements Runnable, Comparator<Road> {
 			//get the data source for the obs tables
 			if (m_iDsObs != null)
 				iObsDb = m_iDsObs.getConnection();
-			
+
 			Arrays.sort(oSub.m_nObsTypes); //sort obstypeids in ascending order
-			oRoadList.sort(this); //sort the roads by latitude then longitute
+      Collections.sort(oRoadList, this); //sort the roads by latitude then longitute
 			for (int nObsType : oSub.m_nObsTypes) //for each obstype
 			{
 				oTempList.clear(); //clear the temporary list
@@ -300,13 +301,13 @@ public class FcstSubscriptions implements Runnable, Comparator<Road> {
 					{
 						if (bCaught) //the query didn't run so run it for today's table only
 						{
-							iRs = iStatement.executeQuery("SELECT obstypeid, obstime, recvtime, latitude, longitude, value FROM obs.\"" + sTableName + 
+							iRs = iStatement.executeQuery("SELECT obstypeid, obstime, recvtime, latitude, longitude, value FROM obs.\"" + sTableName +
 							"\" WHERE obstypeid = " + nObsType + " AND obstime >= '" + oNowTs.toString().substring(0,19) + "' AND obstime>=recvtime ORDER BY latitude, longitude, obstime, recvtime");
 						}
 						if (iRs != null)
 						{
 							while (iRs.next()) //put the result set in memory so we can filter out noncurrent forecasts
-								oTempList.add(new SubObs(iRs.getInt(1), iRs.getTimestamp(2).getTime(), 
+								oTempList.add(new SubObs(iRs.getInt(1), iRs.getTimestamp(2).getTime(),
 									iRs.getTimestamp(3).getTime(), iRs.getInt(4), iRs.getInt(5), 0, iRs.getDouble(6), obsTypeDao));
 							iRs.close();
 						}
@@ -320,16 +321,16 @@ public class FcstSubscriptions implements Runnable, Comparator<Road> {
 					//remove noncurrent forecasts from the list (the list is ordered by latitude, then longitude, then obstime, then received time)
 					if (oTempSubObs.m_dLat < nMinLat || oTempSubObs.m_dLat > nMaxLat ||
 						 oTempSubObs.m_dLon < nMinLon || oTempSubObs.m_dLon > nMaxLon ||
-						(oTempSubObs.m_dLat == oTempList.get(nIndex + 1).m_dLat && 
-						 oTempSubObs.m_dLon == oTempList.get(nIndex + 1).m_dLon && 
+						(oTempSubObs.m_dLat == oTempList.get(nIndex + 1).m_dLat &&
+						 oTempSubObs.m_dLon == oTempList.get(nIndex + 1).m_dLon &&
 						 oTempSubObs.m_lTimestamp == oTempList.get(nIndex + 1).m_lTimestamp))
 						oTempList.remove(nIndex);
 				}
 				//the last object never got checked in the other loop so check it now
 				if (!oTempList.isEmpty())
-					if(oTempList.get(oTempList.size() - 1).m_dLat < nMinLat || 
+					if(oTempList.get(oTempList.size() - 1).m_dLat < nMinLat ||
 							oTempList.get(oTempList.size() - 1).m_dLat > nMaxLat ||
-							oTempList.get(oTempList.size() - 1).m_dLon < nMinLon || 
+							oTempList.get(oTempList.size() - 1).m_dLon < nMinLon ||
 							oTempList.get(oTempList.size() - 1).m_dLon > nMaxLon)
 						oTempList.remove(oTempList.size() -1);
 				for (Road oRoad : oRoadList)
@@ -382,7 +383,7 @@ public class FcstSubscriptions implements Runnable, Comparator<Road> {
      * @param oWriter stream to write the subscription-observation data to.
      * @param oSubs subscription matching to observations to output.
      */
-    public void getResults(HttpServletRequest request, PrintWriter writer, FcstSubscription subs) 
+    public void getResults(HttpServletRequest request, PrintWriter writer, FcstSubscription subs)
 	 {
         ArrayList<SubObs> oSubObsList = new ArrayList<SubObs>();
         boolean isSuperUser = AccessControl.isSuperUser(request);
@@ -445,12 +446,12 @@ public class FcstSubscriptions implements Runnable, Comparator<Road> {
             PreparedStatement iSubsQuery = iSubsDb.prepareStatement(SUBS_QUERY);
             iSubsQuery.setTimestamp(1, oNowTs);
             ResultSet iSubsResults = iSubsQuery.executeQuery();
-            while (iSubsResults.next()) 
+            while (iSubsResults.next())
 				{
 					oSubObsList.clear();
                 // process all subscriptions for the current cycle
                 int nCycle = iSubsResults.getInt(12);
-                if (oNow.get(GregorianCalendar.MINUTE) % nCycle == 0) 
+                if (oNow.get(GregorianCalendar.MINUTE) % nCycle == 0)
 					 {
                     oSubs.deserialize(iSubsResults, iGetSubObs);
 						  getObs(oSubObsList, oSubs);
@@ -463,7 +464,7 @@ public class FcstSubscriptions implements Runnable, Comparator<Road> {
                     OutputFormat oOutputFormat =
                             m_oFormatters.get(oSubs.m_sOutputFormat);
 
-                    if (oOutputFormat != null) 
+                    if (oOutputFormat != null)
 						  {
                         String sFilename = m_oDateFormat.format(
                                 oNow.getTime()) + oOutputFormat.getSuffix();
@@ -506,10 +507,10 @@ public class FcstSubscriptions implements Runnable, Comparator<Road> {
 
 					 iGetSubObs.setInt(1, nSubId);
 					 iGetSubObs.executeUpdate();
-					 
+
                 iSubsQuery.setInt(1, nSubId);
                 iSubsQuery.executeUpdate();
-					 
+
 
             }
 
@@ -570,12 +571,12 @@ public class FcstSubscriptions implements Runnable, Comparator<Road> {
 
         logger.info("run() returning");
     }
-	 
-	 
+
+
 	/**
-	 * Gets and increments the next unique subscription id 
+	 * Gets and increments the next unique subscription id
 	 * @return subscription id
-	 */ 
+	 */
 	public int getNextId()
 	{
 		synchronized(Subscription.g_oNextId)
@@ -584,12 +585,12 @@ public class FcstSubscriptions implements Runnable, Comparator<Road> {
 		}
 	}
 
-	
+
 	/**
 	 * Compares two roads by latitude then longitude
 	 * @param o1 road 1
 	 * @param o2 road 2
-	 * @return 
+	 * @return
 	 */
 	@Override
 	public int compare(Road o1, Road o2)
@@ -597,7 +598,7 @@ public class FcstSubscriptions implements Runnable, Comparator<Road> {
 		int nReturn = o1.m_nYmid - o2.m_nYmid;
 		if (nReturn == 0)
 			nReturn = o1.m_nXmid - o2.m_nXmid;
-		
+
 		return nReturn;
 	}
 }
