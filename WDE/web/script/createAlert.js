@@ -40,8 +40,12 @@
 
     var btnClickAdd;
     var btnClickRemove;
-    function addRow(addHandler = true)
+    function addRow(addHandler)
     {
+      
+    if(typeof addHandler === 'undefined' )
+      addHandler = true;
+    
       var newRow = $('<tr>' +
               '<td class="alert-filter">' + buildSelect(['Any', 'Mean', 'Mode']) + '</td>' +
               '<td class="alert-obstype">' + buildSelect(obsList) + '</td>' +
@@ -240,7 +244,14 @@
 
         map.dragging.enable();
 
-        document.getSelection().removeAllRanges();
+        function clearSelectedText() {
+            var sel = window.document.getSelection();
+          if (sel.rangeCount > 0 && sel.getRangeAt(0).getClientRects().length > 0) {
+              sel.removeAllRanges();
+          }
+        }
+        
+        clearSelectedText();
 
         setReportStep(3);
 

@@ -24,7 +24,10 @@ jQuery.fn.extend({
 	* To get the params of a html-attribut (uses src attribute)
 	* @example value = $('#imgLink').getUrlParam("paramName");
 	*/ 
-	getUrlParam: function(strParamName, lastValue = true){
+	getUrlParam: function(strParamName, lastValue){
+    if(typeof lastValue === 'undefined' )
+      lastValue = true;
+      
 		strParamName = decodeURIComponent(strParamName);
 		
 		var returnVal = new Array();
