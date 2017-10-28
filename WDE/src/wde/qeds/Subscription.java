@@ -371,7 +371,7 @@ public class Subscription {
 
 		  for (int i = 0; i < sObsFilters.length; i++)
 			  m_nObsTypes[i] = Integer.parseInt(sObsFilters[i]);
-    } 
+    }
 
     public void setMinObsValue(String sValue)
     {
@@ -610,6 +610,8 @@ public class Subscription {
             m_nObsTypes = new int[nRows];
             while (oRs.next())
               m_nObsTypes[nCount++] = oRs.getInt(1);
+            
+            Arrays.sort(m_nObsTypes);
           }
         }
         else if(nObstype == 0)
@@ -777,6 +779,7 @@ public class Subscription {
                             oSubObs.m_iPlatform != null &&
                                     inList(oSubObs.m_iPlatform.getId(), m_oPlatformIds)
                     );
+            bIsObs = isObs(oSubObs.m_nObsTypeId);
         }
 
         return
