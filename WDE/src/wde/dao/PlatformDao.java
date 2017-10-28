@@ -103,7 +103,7 @@ public class PlatformDao {
      */
     public IPlatform getPlatform(int id) {
 
-        logger.info("getPlatform for id: " + id);
+        logger.trace("getPlatform for id: " + id);
 
         Platform p = (Platform) platform1stQueryMap.get(id);
 
