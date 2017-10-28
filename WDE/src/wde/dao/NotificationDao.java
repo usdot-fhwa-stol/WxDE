@@ -88,7 +88,7 @@ public class NotificationDao
     {
 
       int colIndex;
-      int conditionIndex = -1;
+      int conditionIndex = startIndex - 1;
       insertConditionStmt.setInt(1, notificationId);
       for(int i = startIndex; i < endIndex; ++i)
       {
