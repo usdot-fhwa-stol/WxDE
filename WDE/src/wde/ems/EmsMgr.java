@@ -126,33 +126,25 @@ public class EmsMgr<T> implements Runnable {
             if (sDataSourceName == null || sQuery == null)
                 continue;
 
-            Connection iConnection = null;
-            PreparedStatement ps = null;
-            ResultSet rs = null;
 
-            try {
                 // open the metadata file
                 String tableName = sTables[nIndex];
 
                 if (tableName.equals("platform"))
                     tableName = "station";
 
-                FileWriter oFileWriter =
-                        new FileWriter(sDir + tableName + ".csv");
-
                 DataSource iDataSource =
                         wdeMgr.getDataSource(sDataSourceName);
 
                 if (iDataSource == null)
                     continue;
-
-                iConnection = iDataSource.getConnection();
-                if (iConnection == null)
-                    continue;
-
-                // get the result set and result set metadata
-                ps = iConnection.prepareStatement(sQuery);
-                rs = ps.executeQuery();
+            try(
+            Connection iConnection = iDataSource.getConnection();
+            PreparedStatement ps =iConnection.prepareStatement(sQuery) ;
+            ResultSet rs = ps.executeQuery();
+            FileWriter oFileWriter =
+                    new FileWriter(sDir + tableName + ".csv");
+                    ) {
                 ResultSetMetaData iMetaData = rs.getMetaData();
 
                 // write the Clarus metadata header
@@ -196,21 +188,9 @@ public class EmsMgr<T> implements Runnable {
                 }
 
                 oFileWriter.flush();
-                oFileWriter.close();
             } catch (Exception oException) {
                 logger.info("run " + sQuery);
                 logger.error(oException);
-            } finally {
-                try {
-                    rs.close();
-                    rs = null;
-                    ps.close();
-                    ps = null;
-                    iConnection.close();
-                    iConnection = null;
-                } catch (SQLException se) {
-                    // ignore
-                }
             }
         }
     }

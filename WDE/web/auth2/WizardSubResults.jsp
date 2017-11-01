@@ -19,10 +19,6 @@
 		return;
 	}
 
-	Connection iConnection = iDataSource.getConnection();
-	if (iConnection == null) {
-		return;
-	}
 
 	java.util.Date oDate = new java.util.Date();
     // oDate.setTime(System.currentTimeMillis() + 31536000000L); // Old = 1 year
@@ -34,8 +30,17 @@
     int nAttempts = 0;
     boolean bFailed = true;
     String uuid = UUID.randomUUID().toString();
+    
+	try(Connection iConnection = iDataSource.getConnection();
+      PreparedStatement oInsertSubscription = iConnection.prepareStatement("INSERT INTO subs.subscription (id, expires, cycle, name, description, owner_name, ispublic, guid) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
+      PreparedStatement oUpdateSubscription = iConnection.prepareStatement("UPDATE subs.subscription SET lat1=?, lng1=?, lat2=?, lng2=?, obsTypeId=?, minValue=?, maxValue=?, qchRun=?, qchFlags=?, format=? WHERE id=?");
+      PreparedStatement oInsertObsTypes = iConnection.prepareStatement("INSERT INTO subs.subobs (subid, obstypeid) VALUES (?, ?)");
+      PreparedStatement oUpdateRadius = iConnection.prepareStatement("INSERT INTO subs.subRadius (subId, lat, lng, radius) VALUES (?, ?, ?, ?)");
+      PreparedStatement oInsertContributor = iConnection.prepareStatement("INSERT INTO subs.subContrib (subId, contribId) VALUES(?, ?)");
+      PreparedStatement oInsertStation = iConnection.prepareStatement("INSERT INTO subs.subStation (subId, stationId) VALUES(?, ?)");)
+  {
 
-    PreparedStatement oInsertSubscription = iConnection.prepareStatement("INSERT INTO subs.subscription (id, expires, cycle, name, description, owner_name, ispublic, guid) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
+    
     oInsertSubscription.setTimestamp(2, new java.sql.Timestamp(oDate.getTime()));
     oInsertSubscription.setInt(3, oSubscription.m_nCycle);
     oInsertSubscription.setString(4, oSubscription.getName());
@@ -61,10 +66,9 @@
         catch (Exception oException)
         {
         }
-        oInsertSubscription.close();
 
         // fill in the remainder of the subscription rollup information
-        PreparedStatement oUpdateSubscription = iConnection.prepareStatement("UPDATE subs.subscription SET lat1=?, lng1=?, lat2=?, lng2=?, obsTypeId=?, minValue=?, maxValue=?, qchRun=?, qchFlags=?, format=? WHERE id=?");
+
 
         // this region is either set directly or calculated from the point radius
         // the bounding box is not set only when a contributor filter is specified
@@ -91,14 +95,13 @@
           oUpdateSubscription.setNull(5, Types.INTEGER);
         
             
-          PreparedStatement oInsertObsTypes = iConnection.prepareStatement("INSERT INTO subs.subobs (subid, obstypeid) VALUES (?, ?)");
+          
           oInsertObsTypes.setInt(1, nSubId);
           for (int i = 0; i < oSubscription.m_nObsTypes.length; i++)
           {
             oInsertObsTypes.setInt(2, oSubscription.m_nObsTypes[i]);
             oInsertObsTypes.execute();
-          }
-          oInsertObsTypes.close();      
+          }   
         }
 
         // set the observation value acceptable range
@@ -130,22 +133,19 @@
         oUpdateSubscription.setString(10, oSubscription.m_sOutputFormat);
         oUpdateSubscription.setInt(11, nSubId);
         oUpdateSubscription.execute();
-        oUpdateSubscription.close();  
 
         // set the point radius values if they were specified
         if (oSubscription.m_oRadius != null)
         {
-            PreparedStatement oUpdateRadius = iConnection.prepareStatement("INSERT INTO subs.subRadius (subId, lat, lng, radius) VALUES (?, ?, ?, ?)");
             oUpdateRadius.setInt(1, nSubId);
             oUpdateRadius.setInt(2, MathUtil.toMicro(oSubscription.m_oRadius.m_dLat));
             oUpdateRadius.setInt(3, MathUtil.toMicro(oSubscription.m_oRadius.m_dLng));
             oUpdateRadius.setInt(4, MathUtil.toMicro(oSubscription.m_oRadius.m_dRadius));
             oUpdateRadius.execute();
-            oUpdateRadius.close();  
         }
 
         // populate the contributor filter
-        PreparedStatement oInsertContributor = iConnection.prepareStatement("INSERT INTO subs.subContrib (subId, contribId) VALUES(?, ?)");
+        
         oInsertContributor.setInt(1, nSubId);
 
         Iterator<Integer> oContributor = oSubscription.m_oContribIds.iterator();
@@ -154,10 +154,9 @@
             oInsertContributor.setInt(2, oContributor.next().intValue());
             oInsertContributor.execute();
         }
-        oInsertContributor.close();
 
         // populate the station filter
-        PreparedStatement oInsertStation = iConnection.prepareStatement("INSERT INTO subs.subStation (subId, stationId) VALUES(?, ?)");
+        
         oInsertStation.setInt(1, nSubId);
 
         Iterator<Integer> iterStation = oSubscription.m_oPlatformIds.iterator();
@@ -166,10 +165,9 @@
             oInsertStation.setInt(2, iterStation.next().intValue());
             oInsertStation.execute();
         }
-        oInsertStation.close();
 
         // release all database resources
-        iConnection.close();
+      
 
         // create the directory where the subscriptions will be delivered
         File oDir = new File(sSubDir + nSubId);
@@ -280,6 +278,7 @@
 
             oWriter.flush();
             oWriter.close();
+        }
     }
 %>
 

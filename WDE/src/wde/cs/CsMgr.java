@@ -52,12 +52,12 @@ public class CsMgr implements Runnable {
      * id, contribId, offset, interval, name, classname,
      * endpoint, username, password
      */
-//	private static String CSVC_QUERY = "SELECT id, contribId, " + 
-//		"midnightOffset, collectionInterval, instanceName, className, " + 
+//	private static String CSVC_QUERY = "SELECT id, contribId, " +
+//		"midnightOffset, collectionInterval, instanceName, className, " +
 //		"endpoint, username, password FROM conf.csvc WHERE id=33 AND active = 1 ORDER BY id";
-//    private static String CSVC_QUERY = "SELECT id, contribId, " + 
-//        "midnightOffset, collectionInterval, instanceName, className, " + 
-//        "endpoint, username, password FROM conf.csvc WHERE contribid=16 AND active = 1 ORDER BY id";   
+//    private static String CSVC_QUERY = "SELECT id, contribId, " +
+//        "midnightOffset, collectionInterval, instanceName, className, " +
+//        "endpoint, username, password FROM conf.csvc WHERE contribid=16 AND active = 1 ORDER BY id";
     private static String CSVC_QUERY = "SELECT id, contribId, " +
             "midnightOffset, collectionInterval, instanceName, className, " +
             "endpoint, username, password FROM conf.csvc WHERE active = 1 ORDER BY id";
@@ -99,11 +99,8 @@ public class CsMgr implements Runnable {
      * </p>
      */
     public CsMgr() {
-        Connection iConnection = null;
-        PreparedStatement ps = null;
-        ResultSet rs = null;
 
-        try {
+
             Config oConfig = ConfigSvc.getInstance().getConfig(this);
 						m_sAltUrl = oConfig.getString("url", "http://otile1.data-env.com/elev/");
 
@@ -118,9 +115,10 @@ public class CsMgr implements Runnable {
             if (iDataSource == null)
                 return;
 
-            iConnection = iDataSource.getConnection();
-            if (iConnection == null)
-                return;
+        try(Connection iConnection = iDataSource.getConnection();
+            PreparedStatement ps = iConnection.prepareStatement(CSVC_QUERY);
+            ResultSet rs = ps.executeQuery();) {
+
 
             // load the timezone information
             m_oTimezones = new TimezoneFactory(iConnection);
@@ -128,8 +126,6 @@ public class CsMgr implements Runnable {
             // load the timestamp format information
             m_oTimestamps = new DateFormatFactory(iConnection);
 
-            ps = iConnection.prepareStatement(CSVC_QUERY);
-            rs = ps.executeQuery();
 
             while (rs.next()) {
                 try {
@@ -155,19 +151,7 @@ public class CsMgr implements Runnable {
             // create the schedule used to retry failed collection attempts
             m_oTask = Scheduler.getInstance().schedule(this, 0, RETRY_INTERVAL, true);
         } catch (Exception e) {
-            e.printStackTrace();
             logger.error(e.getMessage());
-        } finally {
-            try {
-                rs.close();
-                rs = null;
-                ps.close();
-                ps = null;
-                iConnection.close();
-                iConnection = null;
-            } catch (SQLException se) {
-                // ignore
-            }
         }
 
         logger.info("Completing constructor");
@@ -195,13 +179,13 @@ public class CsMgr implements Runnable {
 
 
     /**
-     * Looks up altitude information from a web service if provided altitude 
+     * Looks up altitude information from a web service if provided altitude
 		 * is missing.
      *
      * @param nLat	the latitude used to check the altitude
      * @param nLon	the longitude used to check the altitude
      * @param tElev	the altitude value to check
-		 * 
+		 *
      * @return	the altitude for the given location
      */
     public short checkElev(int nLat, int nLon, short tElev)

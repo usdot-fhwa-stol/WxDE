@@ -59,17 +59,15 @@ String sRequestFile = request.getParameter("file");
 		 	return;
 		}
 	
-		Connection iConnection = iDataSource.getConnection();
-		if (iConnection == null) {
-			return;
-		}
-	
-		PreparedStatement oUpdateSubscription = iConnection.prepareStatement("UPDATE subs.subscription SET expires=? WHERE id=?");
-		oUpdateSubscription.setTimestamp(1, new java.sql.Timestamp(oDate.getTime()));
-		oUpdateSubscription.setInt(2, Integer.parseInt(request.getParameter("subId")));
-		oUpdateSubscription.execute();
-		oUpdateSubscription.close();
-		iConnection.close();
+      try(Connection iConnection = iDataSource.getConnection();
+          PreparedStatement oUpdateSubscription = iConnection.prepareStatement("UPDATE subs.subscription SET expires=? WHERE id=?"))
+      {
+
+        oUpdateSubscription.setTimestamp(1, new java.sql.Timestamp(oDate.getTime()));
+        oUpdateSubscription.setInt(2, Integer.parseInt(request.getParameter("subId")));
+        oUpdateSubscription.execute();
+
+      }
     }
     catch (Exception oException)
     {

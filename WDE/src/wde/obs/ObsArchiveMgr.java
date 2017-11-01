@@ -233,7 +233,7 @@ public class ObsArchiveMgr extends AsyncQ<IObsSet> implements
     @Override
     public void run(IObsSet iObsSet) {
 
-        // when an obs set contains only expired or duplicate obs 
+        // when an obs set contains only expired or duplicate obs
         // there is no need to queue an empty set for the next process
         if (iObsSet.size() > 0)
             wdeMgr.queue(iObsSet);
@@ -293,17 +293,19 @@ public class ObsArchiveMgr extends AsyncQ<IObsSet> implements
             if (oInsertQueue.isEmpty()) return;
 
             // handle inserts before updates
-            try {
-                Connection iConnection = m_iDataSource.getConnection();
-                if (iConnection == null) return;
+            try (Connection iConnection = m_iDataSource.getConnection();
+                PreparedStatement iQuery = iConnection
+                        .prepareStatement(QUERY_INSERT);
+
+                    ){
+              try
+              {
 
                 Timestamp oObsTs = new Timestamp(0L);
                 Timestamp recvTs = new Timestamp(0L);
 
                 iConnection.setAutoCommit(false);
 
-                PreparedStatement iQuery = iConnection
-                        .prepareStatement(QUERY_INSERT);
 
                 while (!oInsertQueue.isEmpty()) {
                     try {
@@ -336,16 +338,17 @@ public class ObsArchiveMgr extends AsyncQ<IObsSet> implements
 
                         iQuery.executeUpdate();
                     } catch (Exception e) {
-                        e.printStackTrace();
                         logger.error(e.getMessage());
                     }
                 }
 
                 // commit the database changes
                 iConnection.commit();
-                iQuery.close();
-
-                iConnection.close();
+              }
+              finally
+              {
+                iConnection.setAutoCommit(true);
+              }
             } catch (SQLException oSqlException) {
                 logger.error(oSqlException);
             }

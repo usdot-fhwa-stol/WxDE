@@ -219,8 +219,6 @@ public class FcstSubscriptions implements Runnable, Comparator<Road> {
 	  */
     private void getObs(ArrayList<SubObs> oSubObsList, FcstSubscription oSub)
 	 {
-		Connection iObsDb = null;
-		ResultSet iRs = null;
 		NDFD oNDFD = NDFD.getInstance();
 		RAP oRAP = RAP.getInstance();
 		RTMA oRTMA = RTMA.getInstance();
@@ -245,12 +243,8 @@ public class FcstSubscriptions implements Runnable, Comparator<Road> {
 		oNow.set(Calendar.MILLISECOND, 0);
 		oNow.set(Calendar.SECOND, 0);
 		oNow.set(Calendar.MINUTE, 0);
-		try
+		try(Connection iObsDb = m_iDsObs.getConnection())
 		{
-			//get the data source for the obs tables
-			if (m_iDsObs != null)
-				iObsDb = m_iDsObs.getConnection();
-
 			Arrays.sort(oSub.m_nObsTypes); //sort obstypeids in ascending order
       Collections.sort(oRoadList, this); //sort the roads by latitude then longitute
 			for (int nObsType : oSub.m_nObsTypes) //for each obstype
@@ -260,7 +254,6 @@ public class FcstSubscriptions implements Runnable, Comparator<Road> {
 				boolean bDbObs = false;
 				boolean bRtmaObs = false;
 				boolean bRapObs = false;
-				boolean bCaught = false;
 				//determine which type of obs it is
 				if (Arrays.binarySearch(m_nNdfdObsTypes, nObsType) >= 0)
 					bNdfdObs = true;
@@ -281,9 +274,9 @@ public class FcstSubscriptions implements Runnable, Comparator<Road> {
 					oTomorrow.set(GregorianCalendar.DAY_OF_MONTH, oTomorrow.get(GregorianCalendar.DAY_OF_MONTH) + 1);
 					String sTomTableName = String.format("obs_%d-%02d-%02d", oTomorrow.get(GregorianCalendar.YEAR),
 						oTomorrow.get(GregorianCalendar.MONTH) + 1, oTomorrow.get(GregorianCalendar.DAY_OF_MONTH));
-					try //try getting obs from today and tomorrow
-					{
-						iRs = iStatement.executeQuery("SELECT * FROM("
+
+          //try getting obs from today and tomorrow
+					try(ResultSet iRs = iStatement.executeQuery("SELECT * FROM("
 							+ "SELECT obstypeid, obstime, recvtime, latitude, longitude, value "
 							+ "FROM obs.\"" + sTableName + "\" "
 							+ "WHERE obstypeid = " + nObsType + " AND obstime >= '" + oNowTs.toString().substring(0,19) + "' AND obstime >= recvtime "
@@ -291,26 +284,22 @@ public class FcstSubscriptions implements Runnable, Comparator<Road> {
 							+ "SELECT obstypeid, obstime, recvtime, latitude, longitude, value "
 							+ "FROM obs.\"" + sTomTableName + "\" "
 							+ "WHERE obstypeid = " + nObsType + " AND obstime >= '" + oNowTs.toString().substring(0, 19) + "' AND obstime >= recvtime) AS a "
-							+ "ORDER BY latitude, longitude, obstime, recvtime");
-					}
-					catch (PSQLException oException) //tomorrow's table might not exist yet, if it doesn't just get results from today's table
+							+ "ORDER BY latitude, longitude, obstime, recvtime"))
 					{
-						bCaught = true;
-					}
-					finally
-					{
-						if (bCaught) //the query didn't run so run it for today's table only
-						{
-							iRs = iStatement.executeQuery("SELECT obstypeid, obstime, recvtime, latitude, longitude, value FROM obs.\"" + sTableName +
-							"\" WHERE obstypeid = " + nObsType + " AND obstime >= '" + oNowTs.toString().substring(0,19) + "' AND obstime>=recvtime ORDER BY latitude, longitude, obstime, recvtime");
-						}
-						if (iRs != null)
-						{
 							while (iRs.next()) //put the result set in memory so we can filter out noncurrent forecasts
 								oTempList.add(new SubObs(iRs.getInt(1), iRs.getTimestamp(2).getTime(),
 									iRs.getTimestamp(3).getTime(), iRs.getInt(4), iRs.getInt(5), 0, iRs.getDouble(6), obsTypeDao));
-							iRs.close();
-						}
+					}
+					catch (SQLException oException)
+					{
+            //tomorrow's table might not exist yet, if it doesn't just get results from today's table
+						try(ResultSet iRs = iStatement.executeQuery("SELECT obstypeid, obstime, recvtime, latitude, longitude, value FROM obs.\"" + sTableName +
+							"\" WHERE obstypeid = " + nObsType + " AND obstime >= '" + oNowTs.toString().substring(0,19) + "' AND obstime>=recvtime ORDER BY latitude, longitude, obstime, recvtime"))
+            {
+							while (iRs.next()) //put the result set in memory so we can filter out noncurrent forecasts
+								oTempList.add(new SubObs(iRs.getInt(1), iRs.getTimestamp(2).getTime(),
+									iRs.getTimestamp(3).getTime(), iRs.getInt(4), iRs.getInt(5), 0, iRs.getDouble(6), obsTypeDao));
+            }
 					}
 				}
 
@@ -431,21 +420,22 @@ public class FcstSubscriptions implements Runnable, Comparator<Road> {
         // only one object of each is needed to deserialize database records
         ArrayList<SubObs> oSubObsList = new ArrayList<SubObs>();
         FcstSubscription oSubs = new FcstSubscription();
-        try {
+
             // get the subscription information
             if (m_iDsSubs == null)
                 return;
+        try (Connection iSubsDb = m_iDsSubs.getConnection();
+            PreparedStatement iGetSubObs = iSubsDb.prepareStatement("SELECT obstypeid FROM subs.subobs WHERE subId = ?", ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
+                PreparedStatement iGetSubs = iSubsDb.prepareStatement(SUBS_QUERY);
+                PreparedStatement iGetSubsToDelete = iSubsDb.prepareStatement(SUBS_DELETE);
+            PreparedStatement iDeleteSubsStmt = iSubsDb.prepareStatement("DELETE FROM subs.subscription WHERE id = ?");
+				PreparedStatement iDeletSubObsStmt = iSubsDb.prepareStatement("DELETE FROM subs.subobs WHERE subId = ?");
+                )
+        {
 
-            Connection iSubsDb = m_iDsSubs.getConnection();
-            if (iSubsDb == null)
-                return;
-            // prepare the subscription detail queries
-				PreparedStatement iGetSubObs = iSubsDb.prepareStatement("SELECT obstypeid FROM subs.subobs WHERE subId = ?", ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
-            // the result sets are stored in memory and can be passed to
-            // other methods repeatedly
-            PreparedStatement iSubsQuery = iSubsDb.prepareStatement(SUBS_QUERY);
-            iSubsQuery.setTimestamp(1, oNowTs);
-            ResultSet iSubsResults = iSubsQuery.executeQuery();
+            iGetSubs.setTimestamp(1, oNowTs);
+            try(ResultSet iSubsResults = iGetSubs.executeQuery())
+            {
             while (iSubsResults.next())
 				{
 					oSubObsList.clear();
@@ -481,43 +471,31 @@ public class FcstSubscriptions implements Runnable, Comparator<Road> {
                     }
                 }
             }
-            // free most of the subscription database resources
-				iGetSubObs.close();
-            iSubsResults.close();
-            iSubsQuery.close();
+            }
 
             // clean up expired subscriptions
             ArrayList<Integer> oSubIds = new ArrayList<Integer>();
-            iSubsQuery = iSubsDb.prepareStatement(SUBS_DELETE);
-            iSubsQuery.setTimestamp(1, oNowTs);
-            iSubsResults = iSubsQuery.executeQuery();
+
+            iGetSubsToDelete.setTimestamp(1, oNowTs);
+            try(ResultSet iSubsResults = iGetSubsToDelete.executeQuery())
+            {
             while (iSubsResults.next())
                 oSubIds.add(new Integer(iSubsResults.getInt(1)));
+            }
 
-            iSubsResults.close();
-            iSubsQuery.close();
-
-            // prepare the subscription delete queries
-            iSubsQuery = iSubsDb.prepareStatement("DELETE FROM subs.subscription WHERE id = ?");
-				iGetSubObs = iSubsDb.prepareStatement("DELETE FROM subs.subobs WHERE subId = ?");
 
             int nIndex = oSubIds.size();
             while (nIndex-- > 0) {
                 int nSubId = oSubIds.get(nIndex).intValue();
 
-					 iGetSubObs.setInt(1, nSubId);
-					 iGetSubObs.executeUpdate();
+					 iDeletSubObsStmt.setInt(1, nSubId);
+					 iDeletSubObsStmt.executeUpdate();
 
-                iSubsQuery.setInt(1, nSubId);
-                iSubsQuery.executeUpdate();
+                iDeleteSubsStmt.setInt(1, nSubId);
+                iDeleteSubsStmt.executeUpdate();
 
 
             }
-
-            // free the remainder of the subscription database resources
-				iGetSubObs.close();
-            iSubsQuery.close();
-            iSubsDb.close();
 
             // remove old files and directories
             long lRemoveTime = oNow.getTimeInMillis() - m_lLifetime;
@@ -551,21 +529,7 @@ public class FcstSubscriptions implements Runnable, Comparator<Road> {
                     }
                 }
             }
-
-//			if (m_iDsObs != null)
-//			{
-//				// delete cached observations older than 7 days
-//				Connection iObsDb = m_iDsObs.getConnection();
-//				PreparedStatement iDeleteQuery =
-//					iObsDb.prepareStatement(OBS_DELETE);
-//				oNowTs.setTime(oNow.getTimeInMillis() - 604800000L);
-//				iDeleteQuery.setTimestamp(1, oNowTs);
-//				iDeleteQuery.executeUpdate();
-//				iDeleteQuery.close();
-//				iObsDb.close();
-//			}
         } catch (Exception e) {
-            e.printStackTrace();
             logger.error(e.getMessage());
         }
 

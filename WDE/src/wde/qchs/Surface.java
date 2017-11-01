@@ -29,24 +29,17 @@ public class Surface {
         Config oConfig = ConfigSvc.getInstance().getConfig(this);
         String sDataSourceName = oConfig.getString("datasource", null);
 
-        Connection iConnection = null;
-        PreparedStatement ps = null;
-        ResultSet rs = null;
-
-        try {
             DataSource iDataSource =
                     WDEMgr.getInstance().getDataSource(sDataSourceName);
 
             if (iDataSource == null)
                 return;
-
-            iConnection = iDataSource.getConnection();
-            if (iConnection == null)
-                return;
-
-            // execute the query
-            ps = iConnection.prepareStatement(SURFACE_QUERY);
-            rs = ps.executeQuery();
+        try (
+        Connection iConnection = iDataSource.getConnection();
+        PreparedStatement ps = iConnection.prepareStatement(SURFACE_QUERY);
+        ResultSet rs = ps.executeQuery();
+                )
+        {
 
             while (rs.next()) {
                 // save the database record into memory, months are zero-based
@@ -61,17 +54,6 @@ public class Surface {
             Introsort.usort(m_oRecords, m_oSearch);
         } catch (Exception oException) {
             oException.printStackTrace();
-        } finally {
-            try {
-                rs.close();
-                rs = null;
-                ps.close();
-                ps = null;
-                iConnection.close();
-                iConnection = null;
-            } catch (SQLException se) {
-                // ignore
-            }
         }
     }
 

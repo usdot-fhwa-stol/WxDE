@@ -202,27 +202,22 @@ public class ContribMonitor extends AsyncQ<IObsSet> {
             if (iDataSource == null)
                 return;
 
-            Connection iConnection = iDataSource.getConnection();
-            if (iConnection == null)
-                return;
-
-//			ResultSet rs = iConnection.createStatement().
-//				executeQuery("SELECT email FROM conf.monitorContact " +
-//				"WHERE contribId=" + oContribPlatforms.m_oContrib.getId());
-            PreparedStatement statement = iConnection.prepareStatement("SELECT email FROM conf.monitorContact WHERE contribId = ?");
-            statement.setInt(1, oContribPlatforms.m_oContrib.getId());
-
-            ResultSet rs = statement.executeQuery();
-
             ArrayList<InternetAddress> oRecipients = new ArrayList<InternetAddress>();
-            while (rs.next())
-                oRecipients.add(new InternetAddress(rs.getString(1)));
 
-            //testing phase
-            oRecipients.add(new InternetAddress("bryan.krueger@synesis-partners.com"));
+            try(Connection iConnection = iDataSource.getConnection();
+                PreparedStatement statement = iConnection.prepareStatement("SELECT email FROM conf.monitorContact WHERE contribId = ?");)
+            {
+              statement.setInt(1, oContribPlatforms.m_oContrib.getId());
 
-            rs.close();
-            iConnection.close();
+              try(ResultSet rs = statement.executeQuery())
+              {
+                while (rs.next())
+                    oRecipients.add(new InternetAddress(rs.getString(1)));
+              }
+              //testing phase
+              oRecipients.add(new InternetAddress("bryan.krueger@synesis-partners.com"));
+            }
+
             if (oRecipients.isEmpty())
                 return; // there must be at least one recipient address
 

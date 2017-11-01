@@ -77,31 +77,27 @@ public class DataSummary {
         String beginTimeStr = request.getParameter("beginTime");
         String endTimeStr = request.getParameter("endTime");
 
-        try {
+        try (Connection dbConn = dataSource.getConnection()){
             long beginTimeLong = Long.valueOf(beginTimeStr);
             long endTimeLong = Long.valueOf(endTimeStr);
-
-            Connection dbConn = dataSource.getConnection();
 
             Timestamp beginTime = new Timestamp(beginTimeLong);
             Timestamp endTime = new Timestamp(endTimeLong);
             Timestamp runningTime = new Timestamp(beginTimeLong);
 
-            PreparedStatement ps = null;
-            ResultSet rs = null;
             HashMap<String, Long> summaryMap = new HashMap<>();
 
             while (runningTime.getTime() < (endTimeLong + NUM_OF_MILLI_SECONDS_IN_A_DAY)) {
                 String tableName = "obs_" + runningTime.toString().substring(0, 10);
                 runningTime.setTime(runningTime.getTime() + NUM_OF_MILLI_SECONDS_IN_A_DAY);
                 DatabaseMetaData dbm = dbConn.getMetaData();
-                ResultSet tables = dbm.getTables(null, null, tableName, null);
-                if (!tables.next()) {
-                    tables.close();
-                    logger.debug(tableName + " does not exist");
-                    continue;
+                try(ResultSet tables = dbm.getTables(null, null, tableName, null))
+                {
+                  if (!tables.next()) {
+                      logger.debug(tableName + " does not exist");
+                      continue;
+                  }
                 }
-                tables.close();
 
                 // now that we have database connections, get the summary
                 String queryStr = "SELECT ot.obstype, count(*) FROM obs.\"" + tableName + "\" o, meta.obstype ot"
@@ -111,34 +107,30 @@ public class DataSummary {
                         + " group by ot.obstype order by ot.obstype";
 
                 logger.info(queryStr);
-                ps = dbConn.prepareStatement(queryStr);
+                try(PreparedStatement ps = dbConn.prepareStatement(queryStr))
+                {
+                  ps.setTimestamp(1, beginTime);
+                  ps.setTimestamp(2, endTime);
+                  ps.setLong(3, MathUtil.toMicro(coordinates[0]));
+                  ps.setLong(4, MathUtil.toMicro(coordinates[2]));
+                  ps.setLong(5, MathUtil.toMicro(coordinates[1]));
+                  ps.setLong(6, MathUtil.toMicro(coordinates[3]));
 
-                ps.setTimestamp(1, beginTime);
-                ps.setTimestamp(2, endTime);
-                ps.setLong(3, MathUtil.toMicro(coordinates[0]));
-                ps.setLong(4, MathUtil.toMicro(coordinates[2]));
-                ps.setLong(5, MathUtil.toMicro(coordinates[1]));
-                ps.setLong(6, MathUtil.toMicro(coordinates[3]));
+                  try(ResultSet rs = ps.executeQuery())
+                  {
 
-                rs = ps.executeQuery();
+                    while (rs.next()) {
+                        String key = rs.getString("obsType");
+                        int value = rs.getInt("count");
+                        Long oldValueLong = summaryMap.get(key);
+                        if (oldValueLong != null)
+                            value += oldValueLong.intValue();
 
-                while (rs.next()) {
-                    String key = rs.getString("obsType");
-                    int value = rs.getInt("count");
-                    Long oldValueLong = summaryMap.get(key);
-                    if (oldValueLong != null)
-                        value += oldValueLong.intValue();
-
-                    summaryMap.put(key, new Long(value));
+                        summaryMap.put(key, new Long(value));
+                    }
+                  }
                 }
-
-                rs.close();
-                rs = null;
-                ps.close();
-                ps = null;
             }
-            dbConn.close();
-            dbConn = null;
 
             if (summaryMap.size() == 0)
                 writer.println("No relevant data is available");

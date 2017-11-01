@@ -87,7 +87,7 @@ public class QChSMgr extends AsyncQ<IObsSet> implements ILockFactory<QChSeqMgr> 
         m_oLock = new StripeLock<QChSeqMgr>(this, MAX_THREADS);
 
         // set up the database connection
-        Connection iConnection = null;
+
         WDEMgr wdeMgr = WDEMgr.getInstance();
         try {
             DataSource iDataSource =
@@ -96,30 +96,30 @@ public class QChSMgr extends AsyncQ<IObsSet> implements ILockFactory<QChSeqMgr> 
             if (iDataSource == null)
                 return;
 
-            iConnection = iDataSource.getConnection();
-            if (iConnection == null)
-                return;
+            try(Connection iConnection = iDataSource.getConnection())
+            {
 
-            // load the default obs types
-            oConfig = oConfigSvc.getConfig("_default");
-            String[] sObsTypes = oConfig.getStringArray("obstype");
-            if (sObsTypes != null && sObsTypes.length > 0) {
-                ObsTypeDao obsTypeDao = ObsTypeDao.getInstance();
+              // load the default obs types
+              oConfig = oConfigSvc.getConfig("_default");
+              String[] sObsTypes = oConfig.getStringArray("obstype");
+              if (sObsTypes != null && sObsTypes.length > 0) {
+                  ObsTypeDao obsTypeDao = ObsTypeDao.getInstance();
 
-                // initialize the qch seq mgrs
-                int nIndex = sObsTypes.length;
-                while (nIndex-- > 0) {
-                    // resolve the obs type name to an obs type id
-                    ObsType obsType = obsTypeDao.getObsType(sObsTypes[nIndex]);
+                  // initialize the qch seq mgrs
+                  int nIndex = sObsTypes.length;
+                  while (nIndex-- > 0) {
+                      // resolve the obs type name to an obs type id
+                      ObsType obsType = obsTypeDao.getObsType(sObsTypes[nIndex]);
 
-                    if (obsType != null)
-                        m_oSeqMgrs.add(new QChSeqMgr(Integer.valueOf(obsType.getId()),
-                                MAX_THREADS, iConnection));
-                }
-                Collections.sort(m_oSeqMgrs);
+                      if (obsType != null)
+                          m_oSeqMgrs.add(new QChSeqMgr(Integer.valueOf(obsType.getId()),
+                                  MAX_THREADS, iConnection));
+                  }
+                  Collections.sort(m_oSeqMgrs);
+              }
+
             }
 
-            iConnection.close();
             wdeMgr.register(getClass().getName(), this);
         } catch (Exception e) {
             e.printStackTrace();

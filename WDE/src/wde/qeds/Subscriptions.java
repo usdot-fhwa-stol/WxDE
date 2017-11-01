@@ -214,18 +214,12 @@ public class Subscriptions implements Runnable {
     private int getObs(ArrayList<SubObs> oSubObsList, Subscription sub, boolean isSuperUser) {
         int status = 1;
 
-        Connection dbConn = null;
-        PreparedStatement ps = null;
-        ResultSet rs = null;
+        // attempt to get the needed obs cache connection
+        if (m_iDsObs == null)
+            return status;
 
-        try {
-            // attempt to get the needed obs cache connection
-            if (m_iDsObs == null)
-                return status;
-
-            dbConn = m_iDsObs.getConnection();
-            if (dbConn == null)
-                return status;
+        try (Connection dbConn = m_iDsObs.getConnection())
+        {
 
             String contribListStr = sub.getContributors();
             String platformListStr = null;
@@ -254,13 +248,15 @@ public class Subscriptions implements Runnable {
                 String tableName = "obs_" + runningTime.toString().substring(0, 10);
                 runningTime.setTime(runningTime.getTime() + NUM_OF_MILLI_SECONDS_IN_A_DAY);
                 DatabaseMetaData dbm = dbConn.getMetaData();
-                ResultSet tables = dbm.getTables(null, null, tableName, null);
-                if (!tables.next()) {
-                    tables.close();
-                    logger.debug(tableName + " does not exist");
-                    continue;
+
+                try(ResultSet tables = dbm.getTables(null, null, tableName, null))
+                {
+                  if (!tables.next())
+                  {
+                      logger.debug(tableName + " does not exist");
+                      continue;
+                  }
                 }
-                tables.close();
 
                 String queryStr = null;
                 String obsTypeStr1 = "";
@@ -291,32 +287,37 @@ public class Subscriptions implements Runnable {
                             " AND longitude > " + MathUtil.toMicro(sub.m_dLng1) + " AND longitude < " + MathUtil.toMicro(sub.m_dLng2) + obsTypeStr2 +
                             " ORDER BY obsTypeId, sourceId, sensorId limit " + (maxRows - rowCount);
 
-                // now that we have database connections, get the obs
-                ps = dbConn.prepareStatement(queryStr);
 
-                ps.setTimestamp(1, beginTime);
-                ps.setTimestamp(2, endTime);
+                try(PreparedStatement ps = dbConn.prepareStatement(queryStr))
+                {
+                  // now that we have database connections, get the obs
 
+                  ps.setTimestamp(1, beginTime);
+                  ps.setTimestamp(2, endTime);
+
+                  try( ResultSet rs = ps.executeQuery())
+                  {
                 // cache obs records as objects with resolved contribs and stations
-                rs = ps.executeQuery();
 
-                while (rs.next()) {
+                    while (rs.next()) {
+                        SubObs oSubObs = new SubObs(m_oContribs, platformDao,
+                                sensorDao, m_oUnits, obsTypeDao, rs);
 
-                    SubObs oSubObs = new SubObs(m_oContribs, platformDao,
-                            sensorDao, m_oUnits, obsTypeDao, rs);
-
-                    // only add obs that have valid metadata and can be distributed
-                    if
-                            (
-                            oSubObs.m_iObsType != null &&
-                                    oSubObs.m_iSensor != null &&
-                                    (oSubObs.m_iSensor.getDistGroup() == 2 || oSubObs.m_iSensor.getDistGroup() == 0 && isSuperUser) &&
-                                    oSubObs.m_oContrib != null &&
-                                    oSubObs.m_iPlatform != null
-                            )
-                        oSubObsList.add(oSubObs);
-                    rowCount++;
+                        // only add obs that have valid metadata and can be distributed
+                        if
+                                (
+                                oSubObs.m_iObsType != null &&
+                                        oSubObs.m_iSensor != null &&
+                                        (oSubObs.m_iSensor.getDistGroup() == 2 || oSubObs.m_iSensor.getDistGroup() == 0 && isSuperUser) &&
+                                        oSubObs.m_oContrib != null &&
+                                        oSubObs.m_iPlatform != null
+                                )
+                            oSubObsList.add(oSubObs);
+                        rowCount++;
+                    }
+                  }
                 }
+
 
                 if (rowCount >= maxRows) {
                     status = 2;
@@ -328,13 +329,7 @@ public class Subscriptions implements Runnable {
                     status = 3;
                     break;
                 }
-                rs.close();
-                rs = null;
-                ps.close();
-                ps = null;
             }
-            dbConn.close();
-            dbConn = null;
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
         }
@@ -381,215 +376,193 @@ public class Subscriptions implements Runnable {
         logger.debug("getResults() -- end of method");
     }
 
+  /**
+   * Connects to the data-source to perform the subscription query. For each
+   * subscription found, the observations are gathered, processed, and
+   * output. Runs on a five minute cycle, as configured in the default
+   * constructor.
+   * <p>
+   * Defines a required method for the implementation of {@link Runnable}.
+   * </p>
+   */
+  public synchronized void run()
+  {
+    logger.info("run() invoked");
 
-    /**
-     * Connects to the data-source to perform the subscription query. For each
-     * subscription found, the observations are gathered, processed, and
-     * output. Runs on a five minute cycle, as configured in the default
-     * constructor.
-     * <p>
-     * Defines a required method for the implementation of {@link Runnable}.
-     * </p>
-     */
-    public synchronized void run() {
-        logger.info("run() invoked");
+    // process subscriptions here
+    GregorianCalendar oNow = new GregorianCalendar();
+    Timestamp oNowTs = new Timestamp(oNow.getTimeInMillis());
 
-        // process subscriptions here
-        GregorianCalendar oNow = new GregorianCalendar();
-        Timestamp oNowTs = new Timestamp(oNow.getTimeInMillis());
+    long lNotificationObsTimeCutoff = oNow.getTimeInMillis() - 1000L * 60 * 5;
 
-        long lNotificationObsTimeCutoff = oNow.getTimeInMillis() - 1000L * 60 * 5;
+    // only one object of each is needed to deserialize database records
+    ArrayList<SubObs> oSubObsList = new ArrayList<SubObs>();
+    ArrayList<SubObs> oNotificationObsList = new ArrayList<SubObs>();
+    Subscription oSubs = new Subscription();
 
-        // only one object of each is needed to deserialize database records
-        ArrayList<SubObs> oSubObsList = new ArrayList<SubObs>();
-        ArrayList<SubObs> oNotificationObsList = new ArrayList<SubObs>();
-        Subscription oSubs = new Subscription();
+    // a 30-minute window is always queried
+    ArrayList<IObs> oRawObsList = new ArrayList<IObs>();
+    ObsArchiveMgr.getInstance().getObs(oRawObsList,
+        oNow.getTimeInMillis() - 3900000); // 65 minutes
+    int nIndex = oRawObsList.size();
+    while(nIndex-- > 0)
+    {
+      SubObs oSubObs = new SubObs(m_oContribs, platformDao,
+          sensorDao, m_oUnits, obsTypeDao, oRawObsList.get(nIndex));
 
-        // a 30-minute window is always queried
-        ArrayList<IObs> oRawObsList = new ArrayList<IObs>();
-        ObsArchiveMgr.getInstance().getObs(oRawObsList,
-                oNow.getTimeInMillis() - 3900000); // 65 minutes
-        int nIndex = oRawObsList.size();
-        while (nIndex-- > 0) {
-            SubObs oSubObs = new SubObs(m_oContribs, platformDao,
-                    sensorDao, m_oUnits, obsTypeDao, oRawObsList.get(nIndex));
+      // only add obs that have valid metadata
+      if(oSubObs.m_iObsType != null &&
+          oSubObs.m_iSensor != null &&
+          oSubObs.m_oContrib != null &&
+          oSubObs.m_iPlatform != null)
+      {
+        // only add obs since the last time notifications were evaluated
+        if(oSubObs.recvTime >= lNotificationObsTimeCutoff)
+          oNotificationObsList.add(oSubObs);
 
-            // only add obs that have valid metadata
-            if
-                    (
-                    oSubObs.m_iObsType != null &&
-                            oSubObs.m_iSensor != null &&
-                            oSubObs.m_oContrib != null &&
-                            oSubObs.m_iPlatform != null
-                    )
-            {
-              //only add obs since the last time notifications were evaluated
-              if(oSubObs.recvTime >= lNotificationObsTimeCutoff)
-                oNotificationObsList.add(oSubObs);
-
-              //only add obs that can be distributed
-              if(oSubObs.m_iSensor.getDistGroup() == 2)
-                oSubObsList.add(oSubObs);
-            }
-        }
-
-        try {
-            // get the subscription information
-            if (m_iDsSubs == null)
-                return;
-
-            Connection iSubsDb = m_iDsSubs.getConnection();
-            if (iSubsDb == null)
-                return;
-
-            // prepare the subscription detail queries
-            PreparedStatement iGetRadius = iSubsDb.prepareStatement("SELECT lat, lng, radius FROM subs.subRadius WHERE subId = ?");
-            PreparedStatement iGetContrib = iSubsDb.prepareStatement("SELECT contribId FROM subs.subContrib WHERE subId = ?");
-            PreparedStatement iGetStation = iSubsDb.prepareStatement("SELECT stationId FROM subs.subStation WHERE subId = ?");
-            PreparedStatement iGetSubObs = iSubsDb.prepareStatement("SELECT obstypeid FROM subs.subobs WHERE subId = ?", ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
-            // the result sets are stored in memory and can be passed to
-            // other methods repeatedly
-            PreparedStatement iSubsQuery = iSubsDb.prepareStatement(SUBS_QUERY);
-            iSubsQuery.setTimestamp(1, oNowTs);
-            ResultSet iSubsResults = iSubsQuery.executeQuery();
-            while (iSubsResults.next()) {
-                // process all subscriptions for the current cycle
-                int nCycle = iSubsResults.getInt(12);
-                if (oNow.get(GregorianCalendar.MINUTE) % nCycle == 0) {
-                    oSubs.deserialize(iSubsResults, iGetRadius, iGetContrib, iGetStation, iGetSubObs);
-
-                    // ensure the subscription destination exists
-                    String sPath = m_sSubsDir + oSubs.m_nId;
-                    File oFile = new File(sPath);
-                    if (!oFile.exists() && !oFile.mkdirs())
-                        continue;
-
-                    OutputFormat oOutputFormat =
-                            m_oFormatters.get(oSubs.m_sOutputFormat);
-
-                    if (oOutputFormat != null) {
-                        String sFilename = m_oDateFormat.format(
-                                oNow.getTime()) + oOutputFormat.getSuffix();
-                        oFile = new File(sPath + "/" + sFilename);
-
-                        PrintWriter oPrintWriter = new PrintWriter(oFile);
-                        oOutputFormat.fulfill(oPrintWriter, oSubObsList,
-                                oSubs, sFilename, oSubs.m_nId,
-                                oNow.getTimeInMillis() - (nCycle * 60000), true);
-
-                        // finish writing the output
-                        oPrintWriter.flush();
-                        oPrintWriter.close();
-                    }
-                }
-            }
-            // free most of the subscription database resources
-            iSubsResults.close();
-            iGetRadius.close();
-            iGetSubObs.close();
-            iGetContrib.close();
-            iGetStation.close();
-            iSubsQuery.close();
-
-            // clean up expired subscriptions
-            ArrayList<Integer> oSubIds = new ArrayList<Integer>();
-            iSubsQuery = iSubsDb.prepareStatement(SUBS_DELETE);
-            iSubsQuery.setTimestamp(1, oNowTs);
-            iSubsResults = iSubsQuery.executeQuery();
-            while (iSubsResults.next())
-                oSubIds.add(new Integer(iSubsResults.getInt(1)));
-
-            iSubsResults.close();
-            iSubsQuery.close();
-
-            // prepare the subscription delete queries
-            iSubsQuery = iSubsDb.prepareStatement("DELETE FROM subs.subscription WHERE id = ?");
-            iGetRadius = iSubsDb.prepareStatement("DELETE FROM subs.subRadius WHERE subId = ?");
-            iGetContrib = iSubsDb.prepareStatement("DELETE FROM subs.subContrib WHERE subId = ?");
-            iGetStation = iSubsDb.prepareStatement("DELETE FROM subs.subStation WHERE subId = ?");
-    		iGetSubObs = iSubsDb.prepareStatement("DELETE FROM subs.subobs WHERE subId = ?");
-
-            nIndex = oSubIds.size();
-            while (nIndex-- > 0) {
-                int nSubId = oSubIds.get(nIndex).intValue();
-
-                iGetRadius.setInt(1, nSubId);
-                iGetRadius.executeUpdate();
-
-                iGetContrib.setInt(1, nSubId);
-                iGetContrib.executeUpdate();
-
-                iGetStation.setInt(1, nSubId);
-                iGetStation.executeUpdate();
-
-                iSubsQuery.setInt(1, nSubId);
-                iSubsQuery.executeUpdate();
-
-              iGetSubObs.setInt(1, nSubId);
-              iGetSubObs.executeUpdate();
-            }
-
-            // free the remainder of the subscription database resources
-            iGetRadius.close();
-            iGetContrib.close();
-            iGetStation.close();
-            iSubsQuery.close();
-            iGetSubObs.close();
-            iSubsDb.close();
-
-            // remove old files and directories
-            long lRemoveTime = oNow.getTimeInMillis() - m_lLifetime;
-
-            // iterate through each subscription directory
-            File[] oSubscriptions = new File(m_sSubsDir).listFiles();
-            nIndex = oSubscriptions.length;
-            while (nIndex-- > 0) {
-                File oSubsDir = oSubscriptions[nIndex];
-                File[] oSubFiles = oSubsDir.listFiles();
-
-                if (oSubsDir.lastModified() < lRemoveTime) {
-                    // remove all files when the directory has expired
-                    int nFileIndex = oSubFiles.length;
-                    while (nFileIndex-- > 0)
-                        oSubFiles[nFileIndex].delete();
-
-                    // now remove the top-level subscription directory
-                    oSubsDir.delete();
-                } else {
-                    int nFileIndex = oSubFiles.length;
-                    while (nFileIndex-- > 0) {
-                        File oFile = oSubFiles[nFileIndex];
-                        // remove files older than the cutoff except README.txt
-                        if
-                                (
-                                oFile.lastModified() < lRemoveTime &&
-                                        oFile.getName().compareTo("README.txt") != 0
-                                )
-                            oFile.delete();
-                    }
-                }
-            }
-
-            m_oNotificationEvaluator.processNotifications(oNotificationObsList);
-
-//			if (m_iDsObs != null)
-//			{
-//				// delete cached observations older than 7 days
-//				Connection iObsDb = m_iDsObs.getConnection();
-//				PreparedStatement iDeleteQuery =
-//					iObsDb.prepareStatement(OBS_DELETE);
-//				oNowTs.setTime(oNow.getTimeInMillis() - 604800000L);
-//				iDeleteQuery.setTimestamp(1, oNowTs);
-//				iDeleteQuery.executeUpdate();
-//				iDeleteQuery.close();
-//				iObsDb.close();
-//			}
-        } catch (Exception e) {
-            logger.error(e.getMessage(), e);
-        }
-
-        logger.info("run() returning");
+        // only add obs that can be distributed
+        if(oSubObs.m_iSensor.getDistGroup() == 2)
+          oSubObsList.add(oSubObs);
+      }
     }
+
+    // get the subscription information
+    if(m_iDsSubs == null)
+      return;
+    try(
+        Connection iSubsDb = m_iDsSubs.getConnection();
+        PreparedStatement iGetRadius = iSubsDb.prepareStatement("SELECT lat, lng, radius FROM subs.subRadius WHERE subId = ?");
+        PreparedStatement iGetContrib = iSubsDb.prepareStatement("SELECT contribId FROM subs.subContrib WHERE subId = ?");
+        PreparedStatement iGetStation = iSubsDb.prepareStatement("SELECT stationId FROM subs.subStation WHERE subId = ?");
+        PreparedStatement iGetSubObs = iSubsDb.prepareStatement("SELECT obstypeid FROM subs.subobs WHERE subId = ?", ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
+        // the result sets are stored in memory and can be passed to
+        // other methods repeatedly
+        PreparedStatement iSubsQuery = iSubsDb.prepareStatement(SUBS_QUERY);
+        PreparedStatement iSubsToDeleteQuery = iSubsDb.prepareStatement(SUBS_DELETE);
+        PreparedStatement iDeleteSubsStmt = iSubsDb.prepareStatement("DELETE FROM subs.subscription WHERE id = ?");
+        PreparedStatement iDeleteSubsRadius = iSubsDb.prepareStatement("DELETE FROM subs.subRadius WHERE subId = ?");
+        PreparedStatement iDeletSubsContrib = iSubsDb.prepareStatement("DELETE FROM subs.subContrib WHERE subId = ?");
+        PreparedStatement iDeleteSubsStation = iSubsDb.prepareStatement("DELETE FROM subs.subStation WHERE subId = ?");
+        PreparedStatement iDeletSubsObs = iSubsDb.prepareStatement("DELETE FROM subs.subobs WHERE subId = ?");)
+    {
+
+      // prepare the subscription detail queries
+
+      iSubsQuery.setTimestamp(1, oNowTs);
+      try(ResultSet iSubsResults = iSubsQuery.executeQuery())
+      {
+        while(iSubsResults.next())
+        {
+          // process all subscriptions for the current cycle
+          int nCycle = iSubsResults.getInt(12);
+          if(oNow.get(GregorianCalendar.MINUTE) % nCycle == 0)
+          {
+            oSubs.deserialize(iSubsResults, iGetRadius, iGetContrib, iGetStation, iGetSubObs);
+
+            // ensure the subscription destination exists
+            String sPath = m_sSubsDir + oSubs.m_nId;
+            File oFile = new File(sPath);
+            if(!oFile.exists() && !oFile.mkdirs())
+              continue;
+
+            OutputFormat oOutputFormat =
+                m_oFormatters.get(oSubs.m_sOutputFormat);
+
+            if(oOutputFormat != null)
+            {
+              String sFilename = m_oDateFormat.format(
+                  oNow.getTime()) + oOutputFormat.getSuffix();
+              oFile = new File(sPath + "/" + sFilename);
+
+              PrintWriter oPrintWriter = new PrintWriter(oFile);
+              oOutputFormat.fulfill(oPrintWriter, oSubObsList,
+                  oSubs, sFilename, oSubs.m_nId,
+                  oNow.getTimeInMillis() - (nCycle * 60000), true);
+
+              // finish writing the output
+              oPrintWriter.flush();
+              oPrintWriter.close();
+            }
+          }
+        }
+      }
+
+      // clean up expired subscriptions
+      ArrayList<Integer> oSubIds = new ArrayList<Integer>();
+
+      iSubsToDeleteQuery.setTimestamp(1, oNowTs);
+
+      try(ResultSet iSubsResults = iSubsToDeleteQuery.executeQuery())
+      {
+        while(iSubsResults.next())
+          oSubIds.add(new Integer(iSubsResults.getInt(1)));
+      }
+
+      nIndex = oSubIds.size();
+      while(nIndex-- > 0)
+      {
+        int nSubId = oSubIds.get(nIndex).intValue();
+
+        iDeleteSubsRadius.setInt(1, nSubId);
+        iDeleteSubsRadius.executeUpdate();
+
+        iDeletSubsContrib.setInt(1, nSubId);
+        iDeletSubsContrib.executeUpdate();
+
+        iDeleteSubsStation.setInt(1, nSubId);
+        iDeleteSubsStation.executeUpdate();
+
+        iDeleteSubsStmt.setInt(1, nSubId);
+        iDeleteSubsStmt.executeUpdate();
+
+        iDeletSubsObs.setInt(1, nSubId);
+        iDeletSubsObs.executeUpdate();
+      }
+      // remove old files and directories
+      long lRemoveTime = oNow.getTimeInMillis() - m_lLifetime;
+
+      // iterate through each subscription directory
+      File[] oSubscriptions = new File(m_sSubsDir).listFiles();
+      nIndex = oSubscriptions.length;
+      while(nIndex-- > 0)
+      {
+        File oSubsDir = oSubscriptions[ nIndex ];
+        File[] oSubFiles = oSubsDir.listFiles();
+
+        if(oSubsDir.lastModified() < lRemoveTime)
+        {
+          // remove all files when the directory has expired
+          int nFileIndex = oSubFiles.length;
+          while(nFileIndex-- > 0)
+            oSubFiles[ nFileIndex ].delete();
+
+          // now remove the top-level subscription directory
+          oSubsDir.delete();
+        }
+        else
+        {
+          int nFileIndex = oSubFiles.length;
+          while(nFileIndex-- > 0)
+          {
+            File oFile = oSubFiles[ nFileIndex ];
+            // remove files older than the cutoff except README.txt
+            if(oFile.lastModified() < lRemoveTime &&
+                oFile.getName().compareTo("README.txt") != 0)
+              oFile.delete();
+          }
+        }
+      }
+
+      m_oNotificationEvaluator.processNotifications(oNotificationObsList);
+
+    }
+    catch(Exception e)
+    {
+      logger.error(e.getMessage(), e);
+    }
+
+    logger.info("run() returning");
+  }
 
 
 	/**

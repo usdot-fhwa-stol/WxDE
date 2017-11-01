@@ -78,11 +78,6 @@ public class Units implements ILockFactory<UnitConv> {
      * {@code Units} class.
      */
     private Units() {
-        Connection iConnection = null;
-        PreparedStatement ps = null;
-        ResultSet rs = null;
-
-        try {
             // get the unit conversion configuration
             WDEMgr wdeMgr = WDEMgr.getInstance();
             Config oConfig = ConfigSvc.getInstance().getConfig(this);
@@ -93,14 +88,11 @@ public class Units implements ILockFactory<UnitConv> {
 
             if (iDataSource == null)
                 return;
-
-            iConnection = iDataSource.getConnection();
-            if (iConnection == null)
-                return;
-
-            ps = iConnection.prepareStatement(UNIT_QUERY);
-            rs = ps.executeQuery();
-
+        try (
+        Connection iConnection = iDataSource.getConnection();
+        PreparedStatement ps = iConnection.prepareStatement(UNIT_QUERY);
+        ResultSet rs = ps.executeQuery();
+        ){
             while (rs.next()) {
                 // create and save the forward direction unit conversion
                 UnitConv oUnitConv = new UnitConvF
@@ -134,17 +126,6 @@ public class Units implements ILockFactory<UnitConv> {
         } catch (Exception e) {
             e.printStackTrace();
             logger.error(e.getMessage());
-        } finally {
-            try {
-                rs.close();
-                rs = null;
-                ps.close();
-                ps = null;
-                iConnection.close();
-                iConnection = null;
-            } catch (SQLException se) {
-                // ignore
-            }
         }
 
         logger.info("Completing constructor, array size: " + Integer.toString(m_oUnits.size()));

@@ -26,18 +26,20 @@
 	if (iDataSource == null)
 		return;
 
-	Connection iConnection = iDataSource.getConnection();
-	if (iConnection == null)
-		return;
-
-	PreparedStatement iQuery = iConnection.prepareStatement(sQuery);
+	try(Connection iConnection = iDataSource.getConnection();
+      PreparedStatement iQuery = iConnection.prepareStatement(sQuery);
+          
+          )
+  {
 	iQuery.setInt(1, nObsTypeId);
-	ResultSet iResultSet = iQuery.executeQuery();
-
+  
 	// count the number of records
 	int nRows = 0;
-	while (iResultSet.next())
-		++nRows;
+  try(ResultSet iResultSet = iQuery.executeQuery())
+  {
+    while (iResultSet.next())
+      ++nRows;
+  }
 
     PrintWriter oPrintWriter = response.getWriter();
     oPrintWriter.println("<?xml version=\"1.0\" ?>");
@@ -50,8 +52,9 @@
     
 	// format the quality check names
 	//iResultSet.beforeFirst();
-	iResultSet = iQuery.executeQuery();
-	while (iResultSet.next())
+	try(ResultSet iResultSet = iQuery.executeQuery())
+  {
+    while (iResultSet.next())
     {
         oPrintWriter.print("  <qch bit=\"");
 		oPrintWriter.print(iResultSet.getInt(1));
@@ -59,12 +62,11 @@
 		oPrintWriter.print(iResultSet.getString(2));
 		oPrintWriter.println("\"/>");
     }
+  }
 
-	iResultSet.close();
-	iQuery.close();
-	iConnection.close();
       
 	oPrintWriter.println("</qchs>");
 	oPrintWriter.flush();
 	oPrintWriter.close();
+  }
 %>

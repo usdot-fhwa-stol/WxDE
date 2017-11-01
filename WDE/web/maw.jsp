@@ -30,12 +30,10 @@
 	if (iDataSource == null)
             return;
 
-	Connection iConnection = iDataSource.getConnection();
-	if (iConnection == null)
-            return;
-
-	Statement iQuery = iConnection.createStatement();
-	ResultSet iResultSet = iQuery.executeQuery(sQuery);
+  try(Connection iConnection = iDataSource.getConnection();
+        Statement iQuery = iConnection.createStatement();
+          ResultSet iResultSet = iQuery.executeQuery(sQuery))
+  {
 
         //Lookup table
         String[][] oLookupTable = {
@@ -140,11 +138,7 @@
         }
         
         oPrintWriter.write("}\n");
-        
-	iResultSet.close();
-	iQuery.close();
-	iConnection.close();
-      
         oPrintWriter.close();
+  }
 
 %>

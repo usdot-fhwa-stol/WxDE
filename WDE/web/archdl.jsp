@@ -21,18 +21,17 @@
 
         PrintWriter oPrintWriter = new PrintWriter(new GZIPOutputStream(response.getOutputStream()));
         oPrintWriter.println("obstypeid,sensorid,obstime,latitude,longitude,elevation,value,confvalue,qcharflag");
-	try
-	{
+        
 		DataSource iDataSource = WDEMgr.getInstance().getDataSource("java:comp/env/jdbc/wxde");
 		if (iDataSource == null)
 			return;
-
-		Connection iConnection = iDataSource.getConnection();
-		if (iConnection == null)
-			return;
-
+    
+		try(Connection iConnection = iDataSource.getConnection();
 		Statement iQuery = iConnection.createStatement();
 		ResultSet iResultSet = iQuery.executeQuery(sQuery);
+            )
+    {
+
         
 		while (iResultSet.next())
         	{
@@ -45,9 +44,7 @@
         	    oPrintWriter.println();
 	        }
 
-		iResultSet.close();
-		iQuery.close();
-		iConnection.close();
+    
 	}
 	catch (Exception oException)
 	{

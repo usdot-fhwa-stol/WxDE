@@ -156,28 +156,19 @@ public abstract class DbCache<T> implements Runnable, ILockFactory<T> {
      */
     public void run() {
         synchronized (g_oLock) {
-            Connection iConnection = null;
-            PreparedStatement ps = null;
-            ResultSet rs = null;
 
-            try {
                 DataSource iDataSource =
                         wdeMgr.getDataSource(m_sDataSourceName);
-
                 if (iDataSource == null)
                     return;
-
-                iConnection = iDataSource.getConnection();
-                if (iConnection == null)
-                    return;
+            try(Connection iConnection = iDataSource.getConnection();
+                    PreparedStatement ps = iConnection.prepareStatement(m_sQuery);
+                    ResultSet rs = ps.executeQuery();
+                    ) {
 
                 // use inverse logic since the array is initialized to false
                 int nIndex = m_oRecords.size();
                 boolean[] bKeep = new boolean[nIndex];
-
-                // execute the query
-                ps = iConnection.prepareStatement(m_sQuery);
-                rs = ps.executeQuery();
 
                 // read lock the primary array and get the record object
                 T oT = m_oLock.readLock();
@@ -244,18 +235,7 @@ public abstract class DbCache<T> implements Runnable, ILockFactory<T> {
             } catch (Exception e) {
                 e.printStackTrace();
                 logger.error(e.getMessage());
-            } finally {
-                try {
-                    rs.close();
-                    rs = null;
-                    ps.close();
-                    ps = null;
-                    iConnection.close();
-                    iConnection = null;
-                } catch (SQLException se) {
-                    // ignore
-                }
-            }
+            } 
         }
 
         logger.info("run " + Integer.toString(m_oRecords.size()));

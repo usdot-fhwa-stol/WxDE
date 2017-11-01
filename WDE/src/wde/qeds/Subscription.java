@@ -277,10 +277,6 @@ public class Subscription {
         logger.debug("setSubId(" + sSubId + ")");
         m_nId = Integer.parseInt(sSubId);
 
-        Connection iConnection = null;
-        PreparedStatement ps = null;
-        ResultSet rs = null;
-
         try {
             DataSource iDataSource =
                     WDEMgr.getInstance().getDataSource("java:comp/env/jdbc/wxde");
@@ -288,29 +284,19 @@ public class Subscription {
             if (iDataSource == null)
                 return;
 
-            iConnection = iDataSource.getConnection();
-            if (iConnection == null)
-                return;
-
-            ps = iConnection.prepareStatement("SELECT password FROM subs.subscription WHERE id=?");
-            ps.setInt(1, m_nId);
-            rs = ps.executeQuery();
-            if (rs.next())
-                m_sSecret = rs.getString(1);
+            try(Connection iConnection = iDataSource.getConnection();
+                  PreparedStatement    ps = iConnection.prepareStatement("SELECT password FROM subs.subscription WHERE id=?")  )
+            {
+              ps.setInt(1, m_nId);
+              try(ResultSet rs = ps.executeQuery())
+              {
+                if (rs.next())
+                    m_sSecret = rs.getString(1);
+              }
+            }
         } catch (Exception e) {
             e.printStackTrace();
             logger.error(e.getMessage());
-        } finally {
-            try {
-                rs.close();
-                rs = null;
-                ps.close();
-                ps = null;
-                iConnection.close();
-                iConnection = null;
-            } catch (SQLException se) {
-                // ignore
-            }
         }
     }
 
@@ -610,7 +596,7 @@ public class Subscription {
             m_nObsTypes = new int[nRows];
             while (oRs.next())
               m_nObsTypes[nCount++] = oRs.getInt(1);
-            
+
             Arrays.sort(m_nObsTypes);
           }
         }
@@ -850,37 +836,32 @@ public class Subscription {
 			{
 				m_nNextId = Integer.parseInt(oFormat.format(oToday)) * 100;
 			}
-			Connection iConnection = null;
-			try
+
+      DataSource iDataSource = WDEMgr.getInstance().getDataSource("java:comp/env/jdbc/wxde");
+      if (iDataSource == null)
+          return;
+			try(Connection iConnection = iDataSource.getConnection();
+				PreparedStatement iStatementMax = iConnection.prepareStatement("SELECT MAX(id) FROM subs.subscription WHERE CAST(id AS TEXT) LIKE " + sSearch + " AND id>0");
+				PreparedStatement iStatementMin = iConnection.prepareStatement("SELECT MIN(id) FROM subs.subscription WHERE CAST(id AS TEXT) LIKE " + sSearch + " AND id<0");
+				ResultSet oRsMax = iStatementMax.executeQuery();
+				ResultSet oRsMin = iStatementMin.executeQuery();)
 			{
-            DataSource iDataSource = WDEMgr.getInstance().getDataSource("java:comp/env/jdbc/wxde");
-            if (iDataSource == null)
-                return;
-
-            iConnection = iDataSource.getConnection();
-            if (iConnection == null)
-                return;
-
 				int nMax = 0;
 				int nMin = 0;
-				Statement iStatementMax = iConnection.createStatement();
-				Statement iStatementMin = iConnection.createStatement();
-				ResultSet oRsMax = iStatementMax.executeQuery("SELECT MAX(id) FROM subs.subscription WHERE CAST(id AS TEXT) LIKE " + sSearch + " AND id>0");
-				ResultSet oRsMin = iStatementMin.executeQuery("SELECT MIN(id) FROM subs.subscription WHERE CAST(id AS TEXT) LIKE " + sSearch + " AND id<0");
 				if (oRsMax.next())
 				{
 					nMax = oRsMax.getInt(1);
 					if (nMax != 0)
 						bFoundMax = true;
 				}
-				oRsMax.close();
+
 				if (oRsMin.next())
 				{
 					nMin = oRsMin.getInt(1);
 					if (nMin != 0)
 						bFoundMin = true;
 				}
-				oRsMin.close();
+
 				if (bFoundMax && bFoundMin)
 					m_nNextId = Math.max(nMax, -nMin) + 1;
 				else if (bFoundMax)
