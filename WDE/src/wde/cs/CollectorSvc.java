@@ -137,7 +137,11 @@ public abstract class CollectorSvc implements Runnable {
 
         // create ftp, sftp, or http network endpoint connection
         switch (sEndpoint.charAt(0)) {
-            case 'f': {
+            case 'f':
+						{
+							if (sEndpoint.charAt(1) == 'i')
+                m_oNetConn = new HttpConn(sEndpoint, sUsername, sPassword);
+							else
                 m_oNetConn = new FtpConn(sEndpoint, sUsername, sPassword);
             }
             break;
