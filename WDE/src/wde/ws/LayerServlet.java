@@ -1,6 +1,7 @@
 package wde.ws;
 
 import java.io.IOException;
+import java.sql.Array;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -408,8 +409,11 @@ public abstract class LayerServlet extends HttpServlet
 
   protected void serializeObsRecord(JsonGenerator oOutputGenerator, Set<Integer> oReturnedSensors, DecimalFormat oNumberFormatter, DecimalFormat oConfFormat, SimpleDateFormat oDateFormat, Date oDate, ResultSet oResult) throws IOException, SQLException
   {
+    Array oQchArray = oResult.getArray("qchCharFlag");
+
     serializeObsRecord(oOutputGenerator, oReturnedSensors, oNumberFormatter, oConfFormat, oDateFormat, oDate,
-            oResult.getInt("obstypeid"), oResult.getDouble("value"), oResult.getTimestamp("obstime").getTime(), oResult.getInt("sourceid"), oResult.getFloat("confValue"), oResult.getInt("sensorid"), (String[]) oResult.getArray("qchCharFlag").getArray());
+            oResult.getInt("obstypeid"), oResult.getDouble("value"), oResult.getTimestamp("obstime").getTime(), oResult.getInt("sourceid"), oResult.getFloat("confValue"), oResult.getInt("sensorid"),
+            oQchArray == null ? null : (String[]) oQchArray.getArray());
 
   }
 
