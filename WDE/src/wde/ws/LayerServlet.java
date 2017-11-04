@@ -492,16 +492,14 @@ public abstract class LayerServlet extends HttpServlet
   protected void buildLayerResponseContent(JsonGenerator oOutputGenerator, LatLngBounds oLastBounds, PlatformRequest oPlatformRequest, int nZoomLevel) throws SQLException, IOException
   {
 
-    try (Connection oConnection = m_oDatasource.getConnection())
-    {
-      try (PreparedStatement oStatement = prepareLayerStatement(oConnection, nZoomLevel, oPlatformRequest))
+    try (
+            Connection oConnection = m_oDatasource.getConnection();
+            PreparedStatement oStatement = prepareLayerStatement(oConnection, nZoomLevel, oPlatformRequest);
+            ResultSet oResult = oStatement.executeQuery())
       {
-        try (ResultSet oResult = oStatement.executeQuery())
-        {
           serializeResult(oOutputGenerator, oLastBounds, oPlatformRequest, oResult);
-        }
       }
-    }
+
   }
 
   protected abstract String getQueryWithObsType();

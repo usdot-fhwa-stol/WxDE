@@ -4,8 +4,8 @@ import java.io.IOException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.DecimalFormat;
-import java.util.ArrayList;
-import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 import javax.naming.NamingException;
 import org.codehaus.jackson.JsonGenerator;
 import wde.dao.UnitConv;
@@ -38,7 +38,7 @@ public abstract class PointLayerServletBase extends LayerServlet
     }
 
     DecimalFormat oValueFormatter = new DecimalFormat("0.##");
-    ArrayList<Integer> oReturnedPlatformIdList = new ArrayList<Integer>();
+    Set<Integer> oReturnedPlatformIdList = new HashSet<Integer>();
 
     StringBuilder oMetricObsListBuilder = new StringBuilder(100);
     StringBuilder oEnglishObsListBuilder = new StringBuilder(100);
@@ -48,11 +48,7 @@ public abstract class PointLayerServletBase extends LayerServlet
       do
       {
         int nPlatformId = oResult.getInt("id");
-        int nPlatformIdIndex = Collections.binarySearch(oReturnedPlatformIdList, nPlatformId);
-        if (nPlatformIdIndex >= 0)
-          continue;
-        else
-          oReturnedPlatformIdList.add(~nPlatformIdIndex, nPlatformId);
+
         double dLat;
         double dLng;
         if (m_oQueryUsersMicros)
@@ -65,59 +61,67 @@ public abstract class PointLayerServletBase extends LayerServlet
           dLat = oResult.getDouble("latitude");
           dLng = oResult.getDouble("longitude");
         }
-        if (oLastRequestBounds != null && oLastRequestBounds.intersects(dLat, dLng))
-          continue;
 
-        oJsonGenerator.writeNumber(nPlatformId);
-        oJsonGenerator.writeString(oResult.getString("platformcode"));
-        oJsonGenerator.writeNumber(dLat);
-        oJsonGenerator.writeNumber(dLng);
-
-        if (hasObs())
+        //only write the layer if we haven't written it already
+        if (!oReturnedPlatformIdList.contains(nPlatformId))
         {
-          if (oCurrentRequest.hasObsType())
-          {
-            oMetricObsListBuilder.setLength(0);
-            oEnglishObsListBuilder.setLength(0);
+          oReturnedPlatformIdList.add(nPlatformId);
 
-            int nNextPlatformId = nPlatformId;
-            do
+          //only write the layer if it wasn't covered by the last request
+          if(oLastRequestBounds == null || !oLastRequestBounds.intersects(dLat, dLng))
+          {
+            oJsonGenerator.writeNumber(nPlatformId);
+            oJsonGenerator.writeString(oResult.getString("platformcode"));
+            oJsonGenerator.writeNumber(dLat);
+            oJsonGenerator.writeNumber(dLng);
+
+            if (hasObs())
             {
-              double oObsValue = oResult.getDouble("value");
-              if (!oResult.wasNull())
+              if (oCurrentRequest.hasObsType())
               {
-                if(oMetricObsListBuilder.length() > 0)
-                  oMetricObsListBuilder.append(", ");
+                oMetricObsListBuilder.setLength(0);
+                oEnglishObsListBuilder.setLength(0);
 
-                oMetricObsListBuilder.append(oValueFormatter.format(oObsValue));
-
-                if (oUnitConverter != null)
+                int nNextPlatformId = nPlatformId;
+                do
                 {
-                  if(oEnglishObsListBuilder.length() > 0)
-                    oEnglishObsListBuilder.append(", ");
+                  double oObsValue = oResult.getDouble("value");
+                  if (!oResult.wasNull())
+                  {
+                    if(oMetricObsListBuilder.length() > 0)
+                      oMetricObsListBuilder.append(", ");
 
-                  oEnglishObsListBuilder.append(oValueFormatter.format(oUnitConverter.convert(oObsValue)));
-                }
+                    oMetricObsListBuilder.append(oValueFormatter.format(oObsValue));
+
+                    if (oUnitConverter != null)
+                    {
+                      if(oEnglishObsListBuilder.length() > 0)
+                        oEnglishObsListBuilder.append(", ");
+
+                      oEnglishObsListBuilder.append(oValueFormatter.format(oUnitConverter.convert(oObsValue)));
+                    }
+                  }
+                }while(oResult.next() && (nNextPlatformId =  oResult.getInt("id")) == nPlatformId);
+
+
+                oJsonGenerator.writeString(oMetricObsListBuilder.toString());
+                oJsonGenerator.writeString(oEnglishObsListBuilder.toString());
+
+
+                //if we exited the loop because we got a new platform id, then
+                //continue for the next platform. If the platform ids are equal,
+                //then we exited because there are no more rows.
+                if(nNextPlatformId == nPlatformId)
+                  break;
+                else
+                 continue;
               }
-            }while(oResult.next() && (nNextPlatformId =  oResult.getInt("id")) == nPlatformId);
-
-
-            oJsonGenerator.writeString(oMetricObsListBuilder.toString());
-            oJsonGenerator.writeString(oEnglishObsListBuilder.toString());
-
-
-            //if we exited the loop because we got a new platform id, then
-            //continue for the next platform. If the platform ids are equal,
-            //then we exited because there are no more rows.
-            if(nNextPlatformId == nPlatformId)
-              break;
-            else
-            continue;
-          }
-          else
-          {
-            oJsonGenerator.writeString("");
-            oJsonGenerator.writeString("");
+              else
+              {
+                oJsonGenerator.writeString("");
+                oJsonGenerator.writeString("");
+              }
+            }
           }
         }
 
