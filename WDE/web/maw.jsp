@@ -22,8 +22,8 @@
         
         String sQuery = "SELECT obstypeid,latitude,longitude,value FROM obs.\"obs_" + dateArray[0] + "-" + 
                         dateArray[1] + "-" + dateArray[2] + "\" WHERE obstypeid>0 AND obstypeid<14 " +
-                        "AND obstime>'" + sCurrFormattedDate.substring(0, 10) + " " + dateArray[3] + ":00:00' " + 
-                        "AND obstime<'" + sBehindFormattedDate.substring(0, 10) + " " + lateArray[3] + ":00:00';";
+                        "AND obstime>'" + sCurrFormattedDate.substring(0, 10) + " " + lateArray[3] + ":00:00' " + 
+                        "AND obstime<'" + sBehindFormattedDate.substring(0, 10) + " " + dateArray[3] + ":00:00';";
 //        String sQuery = "SELECT obstypeid,latitude,longitude,value FROM obs.\"obs_2016-06-01\" WHERE obstypeid>0 AND obstypeid<14 AND obstime>'2016-06-01 14:00:00' AND obstime<'2016-06-01 15:00:00'; ";
 
 	DataSource iDataSource = WDEMgr.getInstance().getDataSource(sDataSourceName);
@@ -87,8 +87,7 @@
             }
         }
         
-        Set set = oTm.keySet();
-        Iterator oIdIterator = set.iterator();
+        Iterator<Integer> oIdIterator = oTm.keySet().iterator();
         
         Iterator<Integer> oObsIterator;
         
@@ -98,6 +97,7 @@
         
         while(oIdIterator.hasNext())
         {
+            oRoadId =  oIdIterator.next();
             oPrintWriter.write("    '" + oRoadId + "':{\n");
             oObsIterator = oTm.get(oRoadId).iterator();
             
@@ -130,7 +130,6 @@
                     oPrintWriter.write("        'maw_visibility_site_num':'" + oRoadId + "'\n");
                 }
             }
-            oIdIterator.next();
             oPrintWriter.write("    }");
             if(oIdIterator.hasNext())
                 oPrintWriter.write(",");
