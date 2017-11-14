@@ -76,8 +76,9 @@ public class EmdssAlerts extends EmdssServlet
 
     oDateFormat.applyPattern(RESPONSE_DATE_PATTERN);
 
+    Long lMaxObsTime = Long.MIN_VALUE;
+
     oOutputGenerator.writeStartObject();
-    oOutputGenerator.writeStringField("data_time", oDateFormat.format(oDate));
     oOutputGenerator.writeArrayFieldStart("districts");
 
     boolean bFirstDistrict = true;
@@ -228,8 +229,11 @@ public class EmdssAlerts extends EmdssServlet
             oOutputGenerator.writeStringField("plow", "none");
             oOutputGenerator.writeStringField("precip", null);
             oOutputGenerator.writeStringField("road_temp", null);
+
             oDate.setTime(oAlertTime.getTime());
             oOutputGenerator.writeStringField("time", oDateFormat.format(oDate));
+            lMaxObsTime = Math.max(oAlertTime.getTime(), lMaxObsTime);
+
             oOutputGenerator.writeStringField("treatment_alert_code", "none");
             oOutputGenerator.writeStringField("visibility", "normal");
 
@@ -255,6 +259,12 @@ public class EmdssAlerts extends EmdssServlet
     oOutputGenerator.writeStringField("hr24_alert_summary_code", "clear");
     oOutputGenerator.writeStringField("hr72_alert_summary_code", "clear");
     oOutputGenerator.writeStringField("obs_alert_summary_code", bHasObsAlert ? "alert" : "clear");
+
+    if(lMaxObsTime != Long.MIN_VALUE)
+    {
+      oDate.setTime(lMaxObsTime);
+      oOutputGenerator.writeStringField("data_time", oDateFormat.format(oDate));
+    }
 
     oOutputGenerator.writeEndObject(); // end response object
     /**
