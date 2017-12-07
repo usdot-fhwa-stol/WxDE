@@ -33,6 +33,7 @@ import java.io.PrintWriter;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Date;
 
 public class ApplicationInterfaceServlet extends HttpServlet {
 
@@ -87,12 +88,13 @@ public class ApplicationInterfaceServlet extends HttpServlet {
         String queryStr = "SELECT id from subs.subscription where guid = ?";
         logger.info("Statistics download subscription result: " + queryStr);
 
-        PreparedStatement ps = dm.prepareStatement(connId, queryStr);
-        ResultSet rs = null;
-        try {
-            ps.setString(1, uuid);
-            rs = ps.executeQuery();
-        } catch (SQLException ex) {
+		ResultSet rs = null;
+        try (PreparedStatement ps = dm.prepareStatement(connId, queryStr))
+		{
+			ps.setString(1, uuid);
+			rs = ps.executeQuery();
+        }
+		catch (SQLException ex) {
             printWriter.write("An error occurred attempting to retrieve subscriptions.");
             return;
         }
@@ -119,6 +121,20 @@ public class ApplicationInterfaceServlet extends HttpServlet {
             return;
         }
 
+
+		try (PreparedStatement oUpdateSubscription = dm.prepareStatement(connId, "UPDATE subs.subscription SET expires=? WHERE id=?"))
+		{
+			Date oDate = new java.util.Date();
+			oDate.setTime(System.currentTimeMillis() + 1209600000L); // 2 weeks
+			oUpdateSubscription.setTimestamp(1, new java.sql.Timestamp(oDate.getTime()));
+			oUpdateSubscription.setInt(2, Integer.valueOf(subId));
+			oUpdateSubscription.execute();
+		}
+		catch (SQLException oEx)
+		{
+			oEx.printStackTrace();
+		}
+		
         try {
             BufferedReader oReader = new BufferedReader(new FileReader(subDir + subId + "/" + fileName));
 
