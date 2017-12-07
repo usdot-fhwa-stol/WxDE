@@ -329,12 +329,12 @@ public class RoadWeatherAlerts extends AsyncQ<IObsSet>
           if (oAlertObsSets == null)
             oAlertObsSets = new HashMap<Integer, IObsSet>();
 
-          IObsSet iAlertObsSet = oAlertObsSets.get(iObsSet.getObsType());
+          IObsSet iAlertObsSet = oAlertObsSets.get(oRule.getAlertObstypeId());
           if (iAlertObsSet == null)
           {
-            iAlertObsSet = g_oObsMgr.getObsSet(iObsSet.getObsType());
-            iAlertObsSet = new ObsSet(iObsSet.getObsType());
-            oAlertObsSets.put(iObsSet.getObsType(), iAlertObsSet);
+            iAlertObsSet = g_oObsMgr.getObsSet(oRule.getAlertObstypeId());
+            iAlertObsSet = new ObsSet(oRule.getAlertObstypeId());
+            oAlertObsSets.put(oRule.getAlertObstypeId(), iAlertObsSet);
           }
 
           iAlertObsSet.addObs(iObs.getSourceId(), iObs.getSensorId(), iObs.getObsTimeLong(), System.currentTimeMillis(), iObs.getLatitude(), iObs.getLongitude(), (short) iObs.getElevation(), 0);
