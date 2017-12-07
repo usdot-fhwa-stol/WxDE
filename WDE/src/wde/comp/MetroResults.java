@@ -101,8 +101,8 @@ public class MetroResults
 	
 	
 	/**
-	 * A utility method that takes a latitude and longitude and converts them 
-	 * into a Lambert Conformal Projection
+	 * A utility method that takes a Lambert Conformal Projection coordinates and 
+	 * converts them to Lat/Lon coordinates
 	 * 
 	 * @param dKmX  x coordinate of the projection
 	 * @param dKmY  y coordinate of the projection
@@ -212,23 +212,27 @@ public class MetroResults
 		{
 			for (int i = -nObservationHours + 1; i < nForecastHours; i++)    //encompass all times that are used in METRo
 			{
-				m_oRoadcastDataList.add(new RoadcastData(51137, lNow + 3600000 * i));
-				m_oRoadcastDataList.add(new RoadcastData(51138, lNow + 3600000 * i));
-				m_oRoadcastDataList.add(new RoadcastData(51165, lNow + 3600000 * i));
+				m_oRoadcastDataList.add(new RoadcastData(51137, lNow + 3600000 * i)); //Surface status (road condition)
+				m_oRoadcastDataList.add(new RoadcastData(51138, lNow + 3600000 * i)); //surface temperature
+				m_oRoadcastDataList.add(new RoadcastData(51165, lNow + 3600000 * i)); //sub surface temperature
+				m_oRoadcastDataList.add(new RoadcastData(584, lNow + 3600000 * i)); //roadway snow depth
+				m_oRoadcastDataList.add(new RoadcastData(511310, lNow + 3600000 * i)); //surface water depth
 			}
 		}
 		//if there is already RoadcastData, update the list
 		else
 		{
 			//remove the oldest set of RoadcastData
-			m_oRoadcastDataList.remove(0);
-			m_oRoadcastDataList.remove(0);
-			m_oRoadcastDataList.remove(0);
-			//add 3 new arrays at the last forecast time
+			for (int i = 0; i < 5; i++) //there are 5 types of RoadcastData save
+				m_oRoadcastDataList.remove(0);
+
+			//add 5 new arrays at the last forecast time
 			long lNextHour = m_oRoadcastDataList.get(m_oRoadcastDataList.size() - 1).m_lTimestampEnd;
 			m_oRoadcastDataList.add(new RoadcastData(51137, lNextHour));
 			m_oRoadcastDataList.add(new RoadcastData(51138, lNextHour));
 			m_oRoadcastDataList.add(new RoadcastData(51165, lNextHour));
+			m_oRoadcastDataList.add(new RoadcastData(584, lNextHour));
+			m_oRoadcastDataList.add(new RoadcastData(511310, lNextHour));
 		}
 	}
 	
