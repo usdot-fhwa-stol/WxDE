@@ -281,9 +281,9 @@ public class OutputCsv extends OutputFormat {
                 oWriter.print(",");
                 oWriter.print(m_oDateFormat.format(oSubObs.m_lTimestamp));
                 oWriter.print(",");
-                oWriter.print(oSubObs.m_dLat);
+                oWriter.print(oSubObs.m_dLat / 1000000);
                 oWriter.print(",");
-                oWriter.print(oSubObs.m_dLon);
+                oWriter.print(oSubObs.m_dLon / 1000000);
                 oWriter.print(",");
                 oWriter.print(oSubObs.m_nElev);
                 oWriter.print(",");
