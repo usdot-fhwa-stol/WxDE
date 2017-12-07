@@ -2,12 +2,18 @@ package wde.data.osm;
 
 
 import java.io.BufferedInputStream;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.DataInputStream;
+import java.io.EOFException;
 import java.io.FileInputStream;
+import java.io.FileWriter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
+import wde.util.Config;
+import wde.util.ConfigSvc;
 
 import wde.util.MathUtil;
 
@@ -48,16 +54,19 @@ public class Roads implements Comparator<Road>
 	 */
 	private Roads()
 	{
+		Config oConfig = ConfigSvc.getInstance().getConfig(this);
 		int nRoadId = 0;
 		ArrayList<GridIndex> oGrids = new ArrayList(); // grid/road intersections
-		try
+		try (BufferedWriter oOut = new BufferedWriter(new FileWriter(oConfig.getString("file", "/opt/tomcat/webapps/data/metadata/segment.csv"))))
 		{
-			File[] oFiles = new File("/opt/osm").listFiles(); // default location
+			oOut.write("\"SegmentId\",\"SegmentName\",\"Lat\",\"Lon\",\"Elev\"\n");
+			File[] oFiles = new File(oConfig.getString("dir", "/opt/osm2")).listFiles(); // default location
+			Arrays.sort(oFiles);
 			for (File oFile : oFiles)
 			{
 				if (oFile.isDirectory() || !oFile.getName().endsWith(".osm.bin"))
 					continue; // skip directories, only need processed OSM binary files
-
+				
 				try (DataInputStream oOsmBin = new DataInputStream(
 					new BufferedInputStream(new FileInputStream(oFile))))
 				{
@@ -67,6 +76,7 @@ public class Roads implements Comparator<Road>
 						{
 							oGrids.clear(); // reuse grid buffer
 							Road oRoad = new Road(++nRoadId, oOsmBin); // load road definition
+							oOut.write(String.format("%d,%s,%f,%f,%d\n", oRoad.m_nId, oRoad.m_sName, MathUtil.fromMicro(oRoad.m_nYmid), MathUtil.fromMicro(oRoad.m_nXmid), oRoad.m_tElev));
 							SegIterator oSegIt = oRoad.iterator();
 							while (oSegIt.hasNext())
 							{
@@ -88,13 +98,14 @@ public class Roads implements Comparator<Road>
 						}
 					}
 				}
-				catch (Exception oException) // should only be end-of-file
+				catch (EOFException oEof) // should only be end-of-file
 				{
 				}
 			}
 		}
 		catch (Exception oException)
 		{
+			oException.printStackTrace();
 		}
 	}
 
@@ -239,7 +250,7 @@ public class Roads implements Comparator<Road>
 	{
 		return oRhs.m_nId - oLhs.m_nId;
 	}
-
+	
 
 	private class GridIndex extends ArrayList<Road> implements Comparable<GridIndex>
 	{
