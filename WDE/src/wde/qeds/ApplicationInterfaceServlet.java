@@ -136,7 +136,7 @@ public class ApplicationInterfaceServlet extends HttpServlet {
 		}
 		
         try {
-            BufferedReader oReader = new BufferedReader(new FileReader(subDir + subId + "/" + fileName));
+            BufferedReader oReader = new BufferedReader(new FileReader(subDir + Math.abs(Integer.parseInt(subId)) + "/" + fileName));
 
             String sLine;
             while ((sLine = oReader.readLine()) != null)
