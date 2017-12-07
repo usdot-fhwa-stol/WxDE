@@ -122,9 +122,6 @@ public class PlatformMonitor extends AsyncQ<IObsSet> {
             m_oPlatformList.add(oPlatformObs);
         }
 
-        loadRoads(oConfig.getString("mn_roadfile", null)); // load MN road segments
-
-        loadRoads(oConfig.getString("mi_roadfile", null)); // load MI road segments
 
         initialize(); // must be last to set correct sort order
 
@@ -333,67 +330,6 @@ public class PlatformMonitor extends AsyncQ<IObsSet> {
         logger.info("restore PlatformMonitor end");
 
         updatePlatforms();
-    }
-
-
-    /**
-     * Reads a netCDF file from the provided file path and creates a hash map
-     * associating platform codes with arrays of geo-coordinate points.
-     */
-    private void loadRoads(String sFilename) {
-        logger.info("PlatformMonitor loadRoads begin");
-        if (sFilename == null || sFilename.length() == 0) {
-            logger.error("PlatformMonitor loadRoads missing file name");
-            logger.info("PlatformMonitor loadRoads end");
-            return; // check for missing file name
-        }
-
-        Introsort.usort(m_oPlatformList, m_oSortByCode); // sort by platform code
-        StringBuilder sBuffer = new StringBuilder();
-
-        try {
-            NetcdfFile oNcFile = NetcdfFile.open(sFilename);
-            Variable oSeg = oNcFile.findVariable("seg_name");
-            Variable oLat = oNcFile.findVariable("latitude");
-            Variable oLon = oNcFile.findVariable("longitude");
-
-            ArrayChar.D2 oSegs = (ArrayChar.D2) oSeg.read();
-            ArrayDouble.D1 oLats = (ArrayDouble.D1) oLat.read();
-            ArrayDouble.D1 oLons = (ArrayDouble.D1) oLon.read();
-
-            int[] nShape = oSegs.getShape();
-            for (int nRow = 0; nRow < nShape[0]; nRow++) {
-                sBuffer.setLength(0); // generate platform code
-                for (int nCol = 0; nCol < nShape[1]; nCol++) {
-                    if (oSegs.get(nRow, nCol) != 0) // ignore nulls in string
-                        sBuffer.append(oSegs.get(nRow, nCol));
-                }
-
-                // platform code for road segments must be unique across contributors
-                m_oSearchPlatform.m_sCode = sBuffer.toString();
-                int nIndex = Collections.binarySearch(m_oPlatformList,
-                        m_oSearchPlatform, m_oSortByCode);
-
-                if (nIndex >= 0) {
-                    PlatformObs oPlatform = m_oPlatformList.get(nIndex);
-                    if (oPlatform.m_oLat == null)
-                        oPlatform.m_oLat = new ArrayList<>();
-
-                    if (oPlatform.m_oLon == null)
-                        oPlatform.m_oLon = new ArrayList<>();
-
-                    oPlatform.m_oLat.add(new Double(oLats.get(nRow)));
-                    oPlatform.m_oLon.add(new Double(oLons.get(nRow)));
-                } else {
-                    logger.info("PlatformMonitor loadRoads missing road: " +
-                            m_oSearchPlatform.m_sCode);
-                }
-            }
-            oNcFile.close();
-        } catch (Exception oException) {
-            logger.error("PlatformMonitor loadRoads", oException);
-        }
-        logger.info("PlatformMonitor loadRoads end");
     }
 
 
