@@ -3,13 +3,12 @@
  */
 package wde.util.net;
 
+import java.io.IOException;
+import java.net.SocketTimeoutException;
 import org.apache.commons.net.ftp.FTP;
 import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPReply;
 import org.apache.log4j.Logger;
-
-import java.io.IOException;
-import java.net.SocketTimeoutException;
 
 /**
  * Provides a means of streaming files over an ftp connection.
@@ -18,120 +17,150 @@ import java.net.SocketTimeoutException;
  * streaming files across a network connection.
  * </p>
  */
-public class FtpConn extends NetConn {
-    private static final Logger logger = Logger.getLogger(FtpConn.class);
+public class FtpConn extends NetConn
+{
+	private static final Logger logger = Logger.getLogger(FtpConn.class);
 
-    /**
-     * FTP connection client.
-     */
-    FTPClient m_oFtp = new FTPClient();
-
-
-    /**
-     * Initializes the class attributes to the corresponding provided values.
-     * Formats the url to contain only the server address, and sets the client
-     * communication timeouts.
-     *
-     * @param sUrl      network connection address.
-     * @param sUsername connection username.
-     * @param sPassword password corresponding to the provided password.
-     */
-    public FtpConn(String sUrl, String sUsername, String sPassword) {
-        super(sUrl, sUsername, sPassword);
-
-        // truncate the FTP URL to contain only the server address
-        m_oStringBuilder.setLength(0);
-        m_oStringBuilder.append(m_sUrl);
-        // remove the ftp:// portion of the URL
-        m_oStringBuilder.delete(0, 6);
-
-        // remove any trailing slash
-        if (m_sUrl.endsWith("/"))
-            m_oStringBuilder.setLength(m_oStringBuilder.length() - 1);
-
-        m_sUrl = m_oStringBuilder.toString();
-
-        // set communication timeouts
-        m_oFtp.setDefaultTimeout(20000);
-        m_oFtp.setConnectTimeout(20000);
-        m_oFtp.setDataTimeout(20000);
-    }
+	/**
+	 * FTP connection client.
+	 */
+	FTPClient m_oFtp = new FTPClient();
 
 
-    /**
-     * Connects to the ftp-url, and logs in with the given username and
-     * password.
-     *
-     * @return true if the connection is successful, false otherwise.
-     */
-    @Override
-    public boolean connect() {
-        boolean bSuccess = false;
-
-        try {
-            m_oFtp.connect(m_sUrl);
-            int nReplyCode = m_oFtp.getReplyCode();
-            bSuccess = FTPReply.isPositiveCompletion(nReplyCode);
-            if (bSuccess)
-                m_oFtp.login(m_sUsername, m_sPassword);
-        } catch (Exception oException) {
-            logger.error("connect " + oException.toString() + " " + m_sUrl);
-        }
-
-        return bSuccess;
-    }
+	/**
+	 * <b> Default Constructor </b>
+	 * <p>
+	 * Creates new instances of {@code FtpConn}
+	 * </p>
+	 */
+	private FtpConn()
+	{
+	}
 
 
-    /**
-     * Logs out and disconnects the ftp-connection.
-     */
-    @Override
-    public void disconnect() {
-        try {
-            m_oFtp.logout();
-            m_oFtp.disconnect();
-        } catch (Exception oException) {
-            logger.error("disconnect " + oException.toString() + " " + m_sUrl);
-        }
-    }
+	/**
+	 * Initializes the class attributes to the corresponding provided values.
+	 * Formats the url to contain only the server address, and sets the client
+	 * communication timeouts.
+	 *
+	 * @param sUrl network connection address.
+	 * @param sUsername connection username.
+	 * @param sPassword password corresponding to the provided password.
+	 */
+	public FtpConn(String sUrl, String sUsername, String sPassword)
+	{
+		super(sUrl, sUsername, sPassword);
+
+		// truncate the FTP URL to contain only the server address
+		m_oStringBuilder.setLength(0);
+		m_oStringBuilder.append(m_sUrl);
+		// remove the ftp:// portion of the URL
+		m_oStringBuilder.delete(0, 6);
+
+		// remove any trailing slash
+		if (m_sUrl.endsWith("/"))
+				m_oStringBuilder.setLength(m_oStringBuilder.length() - 1);
+
+		m_sUrl = m_oStringBuilder.toString();
+
+		// set communication timeouts
+		m_oFtp.setDefaultTimeout(20000);
+		m_oFtp.setConnectTimeout(20000);
+		m_oFtp.setDataTimeout(20000);
+	}
 
 
-    /**
-     * Prepares a filestream across the ftp-connection to the provided filename.
-     * Passes this stream to the input-stream attribute.
-     *
-     * @param sFilename file contained at the location specified by the ftp-url.
-     * @return true if the stream was prepared successfully, false otherwise.
-     */
-    @Override
-    public boolean open(String sFilename) {
-        boolean bSuccess = false;
+	/**
+	* Connects to the ftp-url, and logs in with the given username and
+	* password.
+	*
+	* @return true if the connection is successful, false otherwise.
+	*/
+	@Override
+	public boolean connect()
+	{
+		boolean bSuccess = false;
 
-        try {
-            m_oFtp.setFileType(FTP.BINARY_FILE_TYPE);
-            m_iInputStream = m_oFtp.retrieveFileStream(sFilename);
-            bSuccess = (m_iInputStream != null);
-        } catch (SocketTimeoutException oSocketTimeoutException) {
-            logger.error("open " + oSocketTimeoutException.toString() + " " + sFilename);
-        } catch (Exception e) {
-            logger.error("Error opening " + sFilename + " " + e.toString());
-            e.printStackTrace();
-        }
+		try
+		{
+			m_oFtp.connect(m_sUrl);
+			int nReplyCode = m_oFtp.getReplyCode();
+			bSuccess = FTPReply.isPositiveCompletion(nReplyCode);
+			if (bSuccess)
+					m_oFtp.login(m_sUsername, m_sPassword);
+		} 
+		catch (Exception oException)
+		{
+			logger.error("connect " + oException.toString() + " " + m_sUrl);
+		}
 
-        return bSuccess;
-    }
+		return bSuccess;
+	}
 
 
-    /**
-     * Closes the input stream and ftp connection.
-     */
-    @Override
-    public void close() throws IOException {
-        // the FTP object needs to finalize file transfers
-        if (m_iInputStream != null) {
-            m_iInputStream.close();
-            m_iInputStream = null;
-            m_oFtp.completePendingCommand();
-        }
-    }
+	/**
+	* Logs out and disconnects the ftp-connection.
+	*/
+	@Override
+	public void disconnect()
+	{
+		try
+		{
+			m_oFtp.logout();
+			m_oFtp.disconnect();
+		}
+		catch (Exception oException)
+		{
+			logger.error("disconnect " + oException.toString() + " " + m_sUrl);
+		}
+	}
+
+
+	/**
+	* Prepares a filestream across the ftp-connection to the provided filename.
+	* Passes this stream to the input-stream attribute.
+	*
+	* @param sFilename file contained at the location specified by the ftp-url.
+	* @return true if the stream was prepared successfully, false otherwise.
+	*/
+	@Override
+	public boolean open(String sFilename)
+	{
+		boolean bSuccess = false;
+
+		try
+		{
+			m_oFtp.enterLocalPassiveMode();
+			m_oFtp.setFileType(FTP.BINARY_FILE_TYPE);
+			m_iInputStream = m_oFtp.retrieveFileStream(sFilename);
+			bSuccess = (m_iInputStream != null);
+		}
+		catch (SocketTimeoutException oSocketTimeoutException)
+		{
+			logger.error("open " + oSocketTimeoutException.toString() + " " + sFilename);
+		}
+		catch (Exception oException)
+		{
+			logger.error("Error opening " + sFilename + " " + oException.toString());
+			oException.printStackTrace();
+		}
+
+		return bSuccess;
+	}
+
+
+	/**
+	* Closes the input stream and ftp connection.
+	*/
+	@Override
+	public void close() throws IOException 
+	{
+		// the FTP object needs to finalize file transfers
+		if (m_iInputStream != null)
+		{
+			m_iInputStream.close();
+			m_iInputStream = null;
+			m_oFtp.completePendingCommand();
+		}
+	}
 }
