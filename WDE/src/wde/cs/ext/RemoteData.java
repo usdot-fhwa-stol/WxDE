@@ -9,11 +9,14 @@ import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayDeque;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Iterator;
 import org.apache.log4j.Logger;
+import wde.util.Scheduler;
 
 /**
  * This abstract base class implements common NetCDF patterns for identifying, 
@@ -37,6 +40,10 @@ abstract class RemoteData
 	protected int m_nOffset;
 	protected int m_nPeriod;
 	protected int m_nInitTime;
+	protected int m_nRetryInterval;
+	protected int m_nRetryMax;
+	protected ArrayList<RetryState> m_oRetries;
+
 	
 	RemoteData()
 	{
@@ -136,11 +143,71 @@ abstract class RemoteData
 			if (oRemoveNc != null) // non-synchronized remove from local storage
 					oRemoveNc.cleanup(); // no list modification, cleanup relatively lengthy
 		}
-		catch(Exception oException) // failed to download new data
+		catch(IOException oIOEx) // failed to download new data
+		{
+			RetryState oTemp = new RetryState(oTime, sFilename);
+			m_oRetries.add(oTemp);
+			Scheduler.getInstance().scheduleOnce(oTemp, m_nRetryInterval);
+			oIOEx.printStackTrace();	
+		}
+		catch(Exception oException) 
 		{
 			oException.printStackTrace();
 		}
 	} 
+	
+	
+	public void retry(RetryState oRetry)
+	{
+		String sDestFile = getDestFilename(oRetry.m_sFile, oRetry.m_oTime);
+		m_oLogger.info("Retrying to load file: " + sDestFile);
+		try
+		{
+			File oFile = new File(sDestFile);
+			if(!oFile.exists())  //if the file doesn't exist load it from URL
+			{
+				URL oUrl = new URL(m_sBaseURL + oRetry.m_sFile); // retrieve remote data file
+				BufferedInputStream oIn = new BufferedInputStream(oUrl.openStream());
+				BufferedOutputStream oOut = new BufferedOutputStream(
+					new FileOutputStream(oFile));
+				int nByte; // copy remote data to local file
+				while ((nByte = oIn.read()) >= 0)
+					oOut.write(nByte);
+				oIn.close(); // tidy up input and output streams
+				oOut.close();
+			}
+
+			NcfWrapper oNc = new NcfWrapper(m_nObsTypes, m_sObsTypes, m_sHrz, m_sVrt, m_sTime);
+			oNc.load(oRetry.m_oTime.getTimeInMillis() - m_nDelay, 
+				oRetry.m_oTime.getTimeInMillis() + m_nRange, sDestFile);
+
+			 NcfWrapper oRemoveNc = null;
+			 synchronized(this)
+			{
+				if (m_oGrids.size() == m_nLimit) // old NetCDF files fall off bottom
+					oRemoveNc = m_oGrids.removeLast();
+				m_oGrids.push(oNc); // new NetCDF files go on top
+			}
+			if (oRemoveNc != null) // non-synchronized remove from local storage
+					oRemoveNc.cleanup(); // no list modification, cleanup relatively lengthy
+			m_oRetries.remove(oRetry);
+		}
+		catch(IOException oIOEx)
+		{
+			if (++oRetry.m_nCount <= m_nRetryMax)
+				Scheduler.getInstance().scheduleOnce(oRetry, m_nRetryInterval);
+			else
+			{
+				m_oLogger.info("Reached max retries for " + oRetry.m_sFile);
+				m_oRetries.remove(oRetry);
+			}
+			oIOEx.printStackTrace();
+		}
+		catch(Exception oException) // failed to download new data
+		{
+			oException.printStackTrace();
+		}
+	}
 	
 	
 	/**
@@ -148,4 +215,26 @@ abstract class RemoteData
 	 * the program is first started.
 	 */
 	protected abstract void init();
+	
+	
+	protected class RetryState implements Runnable
+	{
+		protected Calendar m_oTime;
+		protected String m_sFile;
+		protected int m_nCount;
+		
+		RetryState(Calendar oTime, String sFile)
+		{
+			m_oTime = oTime;
+			m_sFile = sFile;
+			m_nCount = 0;
+		}
+		
+		
+		@Override
+		public void run()
+		{
+			retry(this);
+		}
+	}
 }

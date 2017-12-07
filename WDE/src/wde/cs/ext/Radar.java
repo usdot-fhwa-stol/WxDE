@@ -3,6 +3,7 @@ package wde.cs.ext;
 import java.io.BufferedInputStream;
 import java.net.URL;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import wde.util.Config;
 import wde.util.ConfigSvc;
@@ -37,6 +38,9 @@ public class Radar extends RemoteGrid
 		m_nPeriod = 240;
 		m_oNeededFile.setTimeZone(Scheduler.UTC);
 		m_nInitTime = oConfig.getInt("time", 3600 * 3);
+		m_nRetryMax = oConfig.getInt("max", 1);
+		m_nRetryInterval = oConfig.getInt("retry", 60000);
+		m_oRetries = new ArrayList();
 		init();
 	}
 

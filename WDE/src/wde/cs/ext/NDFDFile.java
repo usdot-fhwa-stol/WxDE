@@ -6,6 +6,7 @@
 package wde.cs.ext;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import wde.util.Config;
 import wde.util.ConfigSvc;
@@ -36,6 +37,9 @@ abstract class NDFDFile extends RemoteData
 		m_nPeriod = 3600;
 		m_oDateForFile.setTimeZone(Scheduler.UTC);
 		m_nInitTime = oConfig.getInt("time", 3600);
+		m_nRetryMax = oConfig.getInt("max", 4);
+		m_nRetryInterval = oConfig.getInt("retry", 600000);
+		m_oRetries = new ArrayList();
 		
 	}
 	

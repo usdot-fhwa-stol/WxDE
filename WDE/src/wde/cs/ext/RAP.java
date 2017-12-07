@@ -6,6 +6,7 @@
 package wde.cs.ext;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 import wde.util.Config;
@@ -43,6 +44,9 @@ public class RAP extends RemoteData implements Runnable
 		m_nOffset = 3300;
 		m_nPeriod = 3600;
 		m_nInitTime = oConfig.getInt("time", 3600 * 3);
+		m_nRetryMax = oConfig.getInt("max", 4);
+		m_nRetryInterval = oConfig.getInt("retry", 600000);
+		m_oRetries = new ArrayList();
 		init();
 	}
 
