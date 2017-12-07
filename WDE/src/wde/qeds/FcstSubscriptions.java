@@ -28,6 +28,7 @@ import java.util.GregorianCalendar;
 import java.util.Hashtable;
 import java.util.TimeZone;
 import org.postgresql.util.PSQLException;
+import wde.comp.MetroResults;
 import wde.cs.ext.NDFD;
 import wde.cs.ext.RAP;
 import wde.cs.ext.RTMA;
@@ -76,6 +77,10 @@ public class FcstSubscriptions implements Runnable, Comparator<Road> {
 	  * Obs types for alerts, warnings, and forecasted infer obs that come from the database
 	  */
 	 private final int[] m_nDbObsTypes = new int[]{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 589, 5102, 51137};
+	 /**
+	  * Obs types for METRo
+	  */
+	 private final int[] m_nMetroObsTypes = new int[]{584, 51138, 51165, 511310};
 
     /**
      * Subscriptions cleanup query used in conjunction with lifetime attribute.
@@ -196,7 +201,8 @@ public class FcstSubscriptions implements Runnable, Comparator<Road> {
 		  Arrays.sort(m_nRapObsTypes);
 		  Arrays.sort(m_nRtmaObsTypes);
 		  Arrays.sort(m_nDbObsTypes);
-        // set the five-minute subscription fulfillment interval
+		  Arrays.sort(m_nMetroObsTypes);
+        // set the 60-minute subscription fulfillment interval
         Scheduler.getInstance().schedule(this, 0, 3600, true);
     }
 
@@ -222,6 +228,7 @@ public class FcstSubscriptions implements Runnable, Comparator<Road> {
 		NDFD oNDFD = NDFD.getInstance();
 		RAP oRAP = RAP.getInstance();
 		RTMA oRTMA = RTMA.getInstance();
+		MetroResults oMetro = MetroResults.getInstance();
 		int nMaxLat = (int)Math.max(MathUtil.toMicro(oSub.m_dLat1), MathUtil.toMicro(oSub.m_dLat2));
 		int nMinLat = (int)Math.min(MathUtil.toMicro(oSub.m_dLat1), MathUtil.toMicro(oSub.m_dLat2));
 		int nMaxLon = (int)Math.max(MathUtil.toMicro(oSub.m_dLng1), MathUtil.toMicro(oSub.m_dLng2));
@@ -254,6 +261,7 @@ public class FcstSubscriptions implements Runnable, Comparator<Road> {
 				boolean bDbObs = false;
 				boolean bRtmaObs = false;
 				boolean bRapObs = false;
+				boolean bMetroObs = false;
 				//determine which type of obs it is
 				if (Arrays.binarySearch(m_nNdfdObsTypes, nObsType) >= 0)
 					bNdfdObs = true;
@@ -263,6 +271,8 @@ public class FcstSubscriptions implements Runnable, Comparator<Road> {
 					bRtmaObs = true;
 				if (Arrays.binarySearch(m_nRapObsTypes, nObsType) >= 0)
 					bRapObs = true;
+				if (Arrays.binarySearch(m_nMetroObsTypes, nObsType) >= 0)
+					bMetroObs = true;
 				if (iObsDb != null)
 				{
 					Timestamp oNowTs = new Timestamp(oNow.getTimeInMillis());
@@ -331,6 +341,10 @@ public class FcstSubscriptions implements Runnable, Comparator<Road> {
 						if (bRapObs)
 						{
 							dVal = oRAP.getReading(nObsType, lFcstTime, oRoad.m_nYmid, oRoad.m_nXmid);
+						}
+						else if (bMetroObs)
+						{
+							dVal = oMetro.getReading(nObsType, lFcstTime, oRoad.m_nYmid, oRoad.m_nXmid);
 						}
 						else if (bDbObs && !oTempList.isEmpty())
 						{
