@@ -109,6 +109,14 @@ public class Scheduler {
         m_oTimer.scheduleAtFixedRate(oTask, iCalendar.getTime(), nPeriod * 1000);
         return oTask;
     }
+	 
+	 
+	 public TimerTask scheduleOnce(Runnable iRunnable, int nDelay)
+	 {
+		 Sched oTask = new Sched(iRunnable, true);
+		 m_oTimer.schedule(oTask, nDelay);
+		 return oTask;
+	 }
 
 
     /**
