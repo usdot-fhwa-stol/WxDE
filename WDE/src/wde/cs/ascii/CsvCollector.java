@@ -474,6 +474,24 @@ public class CsvCollector implements ICollector {
         }
     }
 
+	private int convertGps(StringBuilder sBuffer)
+	{
+		try {
+		char cLastChar = sBuffer.charAt(sBuffer.length() - 1);
+		if (!Character.isDigit(cLastChar))
+		{
+			int nMultipler = cLastChar == 'N' || cLastChar == 'E' ? 1 : -1;
+			int nIndex = sBuffer.indexOf(".");
+			double dValue = Double.parseDouble(sBuffer.substring(0, nIndex - 2));
+			dValue += Double.parseDouble(sBuffer.substring(nIndex - 2, sBuffer.length() - 2)) / 60.0;
+			return MathUtil.toMicro(nMultipler * dValue);
+		}
+		
+            return MathUtil.toMicro(Double.parseDouble(sBuffer.toString()));
+        } catch (Exception e) {
+            return Integer.MIN_VALUE;
+        }
+	}
     /**
      * Convert the latitude attribute {@code m_nLat} from the double
      * value contained in the supplied string buffer.
@@ -481,11 +499,7 @@ public class CsvCollector implements ICollector {
      * @param sBuffer The string containing the geo-coordinate position.
      */
     void setLat(StringBuilder sBuffer) {
-        try {
-            m_nLat = MathUtil.toMicro(Double.parseDouble(sBuffer.toString()));
-        } catch (Exception e) {
-            m_nLat = Integer.MIN_VALUE;
-        }
+        m_nLat = convertGps(sBuffer);
     }
 
     /**
@@ -495,11 +509,7 @@ public class CsvCollector implements ICollector {
      * @param sBuffer The string containing the geo-coordinate position.
      */
     void setLon(StringBuilder sBuffer) {
-        try {
-            m_nLon = MathUtil.toMicro(Double.parseDouble(sBuffer.toString()));
-        } catch (Exception e) {
-            m_nLon = Integer.MIN_VALUE;
-        }
+       m_nLon = convertGps(sBuffer);
     }
 
     /**
