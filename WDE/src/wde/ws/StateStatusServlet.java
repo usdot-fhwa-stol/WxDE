@@ -15,6 +15,7 @@ import java.util.TimeZone;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
+import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -68,26 +69,37 @@ public class StateStatusServlet extends HttpServlet
   /**
    * States with a data sharing agreement
    */
-  private static final String[] m_sDataSharingStates =
+  private String[] m_sDataSharingStates =
   {
-    "US.AK", "US.AZ", "US.CA", "US.CO", "US.DE", "US.FL", "US.GA", "US.IA", "US.ID", "US.IL", "US.IN", "US.KS", "US.KY", "US.MI", "US.MN", "US.MO", "US.MT", "US.ND", "US.NH", "US.NJ", "US.NV", "US.NY", "US.OR", "US.SD", "US.VT", "US.WI", "US.WY"
+    "US.AK", "US.AZ", "US.CA", "US.CO", "US.DE", "US.FL", "US.GA", "US.IA", "US.ID", "US.IL", "US.IN", "US.KS", "US.KY", "US.MI", "US.MN", "US.MO", "US.MT", "US.ND", "US.NH", "US.NJ", "US.NV", "US.NY", "US.OR", "US.SD", "US.VT", "US.WI", "US.WY", "US.PN"
   };
 
   /**
    * States providing metadata
    */
-  private static final String[] m_sMetadataStates =
+  private  String[] m_sMetadataStates =
   {
-    "US.AK", "US.AZ", "US.CA", "US.CO", "US.DE", "US.FL", "US.GA", "US.IA", "US.ID", "US.IL", "US.IN", "US.KS", "US.KY", "US.MA", "US.MD", "US.ME", "US.MI", "US.MN", "US.MO", "US.MT", "US.ND", "US.NE", "US.NH", "US.NH", "US.NM", "US.NV", "US.NY", "US.OH", "US.OK", "US.OR", "US.SC", "US.SD", "US.TN", "US.TX", "US.UT", "US.VA", "US.VT", "US.WA", "US.WI", "US.WV", "US.WY"
+    "US.AK", "US.AZ", "US.CA", "US.CO", "US.DE", "US.FL", "US.GA", "US.IA", "US.ID", "US.IL", "US.IN", "US.KS", "US.KY", "US.MA", "US.MD", "US.ME", "US.MI", "US.MN", "US.MO", "US.MT", "US.ND", "US.NE", "US.NH", "US.NH", "US.NM", "US.NV", "US.NY", "US.OH", "US.OK", "US.OR", "US.SC", "US.SD", "US.TN", "US.TX", "US.UT", "US.VA", "US.VT", "US.WA", "US.WI", "US.WV", "US.WY", "US.PN"
   };
 
   /**
    * Combined list of states with metadata and/or data sharing agreements
    */
-  private static final String[] m_sAllStates;
+  private String[] m_sAllStates;
 
-  static
+
+  @Override
+  public void init(ServletConfig config) throws ServletException
   {
+    String metaStates = config.getServletContext().getInitParameter("metaDataStates");
+    String dataSharingStates = config.getServletContext().getInitParameter("dataSharingStates");
+
+    if(metaStates != null)
+      m_sMetadataStates = metaStates.split("\\,");
+
+    if(dataSharingStates != null)
+      m_sDataSharingStates = dataSharingStates.split("\\,");
+
     Arrays.sort(m_sDataSharingStates);
 
     Arrays.sort(m_sMetadataStates);
@@ -103,6 +115,8 @@ public class StateStatusServlet extends HttpServlet
     m_sAllStates = new String[oAllStatesList.size()];
     oAllStatesList.toArray(m_sAllStates);
   }
+
+
 
   public StateStatusServlet() throws NamingException
   {
