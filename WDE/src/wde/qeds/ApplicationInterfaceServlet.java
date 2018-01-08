@@ -88,8 +88,9 @@ public class ApplicationInterfaceServlet extends HttpServlet {
         String queryStr = "SELECT id from subs.subscription where guid = ?";
         logger.info("Statistics download subscription result: " + queryStr);
 
+		PreparedStatement ps = dm.prepareStatement(connId, queryStr);
 		ResultSet rs = null;
-        try (PreparedStatement ps = dm.prepareStatement(connId, queryStr))
+        try
 		{
 			ps.setString(1, uuid);
 			rs = ps.executeQuery();
@@ -111,6 +112,8 @@ public class ApplicationInterfaceServlet extends HttpServlet {
             try {
                 rs.close();
                 rs = null;
+				ps.close();
+				ps = null;
             } catch (SQLException se) {
                 // ignore
             }
