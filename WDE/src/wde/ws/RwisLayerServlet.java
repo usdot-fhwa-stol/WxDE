@@ -23,7 +23,8 @@ public class RwisLayerServlet extends PointLayerServletBase
           + ",p.category\n"
           + ",p.platformcode\n"
           + ",p.locbaselat AS latitude\n"
-          + ",p.locbaselong AS longitude\n";
+          + ",p.locbaselong AS longitude\n"
+          + ",s.sensorindex\n";
 
     String sBaseFromWhere
           = "FROM\n"
@@ -47,14 +48,14 @@ public class RwisLayerServlet extends PointLayerServletBase
           = sBaseSelect
           + ",NULL AS value\n"
           + sBaseFromWhere
-          + "GROUP BY p.id, p.platformcode, p.locbaselat, p.locbaselong, s.distgroup";
+          + "GROUP BY p.id, s.sensorindex, p.platformcode, p.locbaselat, p.locbaselong, s.distgroup";
 
     m_sQueryWithObsTemplate
           = sBaseSelect
           + ",o.value\n"
           + sBaseFromWhere
           + "AND o.obstypeid = ?\n"
-          + "ORDER BY platformid, obstime desc";
+          + "ORDER BY platformid, s.sensorindex, obstime desc";
   }
 
 
