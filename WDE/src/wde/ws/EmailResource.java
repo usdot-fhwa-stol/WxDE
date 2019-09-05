@@ -77,7 +77,7 @@ public class EmailResource {
                 "You recently requested to retrieve your User ID from the Weather Data Environment system.\r\n\r\n"
                         + "Your account's User ID is: " + user.getUser() + "\r\n\r\n"
                         + "Weather Data Environment - Login: "
-                        + req.getRequestURL().toString().replace("resources/email/forgotUserId", "auth/loginRedirect.jsp")
+                        + res.encodeURL(req.getRequestURL().toString().replace("resources/email/forgotUserId", "auth/loginRedirect.jsp"))
         );
 
         Notification.send(email);
