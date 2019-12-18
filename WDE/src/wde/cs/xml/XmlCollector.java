@@ -317,6 +317,10 @@ public class XmlCollector extends DefaultHandler implements ICollector {
             } else
                 m_oLastCollection.setTime(0);
         } catch (Exception oException) {
+	  	    m_sPath.setLength(0);
+		    m_oTags.clear();
+		    m_sBuffer.setLength(0);
+		    g_oLogger.error(oException, oException);
             try {
                 oNetConn.close();
             } catch (Exception oIOException) {
@@ -389,6 +393,7 @@ public class XmlCollector extends DefaultHandler implements ICollector {
                              String qName, Attributes attributes) {
         int nAddCount = 0;
         if (m_bStartFile) {
+            m_oAdded.push(0);
             m_bStartFile = false;
             return;
         }
@@ -959,6 +964,7 @@ public class XmlCollector extends DefaultHandler implements ICollector {
      */
     public void setTimestamp(StringBuilder sBuffer) {
         try {
+            m_sTimestamp.setLength(0);
             m_sTimestamp.append(sBuffer);
             m_lTimestamp = m_oTsFormat.parse(m_sTimestamp.toString()).getTime();
         } catch (Exception oException) {
