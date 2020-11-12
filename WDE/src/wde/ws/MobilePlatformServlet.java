@@ -18,7 +18,8 @@ public class MobilePlatformServlet extends PointLayerServletBase
           + ",p.platformcode\n"
           + ",o.obstime\n"
           + ",o.latitude \n"
-          + ",o.longitude \n";
+          + ",o.longitude \n"
+          + ",s.sensorindex \n";
 
   private final String m_sBaseFromWhere
           = "FROM\n"
@@ -40,14 +41,14 @@ public class MobilePlatformServlet extends PointLayerServletBase
           = m_sBaseSelect
           + ",null AS value\n"
           + m_sBaseFromWhere
-          + "ORDER BY platformid, obstime desc";
+          + "ORDER BY platformid, s.sensorindex, obstime desc";
 
   private final String m_sQueryWithObsTemplate
           = m_sBaseSelect
           + ",o.value\n"
           + m_sBaseFromWhere
           + "AND o.obstypeid = ?\n"
-          + "ORDER BY platformid, obstime desc";
+          + "ORDER BY platformid, s.sensorindex, obstime desc";
 
   public MobilePlatformServlet() throws NamingException
   {

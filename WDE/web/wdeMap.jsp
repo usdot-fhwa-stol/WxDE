@@ -693,7 +693,7 @@ var metaDataStyle = setStandardStyleProperties({ color: "grey"});
 metaDataStyle.radius = 8;
 var metaHighlightStyle = getHighlightStyle(metaDataStyle);
 var metaDataOptions = {hasObs: false, checkbox: document.getElementById("chkMetaDataLayer"), highlighter: new StaticLayerStyler(metaHighlightStyle)};
-map.registerWxdeLayer(L.wxdeLayer('MetaDataLayer', createCircleMarkers, new StaticLayerStyler(metaDataStyle), metaDataOptions));
+map.registerWxdeLayer(L.wxdeLayer('RwisMetaDataLayer', createCircleMarkers, new StaticLayerStyler(metaDataStyle), metaDataOptions));
 
 var asosMetaDataOptions = {hasObs: false, checkbox: document.getElementById("chkAsosMetaDataLayer"), highlighter: new StaticLayerStyler(metaHighlightStyle)};
 map.registerWxdeLayer(L.wxdeLayer('AsosMetaDataLayer', createCircleMarkers, new StaticLayerStyler(metaDataStyle), asosMetaDataOptions));

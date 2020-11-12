@@ -175,7 +175,7 @@ public abstract class CollectorSvc implements Runnable {
             while (rs.next())
                 m_oCollectors.add(createCollector(nContribIds, oCsMgr, iConnection, rs));
         } catch (Exception oException) {
-            oException.printStackTrace();
+            logger.error(oException, oException);
         } finally {
             try {
                 rs.close();

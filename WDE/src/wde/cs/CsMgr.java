@@ -162,7 +162,7 @@ public class CsMgr implements Runnable {
      *
      * @return The instance of CsMgr.
      */
-    public CsMgr getInstance() {
+    public static CsMgr getInstance() {
         return g_oInstance;
     }
 

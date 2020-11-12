@@ -94,4 +94,12 @@ public class UnitConv implements Comparable<UnitConv> {
 
         return m_sToUnit.compareTo(oUnitConv.m_sToUnit);
     }
+
+  @Override
+  public String toString()
+  {
+    return "{" + m_sFromUnit + " to " + m_sToUnit + ":  * " + m_dMultiply + "/" + m_dDivide + " + (" + m_dAdd + ")}";
+  }
+
+
 }

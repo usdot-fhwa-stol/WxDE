@@ -72,7 +72,7 @@ public class UserResource {
             email.setBody("Thank you for registering at Weather Data Environment.\r\n\r\n"
                     + "Click or copy the link in this email and paste it in your browser's\r\n"
                     + "Address Bar to validate your account: \r\n\r\n"
-                    + req.getRequestURL().toString().replace("user", "email/verifyEmail/" + user.getGuid()));
+                    + resp.encodeURL(req.getRequestURL().toString().replace("user", "email/verifyEmail/" + user.getGuid())));
 
             Notification.send(email);
         } catch (Exception ex) {

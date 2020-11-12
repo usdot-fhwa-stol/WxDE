@@ -38,7 +38,7 @@ public abstract class PointLayerServletBase extends LayerServlet
     }
 
     DecimalFormat oValueFormatter = new DecimalFormat("0.##");
-    Set<Integer> oReturnedPlatformIdList = new HashSet<Integer>();
+    Set<Integer> oReturnedPlatformIds = new HashSet<Integer>();
 
     StringBuilder oMetricObsListBuilder = new StringBuilder(100);
     StringBuilder oEnglishObsListBuilder = new StringBuilder(100);
@@ -63,9 +63,9 @@ public abstract class PointLayerServletBase extends LayerServlet
         }
 
         //only write the layer if we haven't written it already
-        if (!oReturnedPlatformIdList.contains(nPlatformId))
+        if (!oReturnedPlatformIds.contains(nPlatformId))
         {
-          oReturnedPlatformIdList.add(nPlatformId);
+          oReturnedPlatformIds.add(nPlatformId);
 
           //only write the layer if it wasn't covered by the last request
           if(oLastRequestBounds == null || !oLastRequestBounds.intersects(dLat, dLng))
@@ -83,9 +83,19 @@ public abstract class PointLayerServletBase extends LayerServlet
                 oEnglishObsListBuilder.setLength(0);
 
                 int nNextPlatformId = nPlatformId;
+                int nLastSensorIndex = Integer.MIN_VALUE;
                 do
                 {
+                  // Results are ordered by sensor index.
+                  // Only write the first value for each
+                  int nCurrentSensorIndex = oResult.getInt("sensorindex");
+                  if(nCurrentSensorIndex == nLastSensorIndex)
+                    continue;
+                  else
+                    nLastSensorIndex = nCurrentSensorIndex;
+
                   double oObsValue = oResult.getDouble("value");
+
                   if (!oResult.wasNull())
                   {
                     if(oMetricObsListBuilder.length() > 0)

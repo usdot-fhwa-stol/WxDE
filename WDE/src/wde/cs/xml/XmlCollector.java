@@ -28,6 +28,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Date;
+import org.apache.log4j.Logger;
 
 
 /**
@@ -199,6 +200,7 @@ public class XmlCollector extends DefaultHandler implements ICollector {
             "className, unit, ignoreValues, xmlPath " +
             "FROM conf.xmldef WHERE collectorId = ?";
 
+    private static final Logger g_oLogger = Logger.getLogger(XmlCollector.class);
 
     /**
      * <b> Default Constructor </b>
@@ -236,62 +238,56 @@ public class XmlCollector extends DefaultHandler implements ICollector {
      *                            to read.
      */
     protected XmlCollector(int nId, int nDelay, boolean bRetry,
-                           int nCollectTzId, int nContentTzId, int nTimestampId,
-                           int nDefaultSensorIndex, String sFilepath, int[] nContribIds,
-                           CsMgr oCsMgr, XmlSvc oXmlSvc, Connection iConnection) {
-        m_nId = nId;
+      int nCollectTzId, int nContentTzId, int nTimestampId,
+      int nDefaultSensorIndex, String sFilepath, int[] nContribIds,
+      CsMgr oCsMgr, XmlSvc oXmlSvc, Connection iConnection)
+  {
+    m_nId = nId;
 
-        // set the number of seconds to wait after the collection time occurs
-        m_nDelay = nDelay * 1000; // convert seconds to milliseconds
+    // set the number of seconds to wait after the collection time occurs
+    m_nDelay = nDelay * 1000; // convert seconds to milliseconds
 
-        // set whether the collector should retry upon failure
-        m_bRetry = bRetry;
+    // set whether the collector should retry upon failure
+    m_bRetry = bRetry;
 
-        m_oTsFormat = oCsMgr.createDateFormat(nTimestampId);
-        m_oTsFormat.setTimeZone(oCsMgr.createSimpleTimeZone(nContentTzId));
+    m_oTsFormat = oCsMgr.createDateFormat(nTimestampId);
+    m_oTsFormat.setTimeZone(oCsMgr.createSimpleTimeZone(nContentTzId));
 
-        m_nDefaultSensorIndex = nDefaultSensorIndex;
+    m_nDefaultSensorIndex = nDefaultSensorIndex;
 
-        m_oFilepath = new SimpleDateFormat(sFilepath);
-        m_oFilepath.setTimeZone(oCsMgr.createSimpleTimeZone(nCollectTzId));
+    m_oFilepath = new SimpleDateFormat(sFilepath);
+    m_oFilepath.setTimeZone(oCsMgr.createSimpleTimeZone(nCollectTzId));
 
-        m_nContribIds = nContribIds; // save reference to list of contrib ids
-        m_oXmlSvc = oXmlSvc;
-				m_oCsMgr = oCsMgr;
+    m_nContribIds = nContribIds; // save reference to list of contrib ids
+    m_oXmlSvc = oXmlSvc;
+    m_oCsMgr = oCsMgr;
 
-        PreparedStatement ps = null;
-        ResultSet rs = null;
+    try(PreparedStatement oXmlDefStmt = iConnection.prepareStatement(m_sQuery))
+    {
+        oXmlDefStmt.setInt(1, nId);
+      try(ResultSet oXmlDefRs = oXmlDefStmt.executeQuery())
+      {
 
-        try {
-            ps = iConnection.prepareStatement(m_sQuery);
-            ps.setInt(1, nId);
-            rs = ps.executeQuery();
+        while(oXmlDefRs.next())
+        {
+          DataValue oDataHandler = (DataValue) Class.forName(
+              oXmlDefRs.getString(4)).newInstance();
 
-            while (rs.next()) {
-                DataValue oDataHandler = (DataValue) Class.forName(
-                        rs.getString(4)).newInstance();
+          oDataHandler.init(oXmlDefRs.getInt(2), oXmlDefRs.getDouble(3),
+              oXmlDefRs.getString(5), oXmlDefRs.getString(6), oXmlDefRs.getString(7), this);
 
-                oDataHandler.init(rs.getInt(2), rs.getDouble(3),
-                        rs.getString(5), rs.getString(6), rs.getString(7), this);
-
-                m_oDataValueHandler.add(oDataHandler);
-            }
-
-            // create a SAX parser to handle the xml document
-            m_oParser = SAXParserFactory.newInstance().newSAXParser();
-        } catch (Exception oException) {
-            oException.printStackTrace();
-        } finally {
-            try {
-                rs.close();
-                rs = null;
-                ps.close();
-                ps = null;
-            } catch (SQLException se) {
-                // ignore
-            }
+          m_oDataValueHandler.add(oDataHandler);
         }
+
+        // create a SAX parser to handle the xml document
+        m_oParser = SAXParserFactory.newInstance().newSAXParser();
+      }
     }
+    catch(Exception oException)
+    {
+      g_oLogger.error(oException, oException);
+    }
+  }
 
     /**
      * Tells the SaxParser to read the file, adding the observations to the
@@ -321,6 +317,10 @@ public class XmlCollector extends DefaultHandler implements ICollector {
             } else
                 m_oLastCollection.setTime(0);
         } catch (Exception oException) {
+	  	    m_sPath.setLength(0);
+		    m_oTags.clear();
+		    m_sBuffer.setLength(0);
+		    g_oLogger.error(oException, oException);
             try {
                 oNetConn.close();
             } catch (Exception oIOException) {
@@ -393,6 +393,7 @@ public class XmlCollector extends DefaultHandler implements ICollector {
                              String qName, Attributes attributes) {
         int nAddCount = 0;
         if (m_bStartFile) {
+            m_oAdded.push(0);
             m_bStartFile = false;
             return;
         }
@@ -411,36 +412,59 @@ public class XmlCollector extends DefaultHandler implements ICollector {
         else
             m_oTags.add(m_oIgnore);
 
-        if (attributes != null) {
-            if (startsWith()) {
-                int nAttLength = attributes.getLength();
-                for (int nAttIndex = 0; nAttIndex < nAttLength; nAttIndex++) {
-                    startElement(null, null, attributes.getQName(nAttIndex), null);
-                    nAddCount++;
-                    if (m_oTags.get(m_oTags.size() - 1) == m_oCurrentDataValue) {
-                        m_sBuffer.setLength(0);
-                        m_sBuffer.append(attributes.getValue(nAttIndex));
-                        m_oCurrentDataValue.characters(m_sBuffer);
-                        pop();
-                        nAddCount--;
-                        m_oCurrentDataValue = null;
-                    } else if (m_oTags.get(m_oTags.size() - 1) == m_oKeep) {
-                        startElement(null, null, attributes.getValue(nAttIndex), null);
-                        nAddCount++;
-                        if (m_oTags.get(m_oTags.size() - 1) == m_oIgnore) {
-                            pop();
-                            pop();
-                            nAddCount -= 2;
-                        }
-                    } else if (m_oTags.get(m_oTags.size() - 1) == m_oIgnore) {
-                        pop();
-                        nAddCount--;
-                    }
-                }
-            }
+      if(attributes != null)
+      {
+        if(startsWith())
+        {
+          int nAttLength = attributes.getLength();
+
+          //Due to the order of attributes coming in we could have one
+          //attribute's path match a data value, but then have another one clear
+          //it back to null before we come out of the attribute loop and process the found value.
+          //If an attribute does match a value, hold on to it here so we can
+          //set it as the current value again before we return
+          DataValue oFoundDataValue = m_oCurrentDataValue;
+
+          for(int nAttIndex = 0; nAttIndex < nAttLength; nAttIndex++)
+          {
+            startElement(null, null, attributes.getQName(nAttIndex), null);
             nAddCount++;
-            m_oAdded.addFirst(nAddCount);
+            if(m_oTags.get(m_oTags.size() - 1) == m_oCurrentDataValue)
+            {
+              m_sBuffer.setLength(0);
+              m_sBuffer.append(attributes.getValue(nAttIndex));
+              m_oCurrentDataValue.characters(m_sBuffer);
+              pop();
+              nAddCount--;
+              m_oCurrentDataValue = null;
+            }
+            else if(m_oTags.get(m_oTags.size() - 1) == m_oKeep)
+            {
+              startElement(null, null, attributes.getValue(nAttIndex), null);
+              nAddCount++;
+              //if it is either the ignore signal or an actual found
+              //value, then we don't need to keep the attribute name/valaue
+              //in the path.
+              if(m_oTags.get(m_oTags.size() - 1) != m_oKeep)
+              {
+                pop();
+                pop();
+                nAddCount -= 2;
+              }
+              if(m_oCurrentDataValue != null)
+                oFoundDataValue = m_oCurrentDataValue;
+            }
+            else if(m_oTags.get(m_oTags.size() - 1) == m_oIgnore)
+            {
+              pop();
+              nAddCount--;
+            }
+          }
+          m_oCurrentDataValue = oFoundDataValue;
         }
+        nAddCount++;
+        m_oAdded.addFirst(nAddCount);
+      }
     }
 
 
@@ -769,13 +793,13 @@ public class XmlCollector extends DefaultHandler implements ICollector {
      * @see Text#compare(java.lang.CharSequence, java.lang.CharSequence)
      */
     private DataValue findDataValue() {
-        int nIndex = m_oDataValueHandler.size();
+      int nIndex = m_oDataValueHandler.size();
         while (nIndex-- > 0 && Text.compare(m_oDataValueHandler.get(nIndex).m_sPath, m_sPath) != 0) ;
         if (nIndex < 0)
             return null;
 
         return m_oDataValueHandler.get(nIndex);
-    }
+  }
 
 
     /**
@@ -825,7 +849,7 @@ public class XmlCollector extends DefaultHandler implements ICollector {
             if (iObsSet != null)
 						{
 							m_tElev = m_oCsMgr.checkElev(m_nLat, m_nLon, m_tElev);
-              iObsSet.addObs(1, iSensor.getId(), m_lTimestamp, now, 
+              iObsSet.addObs(1, iSensor.getId(), m_lTimestamp, now,
 								m_nLat, m_nLon, m_tElev, dValue); // source is 1 for WxDE
             } else {
                 int nContribId = -m_oXmlSvc.m_nId; // save the negative value of
@@ -940,6 +964,7 @@ public class XmlCollector extends DefaultHandler implements ICollector {
      */
     public void setTimestamp(StringBuilder sBuffer) {
         try {
+            m_sTimestamp.setLength(0);
             m_sTimestamp.append(sBuffer);
             m_lTimestamp = m_oTsFormat.parse(m_sTimestamp.toString()).getTime();
         } catch (Exception oException) {

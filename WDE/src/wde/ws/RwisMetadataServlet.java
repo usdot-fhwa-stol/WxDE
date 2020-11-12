@@ -9,7 +9,6 @@ import javax.servlet.annotation.WebServlet;
  *
  * @author scot.lange
  */
-@WebServlet(urlPatterns = "/MetaDataLayer/*")
 public class RwisMetadataServlet extends PointLayerServletBase
 {
 
