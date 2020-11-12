@@ -20,7 +20,7 @@ public final class RTMA extends RemoteGrid
 {
 	private static final RTMA g_oRTMA = new RTMA();
 	private final SimpleDateFormat m_oSrcFile = new SimpleDateFormat(
-		"'rtma2p5.'yyyyMMdd'/rtma2p5.t'HH'z.2dvarges_ndfd.grb2'");
+		"'rtma2p5.'yyyyMMdd'/rtma2p5.t'HH'z.2dvarges_ndfd.grb2_wexp'");
 
 
 	/**

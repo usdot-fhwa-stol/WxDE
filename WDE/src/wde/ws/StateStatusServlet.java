@@ -71,7 +71,7 @@ public class StateStatusServlet extends HttpServlet
    */
   private String[] m_sDataSharingStates =
   {
-    "US.AK", "US.AZ", "US.CA", "US.CO", "US.DE", "US.FL", "US.GA", "US.IA", "US.ID", "US.IL", "US.IN", "US.KS", "US.KY", "US.MI", "US.MN", "US.MO", "US.MT", "US.ND", "US.NH", "US.NJ", "US.NV", "US.NY", "US.OR", "US.SD", "US.VT", "US.WI", "US.WY", "US.PN"
+    "US.AK", "US.AZ", "US.CA", "US.CO", "US.DE", "US.FL", "US.GA", "US.IA", "US.ID", "US.IL", "US.IN", "US.KS", "US.KY", "US.MI", "US.MN", "US.MO", "US.MT", "US.ND", "US.NH", "US.NJ", "US.NV", "US.NY", "US.OR", "US.SD", "US.VA", "US.VT", "US.WI", "US.WY", "US.PN"
   };
 
   /**
@@ -95,10 +95,10 @@ public class StateStatusServlet extends HttpServlet
     String dataSharingStates = config.getServletContext().getInitParameter("dataSharingStates");
 
     if(metaStates != null)
-      m_sMetadataStates = metaStates.split("\\,");
+      m_sMetadataStates = metaStates.split(",");
 
     if(dataSharingStates != null)
-      m_sDataSharingStates = dataSharingStates.split("\\,");
+      m_sDataSharingStates = dataSharingStates.split(",");
 
     Arrays.sort(m_sDataSharingStates);
 
@@ -115,7 +115,6 @@ public class StateStatusServlet extends HttpServlet
     m_sAllStates = new String[oAllStatesList.size()];
     oAllStatesList.toArray(m_sAllStates);
   }
-
 
 
   public StateStatusServlet() throws NamingException

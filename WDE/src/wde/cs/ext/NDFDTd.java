@@ -17,7 +17,7 @@ public class NDFDTd extends NDFDFile
 	{
 		Config oConfig = ConfigSvc.getInstance().getConfig(this);
 		m_nObsTypes = new int[]{575};
-		m_sObsTypes = new String[]{"Dewpoint_temperature_surface"};
+		m_sObsTypes = new String[]{"Dewpoint_temperature_surface_above_ground"};
 		m_sBaseDir = oConfig.getString("dir", "/run/shm/ndfd/");
 		m_sSrcFile = "ds.td.bin";
 		init();

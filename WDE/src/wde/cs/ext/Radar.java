@@ -33,7 +33,7 @@ public class Radar extends RemoteGrid
 		m_sVrt = "lat";
 		m_sTime = "time";
 		m_sBaseDir = oConfig.getString("dir", "/run/shm/radar/");
-		m_sBaseURL = "http://mrms.ncep.noaa.gov/data/2D/MergedBaseReflectivityQC/";
+		m_sBaseURL = "https://mrms.ncep.noaa.gov/data/2D/MergedBaseReflectivityQC/";
 		m_nOffset = 60;
 		m_nPeriod = 240;
 		m_oNeededFile.setTimeZone(Scheduler.UTC);

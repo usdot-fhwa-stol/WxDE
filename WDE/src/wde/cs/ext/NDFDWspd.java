@@ -17,7 +17,7 @@ public class NDFDWspd extends NDFDFile
 	{
 		Config oConfig = ConfigSvc.getInstance().getConfig(this);
 		m_nObsTypes = new int[]{56104};
-		m_sObsTypes = new String[]{"Wind_speed_surface"};
+		m_sObsTypes = new String[]{"Wind_speed_surface_above_ground"};
 		m_sBaseDir = oConfig.getString("dir", "/run/shm/ndfd/");
 		m_sSrcFile = "ds.wspd.bin";
 		init();

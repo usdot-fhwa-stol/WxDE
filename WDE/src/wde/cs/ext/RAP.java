@@ -39,7 +39,7 @@ public class RAP extends RemoteData implements Runnable
 		m_sTime = "time";
 		//m_sBaseDir = "C:/Users/aaron.cherney/TestFiles/RAP/";
 		m_sBaseDir = oConfig.getString("dir", "/run/shm/rap");
-		m_sBaseURL = "http://nomads.ncep.noaa.gov/cgi-bin/filter_rap.pl?file=";
+		m_sBaseURL = "ftp://ftpprd.ncep.noaa.gov/pub/data/nccf/com/rap/prod/";
 		m_oSrcFile.setTimeZone(Scheduler.UTC);
 		m_nOffset = 3300;
 		m_nPeriod = 3600;
@@ -84,18 +84,11 @@ public class RAP extends RemoteData implements Runnable
 	protected String getDestFilename(String sSrcFile, Calendar oNow)
 	{
 		String sDestFile = m_sBaseDir; // ignore intervening directories in path
-		//remove non essential text from the end of the file name
-		int nIndex = sSrcFile.indexOf("&");
-		sSrcFile = sSrcFile.substring(0, nIndex);
 		int nSepIndex = sSrcFile.lastIndexOf("/");
 		if (nSepIndex >= 0)
-		{
-			return sDestFile + sSrcFile.substring(nSepIndex, nIndex); // extract the file name
-		} 
+			return sDestFile + sSrcFile.substring(nSepIndex); // extract the file name
 		else
-		{
 			return sDestFile + sSrcFile; // local file name
-		}
 	}
 	
 	
@@ -151,8 +144,7 @@ public class RAP extends RemoteData implements Runnable
 		//get all the RAP forecast files for the desired time range
 		for (int i = 0; i < m_nInitTime / m_nPeriod; i++)
 		{
-			m_oSrcFile.applyPattern("'rap.t'HH'z.awp130pgrbf0'" + i + 
-				"'.grib2&lev_surface=on&var_CFRZR=on&var_CICEP=on&var_CRAIN=on&var_CSNOW=on&var_PRATE=on&var_PRES=on&leftlon=0&rightlon=360&toplat=90&bottomlat=-90&dir=%2Frap.'yyyyMMdd");
+			m_oSrcFile.applyPattern(String.format("'rap.'yyyyMMdd'/rap.t'HH'z.awp130pgrbf%02d.grib2'", i));
 			loadFile(iCalendar);
 			//update the time range by an hour
 			m_nRange += 3600000;   
@@ -174,8 +166,7 @@ public class RAP extends RemoteData implements Runnable
 		//get all the RAP forecast files for the desired time range
 		for (int i = 0; i < m_nInitTime / m_nPeriod; i++)
 		{
-			m_oSrcFile.applyPattern("'rap.t'HH'z.awp130pgrbf0'" + i + 
-				"'.grib2&lev_surface=on&var_CFRZR=on&var_CICEP=on&var_CRAIN=on&var_CSNOW=on&var_PRATE=on&var_PRES=on&leftlon=0&rightlon=360&toplat=90&bottomlat=-90&dir=%2Frap.'yyyyMMdd");
+			m_oSrcFile.applyPattern(String.format("'rap.'yyyyMMdd'/rap.t'HH'z.awp130pgrbf%02d.grib2'", i));
 			loadFile(oTime);
 			//update the time range by an hour
 			m_nRange += 3600000;

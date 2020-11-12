@@ -17,7 +17,7 @@ public class NDFDTemp extends NDFDFile
 	{
 		Config oConfig = ConfigSvc.getInstance().getConfig(this);
 		m_nObsTypes = new int[]{5733};
-		m_sObsTypes = new String[]{"Temperature_surface"};
+		m_sObsTypes = new String[]{"Temperature_surface_above_ground"};
 		m_sBaseDir = oConfig.getString("dir", "/run/shm/ndfd/");
 		m_sSrcFile = "ds.temp.bin";
 		init();
