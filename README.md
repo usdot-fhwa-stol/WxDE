@@ -48,13 +48,13 @@ Accounts may have to be setup with agencies and vendors to receive a username an
 
 # Version History and Retention
 
-**Status:** This project is in the release phase.
+**Status:** This project is in the release phase
 
 **Release Frequency:** This project currently has no plans for updates
 
 **Release History: See [CHANGELOG.md](CHANGELOG.md)**
 
-**Retention:** This project will remain publicly accessible for the foreseeable future.
+**Retention:** This project will remain publicly accessible for the foreseeable future
 
 # License
 
@@ -67,6 +67,7 @@ Please read [CONTRIBUTING.md](CONTRIBUTING.MD) for details on our Code of Conduc
 # Contact Information
 
 Contact Name: Federal Highway Administration
+
 Contact Information: [Federal Highway Adminstration](http://www.fhwa.dot.gov/) | [Turner-Fairbank Highway Research Center](http://www.fhwa.dot.gov/research/tfhrc/)
 
 # Acknowledgements
