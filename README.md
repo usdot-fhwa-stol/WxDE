@@ -48,9 +48,8 @@ Accounts may have to be setup with agencies and vendors to receive a username an
 
 ## Creating/updating metadata
 
-1. Determine the contributor id of the agency that is being updated by referencing the meta.contrib table.
-
-Example query to determine Georgia's contributor id:
+1. Determine the contributor id of the agency that is being updated by referencing the meta.contrib table.  
+Example query to determine Georgia's contributor id:  
 ```
 SELECT name, id FROM meta.contrib WHERE name ilike '%ga%';
 ```
