@@ -50,10 +50,11 @@ Accounts may have to be setup with agencies and vendors to receive a username an
 
 1. Determine the contributor id of the agency that is being updated by referencing the meta.contrib table.
 
-	Example query to determine Georgia's contributor id:  
+	Example query to determine Georgia's contributor id:
 	```
 	SELECT name, id FROM meta.contrib WHERE name ilike '%ga%';
 	```
+	
 2. Edit the meta.site table. Sites describe the general location of platforms and sensors. The following attributes need to be included:
 	- id: unique system site id (integer)
 	- staticid: another system id, usually the same as the id attribute (integer)
@@ -64,10 +65,10 @@ Accounts may have to be setup with agencies and vendors to receive a username an
 	- state: the abbreviation of the state the site is located in (character varying(2))
 	- country: the abbreviation of the country the site is located in (character varying(3))
 	
-Example query adding a site located in Oregon:
-```
-INSERT INTO meta.site (id, staticid, updatetime, statesiteid, contribid, description, state, country) VALUES (400047, 400047, '2020-07-15', '24023', 40, 'OR 140 @ Nevada State Line (OR 140 MP 64.24)', 'OR', 'USA');
-```
+	Example query adding a site located in Oregon:
+	```
+	INSERT INTO meta.site (id, staticid, updatetime, statesiteid, contribid, description, state, country) VALUES (400047, 400047, '2020-07-15', '24023', 40, 'OR 140 @ Nevada State Line (OR 140 MP 64.24)', 'OR', 'USA');
+	```
 
 3. Edit the meta.platform table. Platforms describe the physical attributes of sensor locations and whether the sensors are stationary or mobile. The following attributes need to be included:
 	- id: unique system platform id (integer)
@@ -82,10 +83,10 @@ INSERT INTO meta.site (id, staticid, updatetime, statesiteid, contribid, descrip
 	- locbaselong: longitude of the platform in decimal degrees, if not mobile (numeric(18,9))
 	- locbaseelev: elevation of the platform in meters, if not mobile (numeric(18,9))
 
-Example query adding a platform to the site added in step 2:
-```
-INSERT INTO meta.platform (id, staticid, updatetime, platformcode, category, description, contribid, siteid, locbaselat, locbaselong, locbaseelev) VALUES (400047, 400047, '2020-07-15', '24023', 'P', 'OR 140 @ Nevada State Line (OR 140 MP 64.24)', 40, 400047, 42.0040100, -119.3352100, 1887);
-```
+	Example query adding a platform to the site added in step 2:
+	```
+	INSERT INTO meta.platform (id, staticid, updatetime, platformcode, category, description, contribid, siteid, locbaselat, locbaselong, locbaseelev) VALUES (400047, 400047, '2020-07-15', '24023', 'P', 'OR 140 @ Nevada State Line (OR 140 MP 64.24)', 40, 400047, 42.0040100, -119.3352100, 1887);
+	```
 
 4. Determine the type of sensor(s) being used on a platform by referencing the meta.sensortype table. If a sensor type does not exist, create an entry using the following attributes:
 	- id: unique system sensortype id (integer)
@@ -94,17 +95,17 @@ INSERT INTO meta.platform (id, staticid, updatetime, platformcode, category, des
 	- mfr: manufacturer of the sensor (character varying(50))
 	- model: model of the sensor (character varying(50))
 	
-Example query adding a sensor type manufactured by High Sierra Electronics:
-```
-INSERT INTO meta.sensortype (id, staticid, updatetime, mfr, model) VALUES (436, 436, '2017-11-14', 'High Sierra Electronics', 'Mobile Ice Sight 5435-00');
-```
+	Example query adding a sensor type manufactured by High Sierra Electronics:
+	```
+	INSERT INTO meta.sensortype (id, staticid, updatetime, mfr, model) VALUES (436, 436, '2017-11-14', 'High Sierra Electronics', 'Mobile Ice Sight 5435-00');
+	```
 
 5. For each combination of sensortype and observation type being collected, determine the quality checking parameter id to be used for that sensor by referencing the meta.qchparm table.
 
-Example query to determine the quality checking parameter id for the sensor added in step 4 collecting air temperature
-```
-SELECT id FROM meta.qchparm WHERE sensortypeid = 436 AND obstypeid = 5733;
-```
+	Example query to determine the quality checking parameter id for the sensor added in step 4 collecting air temperature
+	```
+	SELECT id FROM meta.qchparm WHERE sensortypeid = 436 AND obstypeid = 5733;
+	```
 
 
 6. Edit the meta.sensor table. Sensors describe a single observation type being collected at a platform. The following attributes need to be included:
@@ -119,19 +120,19 @@ SELECT id FROM meta.qchparm WHERE sensortypeid = 436 AND obstypeid = 5733;
 	- qchparmid: quality checking parameter id associated with the sensor and observation type (integer)
 	- distgroup: distribution group id. Should be 2 for most cases (integer)
 	
-Example query adding a sensor at the platform added in step 3:
-```	
-INSERT INTO meta.sensor (id, sourceid, staticid, updatetime, platformid, contribid, sensorindex, obstypeid, qchparmid, distgroup) VALUES (40004700, 1, 40004700, '2020-07-15', 400047, 40, 0, 5733, 9, 2);
-```
+	Example query adding a sensor at the platform added in step 3:
+	```	
+	INSERT INTO meta.sensor (id, sourceid, staticid, updatetime, platformid, contribid, sensorindex, obstypeid, qchparmid, distgroup) VALUES (40004700, 1, 40004700, '2020-07-15', 400047, 40, 0, 5733, 9, 2);
+	```
 
 ## Creating/editing collectors
 
 1. Determine the contributor id of the agency that is being updated by referencing the meta.contrib table.
 
-Example query to determine Georgia's contributor id:
-```
-SELECT name, id FROM meta.contrib WHERE name ilike '%ga%';
-```
+	Example query to determine Georgia's contributor id:  
+	```
+	SELECT name, id FROM meta.contrib WHERE name ilike '%ga%';
+	```
 
 2. Edit the conf.csvc table. Collector services keep track the necessary data to access an agency's data feed(s). The following attributes need to be included:
 	- id: unique system collector service id (integer)
@@ -145,11 +146,11 @@ SELECT name, id FROM meta.contrib WHERE name ilike '%ga%';
 	- username: user name for login credentials, if applicable (character varying)
 	- password: password for login credentials, if applicable (character varying)
 	
-Example queries adding collector services for the state of Oregon:
-```
-INSERT INTO conf.csvc (id, active, contribid, midnightoffset, collectioninterval, instancename, classname, endpoint) VALUES (4001, 1, '40', 180, 1200, 'USA/OR/file', 'wde.cs.ascii.CsvSvc', 'file:///home/wxde/collectors//');
-INSERT INTO conf.csvc (id, active, contribid, midnightoffset, collectioninterval, instancename, classname, endpoint) VALUES (4002, 1, '40', 180, 1200, 'USA/OR/url', 'wde.cs.ascii.CsvSvc', 'odot.gov/dataportal', 'wxde-user', 'pw1234');
-```
+	Example queries adding collector services for the state of Oregon:
+	```
+	INSERT INTO conf.csvc (id, active, contribid, midnightoffset, collectioninterval, instancename, classname, endpoint) VALUES (4001, 1, '40', 180, 1200, 'USA/OR/file', 'wde.cs.ascii.CsvSvc', 'file:///home/wxde/collectors//');
+	INSERT INTO conf.csvc (id, active, contribid, midnightoffset, collectioninterval, instancename, classname, endpoint) VALUES (4002, 1, '40', 180, 1200, 'USA/OR/url', 'wde.cs.ascii.CsvSvc', 'odot.gov/dataportal', 'wxde-user', 'pw1234');
+	```
 
 3. Edit the conf.csvcollector table for CSV data sources or the conf.xmlcollector table for XML data sources. The following attributes need to be included for both tables:
 	- id: unique system collector id (integer)
@@ -187,28 +188,28 @@ INSERT INTO conf.csvc (id, active, contribid, midnightoffset, collectioninterval
 	- unit: unit associated with the value in this column (character varying(8))
 	- ignorevalues: semicolon separated list of values to ignore in this column (character varying(128))
 
-Example queries adding CSV column definitions associated with the collector added in step 3:	
-```
-INSERT INTO conf.csvcoldef (collectorid, columnid, obstypeid, multiplier, classname, unit, ignorevalues) VALUES (400101, 0, 0, NULL, wde.cs.ascii.PlatformCode, NULL, NULL);
-INSERT INTO conf.csvcoldef (collectorid, columnid, obstypeid, multiplier, classname, unit, ignorevalues) VALUES (400101, 1, 0, NULL, wde.cs.ascii.SensorId, NULL, NULL);
-INSERT INTO conf.csvcoldef (collectorid, columnid, obstypeid, multiplier, classname, unit, ignorevalues) VALUES (400101, 2, 0, NULL, wde.cs.ascii.Timestamp, NULL, NULL);
-INSERT INTO conf.csvcoldef (collectorid, columnid, obstypeid, multiplier, classname, unit, ignorevalues) VALUES (400101, 3, 0, NULL, wde.cs.ascii.Timestamp, NULL, NULL);
-INSERT INTO conf.csvcoldef (collectorid, columnid, obstypeid, multiplier, classname, unit, ignorevalues) VALUES (400101, 4, 5733, NULL, wde.cs.ascii.DataValue, 'C', '1001');
-INSERT INTO conf.csvcoldef (collectorid, columnid, obstypeid, multiplier, classname, unit, ignorevalues) VALUES (400101, 5, 5101, NULL, wde.cs.ascii.DataValue, 'm', '1000001');
-INSERT INTO conf.csvcoldef (collectorid, columnid, obstypeid, multiplier, classname, unit, ignorevalues) VALUES (400101, 6, 56105, NULL, wde.cs.ascii.MappedValue, 'deg', '361');
-INSERT INTO conf.csvcoldef (collectorid, columnid, obstypeid, multiplier, classname, unit, ignorevalues) VALUES (400101, 7, 56104, NULL, wde.cs.ascii.DataValue, 'km/h, '65535');
-INSERT INTO conf.csvcoldef (collectorid, columnid, obstypeid, multiplier, classname, unit, ignorevalues) VALUES (400101, 8, 56109, NULL, wde.cs.ascii.MappedValue, 'deg', '361');
-INSERT INTO conf.csvcoldef (collectorid, columnid, obstypeid, multiplier, classname, unit, ignorevalues) VALUES (400101, 9, 56108, NULL, wde.cs.ascii.DataValue, 'km/h', '65535');
-INSERT INTO conf.csvcoldef (collectorid, columnid, obstypeid, multiplier, classname, unit, ignorevalues) VALUES (400101, 10, 207, NULL, wde.cs.ascii.MappedValue, NULL, 'No Com;No Data');
-INSERT INTO conf.csvcoldef (collectorid, columnid, obstypeid, multiplier, classname, unit, ignorevalues) VALUES (400101, 11, 581, NULL, wde.cs.ascii.DataValue, '%', '101');
-INSERT INTO conf.csvcoldef (collectorid, columnid, obstypeid, multiplier, classname, unit, ignorevalues) VALUES (400101, 12, 511313, NULL, wde.cs.ascii.DataValue, 'C', '1001');
-INSERT INTO conf.csvcoldef (collectorid, columnid, obstypeid, multiplier, classname, unit, ignorevalues) VALUES (400101, 13, 587, NULL, wde.cs.ascii.DataValue, 'cm/h', '65565');
-INSERT INTO conf.csvcoldef (collectorid, columnid, obstypeid, multiplier, classname, unit, ignorevalues) VALUES (400101, 14, 589, NULL, wde.cs.ascii.MappedValue, NULL, NULL);
-INSERT INTO conf.csvcoldef (collectorid, columnid, obstypeid, multiplier, classname, unit, ignorevalues) VALUES (400101, 15, 511316, 0.01, wde.cs.ascii.DataValue, 'mm', '255;NaN');
-INSERT INTO conf.csvcoldef (collectorid, columnid, obstypeid, multiplier, classname, unit, ignorevalues) VALUES (400101, 16, 51138, NULL, wde.cs.ascii.DataValue, 'C', '1001');
-INSERT INTO conf.csvcoldef (collectorid, columnid, obstypeid, multiplier, classname, unit, ignorevalues) VALUES (400101, 17, 554, NULL, wde.cs.ascii.DataValue, 'mbar', '65535');
-INSERT INTO conf.csvcoldef (collectorid, columnid, obstypeid, multiplier, classname, unit, ignorevalues) VALUES (400101, 18, 575, NULL, wde.cs.ascii.DataValue, 'C', '1001');
-```
+	Example queries adding CSV column definitions associated with the collector added in step 3:	
+	```
+	INSERT INTO conf.csvcoldef (collectorid, columnid, obstypeid, multiplier, classname, unit, ignorevalues) VALUES (400101, 0, 0, NULL, wde.cs.ascii.PlatformCode, NULL, NULL);
+	INSERT INTO conf.csvcoldef (collectorid, columnid, obstypeid, multiplier, classname, unit, ignorevalues) VALUES (400101, 1, 0, NULL, wde.cs.ascii.SensorId, NULL, NULL);
+	INSERT INTO conf.csvcoldef (collectorid, columnid, obstypeid, multiplier, classname, unit, ignorevalues) VALUES (400101, 2, 0, NULL, wde.cs.ascii.Timestamp, NULL, NULL);
+	INSERT INTO conf.csvcoldef (collectorid, columnid, obstypeid, multiplier, classname, unit, ignorevalues) VALUES (400101, 3, 0, NULL, wde.cs.ascii.Timestamp, NULL, NULL);
+	INSERT INTO conf.csvcoldef (collectorid, columnid, obstypeid, multiplier, classname, unit, ignorevalues) VALUES (400101, 4, 5733, NULL, wde.cs.ascii.DataValue, 'C', '1001');
+	INSERT INTO conf.csvcoldef (collectorid, columnid, obstypeid, multiplier, classname, unit, ignorevalues) VALUES (400101, 5, 5101, NULL, wde.cs.ascii.DataValue, 'm', '1000001');
+	INSERT INTO conf.csvcoldef (collectorid, columnid, obstypeid, multiplier, classname, unit, ignorevalues) VALUES (400101, 6, 56105, NULL, wde.cs.ascii.MappedValue, 'deg', '361');
+	INSERT INTO conf.csvcoldef (collectorid, columnid, obstypeid, multiplier, classname, unit, ignorevalues) VALUES (400101, 7, 56104, NULL, wde.cs.ascii.DataValue, 'km/h, '65535');
+	INSERT INTO conf.csvcoldef (collectorid, columnid, obstypeid, multiplier, classname, unit, ignorevalues) VALUES (400101, 8, 56109, NULL, wde.cs.ascii.MappedValue, 'deg', '361');
+	INSERT INTO conf.csvcoldef (collectorid, columnid, obstypeid, multiplier, classname, unit, ignorevalues) VALUES (400101, 9, 56108, NULL, wde.cs.ascii.DataValue, 'km/h', '65535');
+	INSERT INTO conf.csvcoldef (collectorid, columnid, obstypeid, multiplier, classname, unit, ignorevalues) VALUES (400101, 10, 207, NULL, wde.cs.ascii.MappedValue, NULL, 'No Com;No Data');
+	INSERT INTO conf.csvcoldef (collectorid, columnid, obstypeid, multiplier, classname, unit, ignorevalues) VALUES (400101, 11, 581, NULL, wde.cs.ascii.DataValue, '%', '101');
+	INSERT INTO conf.csvcoldef (collectorid, columnid, obstypeid, multiplier, classname, unit, ignorevalues) VALUES (400101, 12, 511313, NULL, wde.cs.ascii.DataValue, 'C', '1001');
+	INSERT INTO conf.csvcoldef (collectorid, columnid, obstypeid, multiplier, classname, unit, ignorevalues) VALUES (400101, 13, 587, NULL, wde.cs.ascii.DataValue, 'cm/h', '65565');
+	INSERT INTO conf.csvcoldef (collectorid, columnid, obstypeid, multiplier, classname, unit, ignorevalues) VALUES (400101, 14, 589, NULL, wde.cs.ascii.MappedValue, NULL, NULL);
+	INSERT INTO conf.csvcoldef (collectorid, columnid, obstypeid, multiplier, classname, unit, ignorevalues) VALUES (400101, 15, 511316, 0.01, wde.cs.ascii.DataValue, 'mm', '255;NaN');
+	INSERT INTO conf.csvcoldef (collectorid, columnid, obstypeid, multiplier, classname, unit, ignorevalues) VALUES (400101, 16, 51138, NULL, wde.cs.ascii.DataValue, 'C', '1001');
+	INSERT INTO conf.csvcoldef (collectorid, columnid, obstypeid, multiplier, classname, unit, ignorevalues) VALUES (400101, 17, 554, NULL, wde.cs.ascii.DataValue, 'mbar', '65535');
+	INSERT INTO conf.csvcoldef (collectorid, columnid, obstypeid, multiplier, classname, unit, ignorevalues) VALUES (400101, 18, 575, NULL, wde.cs.ascii.DataValue, 'C', '1001');
+	```
 
 5. For XML data sources, edit the conf.xmldef. XML definition are used to associate observation with a sensor in the system. The following attributes need to be included:
 	- collectorid: system defid from conf.xmlcollector table associated with this XML definition (integer)
@@ -220,19 +221,19 @@ INSERT INTO conf.csvcoldef (collectorid, columnid, obstypeid, multiplier, classn
 	- ignorevalues: semicolon separated list of values to ignore in this definition (character varying(128))
 	- xmlpath: serialized xml path of tags and attributes for this definition (character varying(256))
 	
-Example XML described by the xmlpath '/data/station/value/code/temp':
-```
-<data>
- <station>
-   <value code="temp">21.3</value>
- </station>
-</data>
-```
+	Example XML described by the xmlpath '/data/station/value/code/temp':
+	```
+	<data>
+	 <station>
+	   <value code="temp">21.3</value>
+	 </station>
+	</data>
+	```
 
-Exmaple query adding XML definition associated with the collector added in step 3:
-```
-INSERT INTO conf.xmldef (collectorid, pathid, obstypeid, multiplier, classname, unit, ignorevalues, xmlpath) VALUES (11, 1, 5733, NULL, 'wde.cs.xml.DataValue', 'C', NULL, '/data/station/value/code/temp');
-```
+	Exmaple query adding XML definition associated with the collector added in step 3:
+	```
+	INSERT INTO conf.xmldef (collectorid, pathid, obstypeid, multiplier, classname, unit, ignorevalues, xmlpath) VALUES (11, 1, 5733, NULL, 'wde.cs.xml.DataValue', 'C', NULL, '/data/station/value/code/temp');
+	```
 
 # Version History and Retention
 
