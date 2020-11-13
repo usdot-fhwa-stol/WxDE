@@ -230,7 +230,7 @@ Accounts may have to be setup with agencies and vendors to receive a username an
 	</data>
 	```
 
-	Exmaple query adding XML definition associated with the collector added in step 3:
+	Example query adding XML definition associated with the collector added in step 3:
 	```
 	INSERT INTO conf.xmldef (collectorid, pathid, obstypeid, multiplier, classname, unit, ignorevalues, xmlpath) VALUES (11, 1, 5733, NULL, 'wde.cs.xml.DataValue', 'C', NULL, '/data/station/value/code/temp');
 	```
