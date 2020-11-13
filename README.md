@@ -161,13 +161,13 @@ INSERT INTO conf.csvc (id, active, contribid, midnightoffset, collectioninterval
 	- timestampid: system timestamp format id (which can be found in conf.timestampformat) used by the content inside of the files of the collector (integer)
 	- filepath: this is appended to the endpoint of the associated collector service to create the full path of the file collected. This is a String used to create a [SimpleDateFormat](https://docs.oracle.com/javase/8/docs/api/java/text/SimpleDateFormat.html) object in Java so proper syntax needs to be followed (character varying(255))
 
-The following attributes are specific to the conf.csvcollector table:
+The following attributes are specific to the conf.csvcollector table:  
 	- skiplines: the number of lines to skip at the beginning of a file, usually to skip header information (smallint)
 	- delimiter: the delimiter used to separate columns in the data file, if no value is given a ',' will be used (character varying(2))
 	- newline: the delimiter used for newlines in the data file, if no value is given '\n' will be used (character varying(2))
 	- stationcode: the id used to associate the file to a single platform within the system, if applicable
 	
-The following attributes are specific to the conf.xmlcollector table:
+The following attributes are specific to the conf.xmlcollector table:  
 	- defid: system id to associate entries in the conf.xmldef table to this collector (integer)
 	- defaultsensorindex: the default sensor index to use for this collector (integer)
 	
