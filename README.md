@@ -48,11 +48,12 @@ Accounts may have to be setup with agencies and vendors to receive a username an
 
 ## Creating/updating metadata
 
-1. Determine the contributor id of the agency that is being updated by referencing the meta.contrib table.  
-Example query to determine Georgia's contributor id:  
-```
-SELECT name, id FROM meta.contrib WHERE name ilike '%ga%';
-```
+1. Determine the contributor id of the agency that is being updated by referencing the meta.contrib table.
+
+	Example query to determine Georgia's contributor id:  
+	```
+	SELECT name, id FROM meta.contrib WHERE name ilike '%ga%';
+	```
 2. Edit the meta.site table. Sites describe the general location of platforms and sensors. The following attributes need to be included:
 	- id: unique system site id (integer)
 	- staticid: another system id, usually the same as the id attribute (integer)
