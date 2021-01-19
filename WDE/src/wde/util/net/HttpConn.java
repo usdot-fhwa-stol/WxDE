@@ -68,8 +68,7 @@ public class HttpConn extends NetConn {
                     m_sUsername.length() > 0 && m_sPassword.length() > 0) {
                 m_oStringBuilder.setLength(0);
                 m_oStringBuilder.append(m_sUsername).append(":").append(m_sPassword);
-                String sEncoding = new sun.misc.BASE64Encoder().encode
-                        (m_oStringBuilder.toString().getBytes());
+                String sEncoding = java.util.Base64.getEncoder().encodeToString(m_oStringBuilder.toString().getBytes());
 
                 m_oStringBuilder.setLength(0);
                 m_oStringBuilder.append("Basic ").append(sEncoding);
